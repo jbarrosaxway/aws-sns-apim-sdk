@@ -10,11 +10,15 @@ repositories {
     mavenCentral()
 }
 
-def apim_folder = '/opt/axway/Axway-7.7.0.20240830/apigateway/system'
-def ps_folder = '/opt/axway/Axway-7.7.0.20240830/policystudio'
+// Configuração dinâmica do Axway API Gateway
+def axway_base = System.getProperty('axway.base', '/opt/axway/Axway-7.7.0.20240830')
+def apim_folder = "${axway_base}/apigateway/system"
+def ps_folder = "${axway_base}/policystudio"
 
-//def apim_folder = '/opt/axway/Axway-7.7.0.20210830/apigateway/system'
-//def ps_folder = '/opt/axway/Axway-7.7.0.20210830/policystudio'
+// Configurações alternativas (descomente se necessário)
+//def axway_base_alt = '/opt/axway/Axway-7.7.0.20210830'
+//def apim_folder_alt = "${axway_base_alt}/apigateway/system"
+//def ps_folder_alt = "${axway_base_alt}/policystudio"
 
 dependencies {
     // AWS SDK - versões testadas e funcionais
@@ -43,7 +47,7 @@ task installLinux(type: Exec) {
     doFirst {
         println "🚀 Instalando filtro AWS Lambda no Linux..."
         println "📁 JAR: build/libs/aws-lambda-apim-sdk-1.0.1.jar"
-        println "📁 Gateway: /opt/axway/Axway-7.7.0.20240830"
+        println "📁 Gateway: ${axway_base}"
     }
 }
 
@@ -146,6 +150,28 @@ task showAwsJars {
     }
 }
 
+// Task para configurar caminho do Axway
+task setAxwayPath {
+    group = 'Configuration'
+    description = 'Configura o caminho do Axway API Gateway'
+    
+    doLast {
+        println "🔧 Configuração do Axway API Gateway"
+        println ""
+        println "📁 Caminho atual: ${axway_base}"
+        println "📁 APIM: ${apim_folder}"
+        println "📁 Policy Studio: ${ps_folder}"
+        println ""
+        println "💡 Para alterar o caminho, use:"
+        println "   ./gradlew -Daxway.base=/caminho/para/axway build"
+        println "   ./gradlew -Daxway.base=/opt/axway/Axway-7.7.0.20240830 installLinux"
+        println ""
+        println "📋 Exemplos:"
+        println "   ./gradlew -Daxway.base=/opt/axway/Axway-7.7.0.20210830 build"
+        println "   ./gradlew -Daxway.base=/home/user/axway/Axway-7.7.0.20240830 installLinux"
+    }
+}
+
 // Task para mostrar todas as tasks disponíveis
 task showTasks {
     group = 'Help'
@@ -158,8 +184,12 @@ task showTasks {
         println "  ./gradlew build                    # Build do projeto"
         println "  ./gradlew clean build             # Clean + Build"
         println ""
+        println "🔧 Configuração:"
+        println "  ./gradlew setAxwayPath            # Mostra configuração do Axway"
+        println ""
         println "🔧 Instalação Linux:"
         println "  ./gradlew installLinux            # Instala no Linux"
+        println "  ./gradlew -Daxway.base=/path installLinux  # Com caminho customizado"
         println ""
         println "🔧 Instalação Windows:"
         println "  ./gradlew installWindows          # Instala no Windows (interativa)"

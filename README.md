@@ -25,16 +25,37 @@ O projeto oferece duas abordagens para integração com AWS Lambda:
 
 ## Build e Instalação
 
+### 🔧 Configuração Dinâmica
+
+O projeto suporta **configuração dinâmica** do caminho do Axway API Gateway:
+
+```bash
+# Configuração padrão
+./gradlew clean build installLinux
+
+# Configuração customizada
+./gradlew -Daxway.base=/opt/axway/Axway-7.7.0.20210830 clean build installLinux
+
+# Verificar configuração atual
+./gradlew setAxwayPath
+```
+
 ### Linux
 ```bash
 # Build e instalação automática
 ./gradlew clean build installLinux
+
+# Com caminho customizado
+./gradlew -Daxway.base=/caminho/para/axway clean build installLinux
 ```
 
 ### Windows
 ```bash
 # Build e instalação interativa
 ./gradlew clean build installWindows
+
+# Com caminho customizado
+./gradlew -Daxway.base=C:\Axway\Axway-7.7.0.20240830 clean build installWindows
 ```
 
 ### Comandos Úteis
@@ -44,6 +65,9 @@ O projeto oferece duas abordagens para integração com AWS Lambda:
 
 # Mostrar links dos JARs AWS SDK
 ./gradlew showAwsJars
+
+# Verificar configuração do Axway
+./gradlew setAxwayPath
 
 # Apenas build
 ./gradlew clean build
