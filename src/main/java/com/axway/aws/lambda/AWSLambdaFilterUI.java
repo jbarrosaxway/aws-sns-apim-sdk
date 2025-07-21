@@ -18,7 +18,7 @@ public class AWSLambdaFilterUI extends DefaultGUIFilter {
 		return pages;
 	}
 
-	private LogPage createLogPage() {
+	public LogPage createLogPage() {
 		return new LogPage();
 	}
 
