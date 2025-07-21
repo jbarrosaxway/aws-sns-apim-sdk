@@ -1,0 +1,14 @@
+---
+name: AWSLambdaFilter
+class: com.axway.aws.lambda.AWSLambdaFilter
+fields:
+  functionName:
+    type: string
+    defaultValues:
+    - {}
+    cardinality: 1
+  awsProfileName:
+    type: string
+    defaultValues:
+    - {}
+    cardinality: 1

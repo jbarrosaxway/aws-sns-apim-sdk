@@ -1,0 +1,7 @@
+- type: InternationalizationFilter
+  fields:
+    type: AWSLambdaFilter
+  logging:
+    fatal: "Error in the AWS Lambda  Error:\n\t\t\t\t${circuit.exception}"
+    failure: Failed in the AWS Lambda filter
+    success: Success in the AWS Lambda filter

@@ -10,19 +10,164 @@ repositories {
     mavenCentral()
 }
 
-def apim_folder = '/Users/rnatarajan/APIM/AxwayProducts/apim_7_7_aug21'
-def ps_folder = '/Users/rnatarajan/APIM/AxwayProducts/apim_7_7_aug21'
+def apim_folder = '/opt/axway/Axway-7.7.0.20240830/apigateway/system'
+def ps_folder = '/opt/axway/Axway-7.7.0.20240830/policystudio'
+
+//def apim_folder = '/opt/axway/Axway-7.7.0.20210830/apigateway/system'
+//def ps_folder = '/opt/axway/Axway-7.7.0.20210830/policystudio'
 
 dependencies {
-
-    implementation group: 'com.amazonaws', name: 'aws-java-sdk-lambda', version: '1.11.564'
+    // AWS SDK - versões testadas e funcionais
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-lambda', version: '1.12.314'
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: '1.12.314'
+    
+    // Axway API Gateway libs
     implementation fileTree( dir: "${apim_folder}/lib", include: '*.jar')
-    implementation fileTree(dir: "${apim_folder}/lib", include: '*.jar')
     implementation fileTree(dir: "${apim_folder}/lib/modules", include: '*.jar')
     implementation fileTree(dir: "${apim_folder}/lib/plugins", include: '*.jar')
-    // policystudio
+    
+    // Policy Studio libs
     implementation fileTree(dir: "${ps_folder}/plugins", include: '*.jar')
-    implementation files("${ps_folder}/plugins/com.vordel.rcp.filterbase_7.7.0.v20210906-1230")
+    implementation files("${ps_folder}/plugins/com.vordel.rcp.filterbase_7.7.0.v20241023-0911")
+}
 
+// Task para instalação no Linux
+task installLinux(type: Exec) {
+    group = 'Installation'
+    description = 'Instala o filtro AWS Lambda no Linux'
+    
+    dependsOn build
+    
+    commandLine 'bash', 'scripts/linux/install-filter.sh'
+    
+    doFirst {
+        println "🚀 Instalando filtro AWS Lambda no Linux..."
+        println "📁 JAR: build/libs/aws-lambda-apim-sdk-1.0.1.jar"
+        println "📁 Gateway: /opt/axway/Axway-7.7.0.20240830"
+    }
+}
+
+// Task para instalação no Windows (interativa)
+task installWindows {
+    group = 'Installation'
+    description = 'Instala o filtro AWS Lambda no Windows (interativa)'
+    
+    dependsOn build
+    
+    doFirst {
+        println "🚀 Instalando filtro AWS Lambda no Windows..."
+        println "📁 JAR: build/libs/aws-lambda-apim-sdk-1.0.1.jar"
+        println ""
+        
+        // Solicitar caminho do projeto Policy Studio
+        def projectPath = System.console()?.readLine("📂 Digite o caminho do projeto Policy Studio (ex: C:\\Users\\jbarros\\apiprojects\\POC-CUSTOM-FILTER): ")
+        
+        if (!projectPath) {
+            throw new GradleException("❌ Caminho do projeto não informado!")
+        }
+        
+        // Validar se o caminho existe
+        def projectDir = new File(projectPath)
+        if (!projectDir.exists()) {
+            println "⚠️  Aviso: O diretório não existe. Criando..."
+            projectDir.mkdirs()
+        }
+        
+        // Criar estrutura de diretórios
+        def metaInfDir = new File(projectPath, "META-INF/types/Entity/Filter/AWSFilter")
+        def systemDir = new File(projectPath, "System")
+        
+        metaInfDir.mkdirs()
+        systemDir.mkdirs()
+        
+        // Copiar arquivos YAML
+        def sourceYamlDir = new File("src/main/resources/yaml")
+        
+        // Copiar AWSLambdaFilter.yaml
+        def sourceFilterYaml = new File(sourceYamlDir, "META-INF/types/Entity/Filter/AWSFilter/AWSLambdaFilter.yaml")
+        def destFilterYaml = new File(metaInfDir, "AWSLambdaFilter.yaml")
+        
+        if (sourceFilterYaml.exists()) {
+            destFilterYaml.text = sourceFilterYaml.text
+            println "✅ Copiado: AWSLambdaFilter.yaml"
+        } else {
+            println "❌ Arquivo não encontrado: ${sourceFilterYaml.absolutePath}"
+        }
+        
+        // Adicionar conteúdo ao Internationalization Default.yaml
+        def sourceIntlYaml = new File(sourceYamlDir, "System/Internationalization Default.yaml")
+        def destIntlYaml = new File(systemDir, "Internationalization Default.yaml")
+        
+        if (sourceIntlYaml.exists()) {
+            if (destIntlYaml.exists()) {
+                // Adicionar ao final do arquivo existente
+                destIntlYaml.append("\n" + sourceIntlYaml.text)
+                println "✅ Conteúdo adicionado ao final: Internationalization Default.yaml"
+            } else {
+                // Criar novo arquivo
+                destIntlYaml.text = sourceIntlYaml.text
+                println "✅ Criado: Internationalization Default.yaml"
+            }
+        } else {
+            println "❌ Arquivo não encontrado: ${sourceIntlYaml.absolutePath}"
+        }
+        
+        println ""
+        println "🎉 Instalação concluída!"
+        println "📁 Projeto: ${projectPath}"
+        println "📁 JAR: build/libs/aws-lambda-apim-sdk-1.0.1.jar"
+        println ""
+        println "📋 Próximos passos:"
+        println "1. Abra o Policy Studio"
+        println "2. Vá em Window > Preferences > Runtime Dependencies"
+        println "3. Adicione o JAR: build/libs/aws-lambda-apim-sdk-1.0.1.jar"
+        println "4. Reinicie o Policy Studio com -clean"
+        println "5. Procure por 'AWS Lambda Filter' na paleta"
+    }
+}
+
+// Task para mostrar informações de download dos JARs AWS
+task showAwsJars {
+    group = 'Installation'
+    description = 'Mostra links para download dos JARs AWS SDK'
+    
+    doLast {
+        println "📦 JARs AWS SDK necessários para Windows:"
+        println ""
+        println "🔗 aws-java-sdk-lambda-1.12.314.jar:"
+        println "   https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-lambda/1.12.314/aws-java-sdk-lambda-1.12.314.jar"
+        println ""
+        println "🔗 aws-java-sdk-core-1.12.314.jar:"
+        println "   https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-core/1.12.314/aws-java-sdk-core-1.12.314.jar"
+        println ""
+        println "📋 Após download:"
+        println "1. Adicione os JARs ao classpath do Policy Studio"
+        println "2. Reinicie o Policy Studio com -clean"
+    }
+}
+
+// Task para mostrar todas as tasks disponíveis
+task showTasks {
+    group = 'Help'
+    description = 'Mostra todas as tasks disponíveis'
+    
+    doLast {
+        println "🚀 Tasks disponíveis:"
+        println ""
+        println "📦 Build:"
+        println "  ./gradlew build                    # Build do projeto"
+        println "  ./gradlew clean build             # Clean + Build"
+        println ""
+        println "🔧 Instalação Linux:"
+        println "  ./gradlew installLinux            # Instala no Linux"
+        println ""
+        println "🔧 Instalação Windows:"
+        println "  ./gradlew installWindows          # Instala no Windows (interativa)"
+        println "  ./gradlew showAwsJars             # Mostra links dos JARs AWS"
+        println ""
+        println "❓ Ajuda:"
+        println "  ./gradlew showTasks               # Mostra esta lista"
+        println "  ./gradlew tasks                   # Lista todas as tasks"
+    }
 }
 
