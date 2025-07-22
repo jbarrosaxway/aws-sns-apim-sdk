@@ -13,6 +13,7 @@ sourceCompatibility = 1.8
 // - Sistema de release automático com permissões corrigidas
 // - Workflow de release otimizado para usar artifacts
 // - Release criado diretamente no workflow build-jar
+// - Sistema de release unificado funcionando corretamente
 
 repositories {
     mavenCentral()
