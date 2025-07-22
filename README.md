@@ -42,6 +42,9 @@ O projeto suporta **configuração dinâmica** do caminho do Axway API Gateway:
 
 ### Linux
 ```bash
+# Build do JAR (apenas Linux)
+./gradlew buildJarLinux
+
 # Build e instalação automática
 ./gradlew clean build installLinux
 
@@ -51,12 +54,49 @@ O projeto suporta **configuração dinâmica** do caminho do Axway API Gateway:
 
 ### Windows
 ```bash
-# Build e instalação interativa
-./gradlew clean build installWindows
+# Instalação apenas dos arquivos YAML em projeto Policy Studio
+./gradlew installWindows
 
-# Com caminho customizado
-./gradlew -Daxway.base=C:\Axway\Axway-7.7.0.20240830 clean build installWindows
+# Instalação em projeto específico (com caminho)
+./gradlew "-Dproject.path=C:\Users\jbarros\apiprojects\DIGIO-POC-AKS" installWindowsToProject
+
+# Instalação interativa (se não especificar caminho)
+./gradlew installWindowsToProject
 ```
+
+> 📖 **Guia Completo Windows**: Veja [INSTALACAO_WINDOWS.md](INSTALACAO_WINDOWS.md) para instruções detalhadas.
+
+### ⚠️ **Importante: Build do JAR**
+
+O **build do JAR deve ser feito no Linux** devido às dependências do Axway API Gateway. Para Windows:
+
+1. **Build no Linux:**
+   ```bash
+   ./gradlew buildJarLinux
+   ```
+
+2. **Copiar JAR para Windows:**
+   ```bash
+   # Copie o arquivo: build/libs/aws-lambda-apim-sdk-1.0.1.jar
+   # Para o ambiente Windows
+   ```
+
+3. **Instalar YAML no Windows:**
+   ```bash
+   ./gradlew installWindows
+   ```
+
+### 🔄 **Processo Linux vs Windows**
+
+| Linux | Windows |
+|-------|---------|
+| ✅ Build do JAR | ❌ Build do JAR |
+| ✅ Instalação completa | ✅ Instalação YAML |
+| ✅ Dependências nativas | ⚠️ JARs externos |
+| ✅ Configuração automática | ⚠️ Configuração manual |
+
+**Linux**: Processo completo (JAR + YAML + instalação)  
+**Windows**: Apenas YAML (JAR deve ser buildado no Linux)
 
 ### Comandos Úteis
 ```bash

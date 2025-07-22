@@ -51,20 +51,23 @@ task installLinux(type: Exec) {
     }
 }
 
-// Task para instalação no Windows (interativa)
+// Task para instalação no Windows (apenas arquivos YAML)
 task installWindows {
     group = 'Installation'
-    description = 'Instala o filtro AWS Lambda no Windows (interativa)'
-    
-    dependsOn build
+    description = 'Instala apenas os arquivos YAML no Windows (sem build do JAR)'
     
     doFirst {
-        println "🚀 Instalando filtro AWS Lambda no Windows..."
-        println "📁 JAR: build/libs/aws-lambda-apim-sdk-1.0.1.jar"
+        println "🚀 Instalando arquivos YAML do filtro AWS Lambda no Windows..."
+        println "📋 Nota: O JAR deve ser buildado no Linux e copiado manualmente"
+        println ""
+        println "📂 Exemplos de projetos Policy Studio:"
+        println "   C:\\Users\\jbarros\\apiprojects\\DIGIO-POC-AKS"
+        println "   C:\\Users\\jbarros\\apiprojects\\POC-CUSTOM-FILTER"
+        println "   C:\\Projects\\API-Gateway\\MyProject"
         println ""
         
         // Solicitar caminho do projeto Policy Studio
-        def projectPath = System.console()?.readLine("📂 Digite o caminho do projeto Policy Studio (ex: C:\\Users\\jbarros\\apiprojects\\POC-CUSTOM-FILTER): ")
+        def projectPath = System.console()?.readLine("📂 Digite o caminho do projeto Policy Studio: ")
         
         if (!projectPath) {
             throw new GradleException("❌ Caminho do projeto não informado!")
@@ -117,16 +120,108 @@ task installWindows {
         }
         
         println ""
-        println "🎉 Instalação concluída!"
-        println "📁 Projeto: ${projectPath}"
-        println "📁 JAR: build/libs/aws-lambda-apim-sdk-1.0.1.jar"
+        println "🎉 Instalação dos arquivos YAML concluída!"
+        println "📁 Projeto Policy Studio: ${projectPath}"
         println ""
         println "📋 Próximos passos:"
-        println "1. Abra o Policy Studio"
-        println "2. Vá em Window > Preferences > Runtime Dependencies"
-        println "3. Adicione o JAR: build/libs/aws-lambda-apim-sdk-1.0.1.jar"
-        println "4. Reinicie o Policy Studio com -clean"
-        println "5. Procure por 'AWS Lambda Filter' na paleta"
+        println "1. Copie o JAR buildado no Linux para o Windows"
+        println "2. Abra o Policy Studio"
+        println "3. Vá em Window > Preferences > Runtime Dependencies"
+        println "4. Adicione o JAR: aws-lambda-apim-sdk-1.0.1.jar"
+        println "5. Reinicie o Policy Studio com -clean"
+        println "6. Procure por 'AWS Lambda Filter' na paleta"
+    }
+}
+
+// Task para instalação Windows com caminho específico
+task installWindowsToProject {
+    group = 'Installation'
+    description = 'Instala YAML em projeto Policy Studio específico'
+    
+    doFirst {
+        println "🚀 Instalando arquivos YAML em projeto específico..."
+        println ""
+        
+        // Obter caminho do projeto via propriedade do sistema
+        def projectPath = System.getProperty('project.path')
+        
+        if (!projectPath) {
+            // Se não foi especificado, solicitar interativamente
+            projectPath = System.console()?.readLine("📂 Digite o caminho do projeto Policy Studio (ex: C:\\Users\\jbarros\\apiprojects\\DIGIO-POC-AKS): ")
+            
+            if (!projectPath) {
+                throw new GradleException("❌ Caminho do projeto não informado! Use: -Dproject.path=C:\\caminho\\do\\projeto")
+            }
+        }
+        
+        println "📁 Projeto: ${projectPath}"
+        
+        // Executar a mesma lógica da task installWindows
+        def projectDir = new File(projectPath)
+        if (!projectDir.exists()) {
+            println "⚠️  Aviso: O diretório não existe. Criando..."
+            projectDir.mkdirs()
+        }
+        
+        def metaInfDir = new File(projectPath, "META-INF/types/Entity/Filter/AWSFilter")
+        def systemDir = new File(projectPath, "System")
+        
+        metaInfDir.mkdirs()
+        systemDir.mkdirs()
+        
+        def sourceYamlDir = new File("src/main/resources/yaml")
+        
+        def sourceFilterYaml = new File(sourceYamlDir, "META-INF/types/Entity/Filter/AWSFilter/AWSLambdaFilter.yaml")
+        def destFilterYaml = new File(metaInfDir, "AWSLambdaFilter.yaml")
+        
+        if (sourceFilterYaml.exists()) {
+            destFilterYaml.text = sourceFilterYaml.text
+            println "✅ Copiado: AWSLambdaFilter.yaml"
+        } else {
+            println "❌ Arquivo não encontrado: ${sourceFilterYaml.absolutePath}"
+        }
+        
+        def sourceIntlYaml = new File(sourceYamlDir, "System/Internationalization Default.yaml")
+        def destIntlYaml = new File(systemDir, "Internationalization Default.yaml")
+        
+        if (sourceIntlYaml.exists()) {
+            if (destIntlYaml.exists()) {
+                destIntlYaml.append("\n" + sourceIntlYaml.text)
+                println "✅ Conteúdo adicionado ao final: Internationalization Default.yaml"
+            } else {
+                destIntlYaml.text = sourceIntlYaml.text
+                println "✅ Criado: Internationalization Default.yaml"
+            }
+        } else {
+            println "❌ Arquivo não encontrado: ${sourceIntlYaml.absolutePath}"
+        }
+        
+        println ""
+        println "🎉 Instalação concluída no projeto: ${projectPath}"
+    }
+}
+
+// Task para build do JAR (apenas Linux)
+task buildJarLinux {
+    group = 'Build'
+    description = 'Build do JAR no Linux (não funciona no Windows)'
+    
+    dependsOn build
+    
+    doFirst {
+        println "🔨 Build do JAR AWS Lambda Filter..."
+        println "📁 JAR: build/libs/aws-lambda-apim-sdk-1.0.1.jar"
+        println "⚠️  Nota: Esta task deve ser executada apenas no Linux"
+    }
+    
+    doLast {
+        def jarFile = new File("build/libs/aws-lambda-apim-sdk-1.0.1.jar")
+        if (jarFile.exists()) {
+            println "✅ JAR criado com sucesso: ${jarFile.absolutePath}"
+            println "📋 Para Windows: Copie este JAR para o ambiente Windows"
+        } else {
+            println "❌ Erro: JAR não foi criado"
+        }
     }
 }
 
@@ -181,18 +276,20 @@ task showTasks {
         println "🚀 Tasks disponíveis:"
         println ""
         println "📦 Build:"
-        println "  ./gradlew build                    # Build do projeto"
+        println "  ./gradlew build                    # Build do projeto (Linux)"
+        println "  ./gradlew buildJarLinux           # Build do JAR (apenas Linux)"
         println "  ./gradlew clean build             # Clean + Build"
         println ""
         println "🔧 Configuração:"
         println "  ./gradlew setAxwayPath            # Mostra configuração do Axway"
         println ""
         println "🔧 Instalação Linux:"
-        println "  ./gradlew installLinux            # Instala no Linux"
+        println "  ./gradlew installLinux            # Instala no Linux (JAR + YAML)"
         println "  ./gradlew -Daxway.base=/path installLinux  # Com caminho customizado"
         println ""
         println "🔧 Instalação Windows:"
-        println "  ./gradlew installWindows          # Instala no Windows (interativa)"
+        println "  ./gradlew installWindows          # Instala YAML no Windows (interativo)"
+        println "  ./gradlew -Dproject.path=/path installWindowsToProject  # Instala YAML em projeto específico"
         println "  ./gradlew showAwsJars             # Mostra links dos JARs AWS"
         println ""
         println "❓ Ajuda:"
