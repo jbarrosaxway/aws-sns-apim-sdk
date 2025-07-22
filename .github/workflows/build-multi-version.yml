@@ -144,6 +144,10 @@ jobs:
         git config --local user.name "github-actions[bot]"
         git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
         
+        # Obter semantic version atual
+        RELEASE_VERSION=$(grep -o 'version = "[^"]*"' build.gradle | cut -d'"' -f2)
+        echo "📋 Versão atual: $RELEASE_VERSION"
+        
         # Gerar tag com semantic version
         TAG_NAME="v${RELEASE_VERSION}"
         echo "📋 Criando tag: $TAG_NAME"
@@ -173,7 +177,6 @@ jobs:
         
         # Criar ZIPs para cada versão com estrutura organizada
         VERSIONS="${{ steps.versions.outputs.versions }}"
-        RELEASE_VERSION=$(grep -o 'version = "[^"]*"' build.gradle | cut -d'"' -f2)
         RELEASE_DATE=$(date +%Y%m%d-%H%M%S)
         
         for VERSION in ${VERSIONS//,/ }; do
