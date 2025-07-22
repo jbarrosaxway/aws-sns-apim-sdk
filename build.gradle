@@ -18,6 +18,7 @@ sourceCompatibility = 1.8
 // - Sistema robusto para lidar com tags existentes
 // - Action de release atualizada para versão moderna
 // - Sistema de detecção automática de versão AWS SDK implementado
+// - Detecção de JAR corrigida e configuração simplificada
 
 repositories {
     mavenCentral()
