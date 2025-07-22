@@ -20,6 +20,7 @@ sourceCompatibility = 1.8
 // - Sistema de detecção automática de versão AWS SDK implementado
 // - Detecção de JAR corrigida e configuração simplificada
 // - Problema de permissão ao renomear JAR corrigido
+// - Versionamento automático implementado
 
 repositories {
     mavenCentral()
