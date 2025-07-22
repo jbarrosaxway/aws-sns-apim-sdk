@@ -145,10 +145,72 @@ def processInternationalizationFile(def sourceFile, def destFile) {
     
     // Verificar se o filtro AWSLambdaFilter já existe no arquivo
     if (destContent.contains("type: AWSLambdaFilter")) {
-        println "🔄 Filtro AWSLambdaFilter já existe. Substituindo..."
+        println "🔄 Filtro AWSLambdaFilter já existe. Atualizando seção..."
         
-            // Estratégia simples: substituir completamente o arquivo
-    destFile.text = sourceContent
+        // Estratégia: preservar outros filtros e apenas atualizar AWSLambdaFilter
+        def lines = destContent.split('\n')
+        def newLines = []
+        def skipSection = false
+        def inInternationalizationFilter = false
+        def foundAWSLambdaFilter = false
+        def outputNewContent = false
+        
+        for (int i = 0; i < lines.length; i++) {
+            def line = lines[i]
+            def trimmedLine = line.trim()
+            
+            // Detectar início de InternationalizationFilter
+            if (trimmedLine == "type: InternationalizationFilter") {
+                inInternationalizationFilter = true
+                skipSection = false
+                newLines.add(line)
+                continue
+            }
+            
+            // Se estamos dentro de InternationalizationFilter, verificar se contém AWSLambdaFilter
+            if (inInternationalizationFilter && trimmedLine == "type: AWSLambdaFilter") {
+                if (foundAWSLambdaFilter) {
+                    // Já encontramos uma seção AWSLambdaFilter, pular esta
+                    skipSection = true
+                    continue
+                } else {
+                    // Primeira ocorrência, pular e substituir com novo conteúdo
+                    foundAWSLambdaFilter = true
+                    skipSection = true
+                    outputNewContent = true
+                    continue
+                }
+            }
+            
+            // Detectar fim da seção InternationalizationFilter
+            if (inInternationalizationFilter && trimmedLine.startsWith("-") && trimmedLine != "type: InternationalizationFilter") {
+                inInternationalizationFilter = false
+                skipSection = false
+                // Adicionar novo conteúdo antes da próxima seção
+                if (outputNewContent) {
+                    newLines.add("")
+                    newLines.addAll(sourceContent.split('\n'))
+                    outputNewContent = false
+                }
+                newLines.add(line)
+                continue
+            }
+            
+            // Se estamos pulando a seção, continuar até o fim
+            if (skipSection) {
+                continue
+            }
+            
+            newLines.add(line)
+        }
+        
+        // Se ainda não adicionamos o novo conteúdo, adicionar no final
+        if (outputNewContent) {
+            newLines.add("")
+            newLines.addAll(sourceContent.split('\n'))
+        }
+        
+        destFile.text = newLines.join('\n')
         
         println "✅ Seção AWSLambdaFilter atualizada: ${destFile.name}"
         return true
