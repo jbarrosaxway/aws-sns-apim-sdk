@@ -10,6 +10,7 @@ sourceCompatibility = 1.8
 // - Suporte aprimorado para ambiente containerizado
 // - Configuração automática de dependências Axway
 // - Build consistente entre ambientes
+// - Sistema de release automático com permissões corrigidas
 
 repositories {
     mavenCentral()
