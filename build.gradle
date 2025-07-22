@@ -19,6 +19,7 @@ sourceCompatibility = 1.8
 // - Action de release atualizada para versão moderna
 // - Sistema de detecção automática de versão AWS SDK implementado
 // - Detecção de JAR corrigida e configuração simplificada
+// - Problema de permissão ao renomear JAR corrigido
 
 repositories {
     mavenCentral()
