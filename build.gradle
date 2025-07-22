@@ -11,9 +11,9 @@ repositories {
 }
 
 // Configuração dinâmica do Axway API Gateway
-def axway_base = System.getProperty('axway.base', '/opt/Axway/apigateway')
-def apim_folder = "${axway_base}/system"
-def ps_folder = "${axway_base}/../policystudio"
+def axway_base = System.getProperty('axway.base', '/opt/axway/Axway-7.7.0.20240830')
+def apim_folder = "${axway_base}/apigateway/system"
+def ps_folder = "${axway_base}/policystudio"
 
 // Configurações alternativas (descomente se necessário)
 //def axway_base_alt = '/opt/axway/Axway-7.7.0.20210830'
