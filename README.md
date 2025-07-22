@@ -257,26 +257,26 @@ docs/
 
 ### Windows
 
-1. **Configurar projeto (primeira vez):**
-   ```powershell
-   .\scripts\windows\configurar-projeto-windows.ps1
+1. **Instalar arquivos YAML (interativo):**
+   ```bash
+   ./gradlew installWindows
+   ```
+   O Gradle solicitará o caminho do projeto Policy Studio.
+
+2. **Instalar arquivos YAML em projeto específico:**
+   ```bash
+   ./gradlew -Dproject.path=C:\caminho\do\projeto installWindowsToProject
    ```
 
-2. **Instalar arquivos YAML:**
-   ```powershell
-   .\scripts\windows\install-filter-windows.ps1
+3. **Ver links dos JARs AWS SDK:**
+   ```bash
+   ./gradlew showAwsJars
    ```
-   ou
-   ```cmd
-   scripts\windows\install-filter-windows.cmd
-   ```
-
-3. **Download manual dos JARs AWS SDK:**
-   - [aws-java-sdk-lambda-1.12.314.jar](https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-lambda/1.12.314/aws-java-sdk-lambda-1.12.314.jar)
-   - [aws-java-sdk-core-1.12.314.jar](https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-core/1.12.314/aws-java-sdk-core-1.12.314.jar)
 
 4. **Configurar Policy Studio:**
-   - Adicione os JARs AWS SDK ao classpath
+   - Abra o Policy Studio
+   - Vá em **Window > Preferences > Runtime Dependencies**
+   - Adicione o JAR: `aws-lambda-apim-sdk-1.0.1.jar`
    - Reinicie o Policy Studio com `-clean`
 
 ## Configuração AWS

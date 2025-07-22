@@ -36,31 +36,25 @@ Este documento lista todos os scripts essenciais mantidos no projeto e suas fun�
 - **Comando:** `./gradlew installLinux`
 - **Saída:** Filtro instalado no Axway API Gateway
 
-#### **Windows** (`scripts/windows/`)
+#### **Windows** (Tasks Gradle)
 
-##### `scripts/windows/install-filter-windows.ps1`
-- **Função:** Instalação PowerShell para Windows
+##### `./gradlew installWindows`
+- **Função:** Instalação interativa para Windows
 - **Uso:** Manual (Windows)
-- **Comando:** `.\scripts\windows\install-filter-windows.ps1`
+- **Comando:** `./gradlew installWindows`
 - **Saída:** Arquivos YAML instalados no projeto Policy Studio
 
-##### `scripts/windows/install-filter-windows.cmd`
-- **Função:** Instalação CMD para Windows
+##### `./gradlew installWindowsToProject`
+- **Função:** Instalação em projeto específico
 - **Uso:** Manual (Windows)
-- **Comando:** `scripts\windows\install-filter-windows.cmd`
-- **Saída:** Arquivos YAML instalados no projeto Policy Studio
+- **Comando:** `./gradlew -Dproject.path=C:\caminho\do\projeto installWindowsToProject`
+- **Saída:** Arquivos YAML instalados no projeto específico
 
-##### `scripts/windows/configurar-projeto-windows.ps1`
-- **Função:** Configura projeto Policy Studio no Windows
-- **Uso:** Manual (primeira configuração)
-- **Comando:** `.\scripts\windows\configurar-projeto-windows.ps1`
-- **Saída:** Projeto configurado
-
-##### `scripts/windows/test-internationalization.ps1`
-- **Função:** Testa internacionalização no Windows
-- **Uso:** Manual (validação)
-- **Comando:** `.\scripts\windows\test-internationalization.ps1`
-- **Saída:** Relatório de testes de internacionalização
+##### `./gradlew showAwsJars`
+- **Função:** Mostra links dos JARs AWS SDK
+- **Uso:** Manual (Windows)
+- **Comando:** `./gradlew showAwsJars`
+- **Saída:** Links para download dos JARs necessários
 
 
 
@@ -72,13 +66,13 @@ scripts/
 │   ├── check-release-needed.sh          # Análise de release
 │   ├── version-bump.sh                  # Versionamento semântico
 │   └── build-with-docker-image.sh       # Build com Docker
-├── 📁 linux/
-│   └── install-filter.sh                # Instalação Linux
-└── 📁 windows/
-    ├── install-filter-windows.ps1       # Instalação PowerShell
-    ├── install-filter-windows.cmd       # Instalação CMD
-    ├── configurar-projeto-windows.ps1   # Configuração projeto
-    └── test-internationalization.ps1    # Teste internacionalização
+└── 📁 linux/
+    └── install-filter.sh                # Instalação Linux
+
+📋 **Tasks Gradle para Windows:**
+├── ./gradlew installWindows             # Instalação interativa
+├── ./gradlew installWindowsToProject    # Instalação em projeto específico
+└── ./gradlew showAwsJars               # Links dos JARs AWS
 ```
 
 ## Scripts Removidos
@@ -96,6 +90,12 @@ Os seguintes scripts foram removidos por não serem essenciais:
 - `fix-internationalization-correct.sh` - Correção correta de internacionalização
 - `fix-internationalization-duplication.sh` - Correção de duplicação
 - `test-internationalization-fix.sh` - Teste de correção
+
+### 🪟 **Scripts Windows (Substituídos por Tasks Gradle):**
+- `install-filter-windows.ps1` - Substituído por `./gradlew installWindows`
+- `install-filter-windows.cmd` - Substituído por `./gradlew installWindowsToProject`
+- `configurar-projeto-windows.ps1` - Funcionalidade integrada nas tasks
+- `test-internationalization.ps1` - Funcionalidade integrada nas tasks
 
 ### 🐳 **Scripts Docker (Removidos):**
 - `check-axway-jars.sh` - Verificação de JARs Axway
