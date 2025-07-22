@@ -14,12 +14,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: write
+      packages: read
+      
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
         fetch-depth: 0  # Necessário para análise de mudanças
+        token: ${{ secrets.GITHUB_TOKEN }}
       
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -102,9 +106,12 @@ jobs:
       run: |
         echo "🚀 Criando tag e release automaticamente..."
         
-        # Configurar git
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        # Configurar git com token
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        
+        # Configurar remote com token
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
         
         # Obter informações da versão
         source .release_check
