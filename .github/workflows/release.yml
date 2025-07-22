@@ -15,41 +15,12 @@ jobs:
       with:
         fetch-depth: 0
         
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      
-    - name: Pull published Docker image
-      run: |
-        # Pull da imagem publicada
-        docker pull axwayjbarros/aws-lambda-apim-sdk:1.0.0
+    - name: Download JAR from previous workflow
+      uses: actions/download-artifact@v4
+      with:
+        name: aws-lambda-apim-sdk-jar
+        path: ./build/libs/
         
-    - name: Build JAR using published image
-      run: |
-        # Executar build do JAR usando a imagem publicada
-        docker run --rm \
-          -v "$(pwd):/workspace" \
-          -v "$(pwd)/build:/workspace/build" \
-          -v "$(pwd)/.gradle:/workspace/.gradle" \
-          -w /workspace \
-          axwayjbarros/aws-lambda-apim-sdk:1.0.0 \
-          bash -c "
-            echo '🔧 Configurando ambiente...'
-            export JAVA_HOME=/opt/java/openjdk-11
-            export PATH=\$JAVA_HOME/bin:\$PATH
-            
-            echo '📦 Verificando Java...'
-            java -version
-            
-            echo '📦 Verificando Gradle...'
-            gradle --version || echo 'Gradle não encontrado, instalando...'
-            
-            echo '🔨 Executando build...'
-            gradle clean build
-            
-            echo '📋 Verificando resultado...'
-            ls -la build/libs/ || echo 'Diretório build/libs não encontrado'
-          "
-          
     - name: Generate changelog
       id: changelog
       run: |
@@ -101,8 +72,8 @@ jobs:
         
     - name: Test JAR
       run: |
-        # Verificar se o JAR foi criado
-        echo "🔍 Verificando JAR criado..."
+        # Verificar se o JAR foi baixado
+        echo "🔍 Verificando JAR baixado..."
         ls -la build/libs/aws-lambda-apim-sdk-*.jar || echo "❌ JAR não encontrado"
         
         # Verificar conteúdo do JAR
