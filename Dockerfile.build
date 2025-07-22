@@ -9,9 +9,7 @@ ENV PATH=$JAVA_HOME/bin:$PATH
 # Instalar dependências necessárias para build
 USER root
 RUN dnf update -y && \
-    dnf remove -y curl-minimal && \
     dnf install -y \
-    curl \
     wget \
     unzip \
     tar \
