@@ -7,6 +7,7 @@ version '1.0.3'
 sourceCompatibility = 1.8
 
 // Comentário para simular release - build.gradle incluído no ZIP da release
+// Nova simulação: pasta gradle incluída para funcionamento completo do Gradle Wrapper
 
 // Melhoria: Sistema de build otimizado para Docker
 // - Suporte aprimorado para ambiente containerizado
