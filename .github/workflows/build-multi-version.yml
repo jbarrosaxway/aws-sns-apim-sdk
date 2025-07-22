@@ -50,6 +50,7 @@ jobs:
         echo "📋 Versões para build: ${{ steps.versions.outputs.versions }}"
         
     - name: Build for each version
+      id: build
       run: |
         # Usar script de versionamento semântico
         echo "🔍 Executando versionamento semântico..."
@@ -75,6 +76,10 @@ jobs:
           RELEASE_VERSION=$(grep -o 'version = "[^"]*"' build.gradle | cut -d'"' -f2)
           echo "📋 Versão após retry: '$RELEASE_VERSION'"
         fi
+        
+        # Salvar versão como output para outros jobs
+        echo "release_version=$RELEASE_VERSION" >> $GITHUB_OUTPUT
+        echo "📋 Versão salva como output: $RELEASE_VERSION"
         
         VERSIONS="${{ steps.versions.outputs.versions }}"
         
@@ -146,16 +151,15 @@ jobs:
         git config --local user.name "github-actions[bot]"
         git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
         
-        # Obter versão atualizada do build.gradle (após script de versionamento)
-        RELEASE_VERSION=$(grep -o 'version = "[^"]*"' build.gradle | cut -d'"' -f2)
-        echo "📋 Versão detectada na release: '$RELEASE_VERSION'"
+        # Obter versão do job de build
+        RELEASE_VERSION="${{ steps.build.outputs.release_version }}"
+        echo "📋 Versão obtida do job de build: '$RELEASE_VERSION'"
         
-        # Verificar se versão foi detectada
+        # Verificar se versão foi obtida
         if [ -z "$RELEASE_VERSION" ] || [ "$RELEASE_VERSION" = "" ]; then
-          echo "⚠️  Versão não detectada na release, tentando ler novamente..."
-          sleep 2
+          echo "⚠️  Versão não obtida do job de build, tentando ler do build.gradle..."
           RELEASE_VERSION=$(grep -o 'version = "[^"]*"' build.gradle | cut -d'"' -f2)
-          echo "📋 Versão após retry na release: '$RELEASE_VERSION'"
+          echo "📋 Versão lida do build.gradle: '$RELEASE_VERSION'"
         fi
         
         if [ -z "$RELEASE_VERSION" ]; then
