@@ -266,7 +266,12 @@ Configure IAM Roles para instâncias EC2 ou pods EKS.
 
 2. **Configurar parâmetros:**
    - `functionName` (obrigatório): Nome da função Lambda
-   - `awsProfileName` (opcional): Perfil AWS (padrão: `default`)
+   - `awsRegion` (opcional): Região AWS (padrão: `us-east-1`)
+   - `invocationType` (opcional): Tipo de invocação (padrão: `RequestResponse`)
+   - `logType` (opcional): Tipo de log (padrão: `None`)
+   - `qualifier` (opcional): Versão ou alias da função
+   - `maxRetries` (opcional): Número máximo de tentativas (padrão: `3`)
+   - `retryDelay` (opcional): Delay entre tentativas em ms (padrão: `1000`)
 
 3. **Atributos de saída:**
    - `aws.lambda.response`: Resposta da função Lambda
