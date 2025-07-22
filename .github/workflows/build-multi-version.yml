@@ -128,6 +128,8 @@ jobs:
         
     - name: Create Single Release with all JARs
       if: github.event_name != 'pull_request' && contains(github.ref, 'master')
+      env:
+        GH_TOKEN: ${{ github.token }}
       run: |
         # Configurar git
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
