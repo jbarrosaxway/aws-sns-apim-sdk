@@ -384,28 +384,23 @@ metadata:
 
 ### Filtro Java
 
-1. **Adicionar filtro à política:**
-   - Abra o Policy Studio
+Para informações detalhadas sobre o filtro Java, incluindo campos, instalação, testes e troubleshooting, consulte o arquivo **[📖 Documentação Filtro Java](docs/FILTRO_JAVA_DOCUMENTATION.md)**.
+
+**Uso básico:**
+1. **Instalar JARs:**
+   - Copie `aws-lambda-apim-sdk-<versao>.jar` para `/opt/Axway/apigateway/groups/group-2/instance-1/ext/lib/`
+   - Copie `dependencies/external-aws-java-sdk-lambda-<versao>.jar` para o mesmo diretório
+   - Reinicie o gateway
+
+2. **Adicionar ao Policy Studio:**
+   - Vá em **Window > Preferences > Runtime Dependencies**
+   - Adicione os JARs ao classpath
+   - Reinicie o Policy Studio com `-clean`
+
+3. **Configurar filtro:**
    - Procure por **"AWS Lambda Filter"** na paleta
-   - Arraste o filtro para a política
-
-2. **Configurar parâmetros:**
-   - `functionName` (obrigatório): Nome da função Lambda
-   - `awsRegion` (opcional): Região AWS (padrão: `us-east-1`)
-   - `invocationType` (opcional): Tipo de invocação (padrão: `RequestResponse`)
-   - `logType` (opcional): Tipo de log (padrão: `None`)
-   - `qualifier` (opcional): Versão ou alias da função
-   - `maxRetries` (opcional): Número máximo de tentativas (padrão: `3`)
-   - `retryDelay` (opcional): Delay entre tentativas em ms (padrão: `1000`)
-
-3. **Atributos de saída:**
-   - `aws.lambda.response`: Resposta da função Lambda
-   - `aws.lambda.http.status.code`: Código de status HTTP
-
-4. **Autenticação AWS (Ordem de Prioridade):**
-   - **Variáveis de ambiente** (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`)
-   - **Arquivo de credenciais** (`~/.aws/credentials`)
-   - **IAM Roles** (detecção automática para EC2/EKS) ← **Recomendado para produção**
+   - Configure os parâmetros necessários
+   - Teste a integração
 
 ### Script Groovy
 
@@ -446,6 +441,22 @@ aws-lambda-apim-sdk/
 └── build/
     └── build/libs/aws-lambda-apim-sdk-1.0.1.jar
 ```
+
+## Testes
+
+### Status dos Testes
+
+| Tipo de Teste | Filtro Java | Script Groovy |
+|---------------|-------------|---------------|
+| **Entity Store (YAML)** | ✅ Testado | ✅ Testado |
+| **Entity Store (XML)** | ❌ **Não testado** | ❌ **Não testado** |
+| **Performance** | ❌ **Não testado** | ❌ **Não testado** |
+
+### Próximos Testes Necessários
+
+1. **Teste Entity Store XML** - Validar compatibilidade com formato XML
+2. **Testes de Performance** - Avaliar performance com diferentes cargas
+3. **Testes de Concorrência** - Múltiplas invocações simultâneas
 
 ## Troubleshooting
 
