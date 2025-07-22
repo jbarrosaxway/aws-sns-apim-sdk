@@ -146,13 +146,13 @@ jobs:
         
     - name: Create GitHub Release
       if: steps.release_check.outputs.release_needed == 'true' && github.event_name != 'pull_request' && contains(github.ref, 'master')
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       id: create_release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: v${{ steps.release_check.outputs.new_version }}
-        release_name: Release v${{ steps.release_check.outputs.new_version }}
+        name: Release v${{ steps.release_check.outputs.new_version }}
         body: |
           ## Changes in this Release
           
@@ -176,17 +176,7 @@ jobs:
           Follow the installation guide in the README for setup instructions.
         draft: false
         prerelease: false
-        
-    - name: Upload JAR to Release
-      if: steps.release_check.outputs.release_needed == 'true' && github.event_name != 'pull_request' && contains(github.ref, 'master')
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./build/libs/aws-lambda-apim-sdk-*.jar
-        asset_name: aws-lambda-apim-sdk-v${{ steps.release_check.outputs.new_version }}.jar
-        asset_content_type: application/java-archive
+        files: build/libs/aws-lambda-apim-sdk-*.jar
         
     - name: Comment on PR
       if: github.event_name == 'pull_request'
