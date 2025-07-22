@@ -63,18 +63,37 @@ echo
 
 # Copiar dependências se existirem
 if [ -d "dependencies" ]; then
-    echo "Copiando dependências..."
-    mkdir -p "$AXWAY_HOME/ext/lib/dependencies"
-    cp dependencies/* "$AXWAY_HOME/ext/lib/dependencies/" 2>/dev/null
-    if [ $? -eq 0 ]; then
-        echo "Dependências copiadas com sucesso"
-    else
-        echo "AVISO: Algumas dependências não puderam ser copiadas"
-    fi
-    echo
+  echo "Copiando dependências..."
+  mkdir -p "$AXWAY_HOME/ext/lib/dependencies"
+  cp dependencies/* "$AXWAY_HOME/ext/lib/dependencies/" 2>/dev/null
+  if [ $? -eq 0 ]; then
+    echo "Dependências copiadas com sucesso"
+  else
+    echo "AVISO: Algumas dependências não puderam ser copiadas"
+  fi
+  echo
 else
-    echo "Nenhuma dependência encontrada para copiar"
-    echo
+  echo "Nenhuma dependência encontrada para copiar"
+  echo
+fi
+
+# Copiar recursos do Policy Studio se existirem
+if [ -d "resources" ]; then
+  echo "Copiando recursos do Policy Studio..."
+  if [ -d "resources/fed" ]; then
+    mkdir -p "$AXWAY_HOME/ext/lib/fed"
+    cp resources/fed/* "$AXWAY_HOME/ext/lib/fed/" 2>/dev/null
+    echo "Recursos FED copiados com sucesso"
+  fi
+  if [ -d "resources/yaml" ]; then
+    mkdir -p "$AXWAY_HOME/ext/lib/yaml"
+    cp resources/yaml/* "$AXWAY_HOME/ext/lib/yaml/" 2>/dev/null
+    echo "Recursos YAML copiados com sucesso"
+  fi
+  echo
+else
+  echo "Nenhum recurso encontrado para copiar"
+  echo
 fi
 
 # Verificar se Policy Studio está rodando

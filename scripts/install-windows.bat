@@ -76,18 +76,37 @@ echo.
 
 :: Copiar dependencias se existirem
 if exist "dependencies" (
-    echo Copiando dependencias...
-    if not exist "%AXWAY_HOME%\ext\lib\dependencies" mkdir "%AXWAY_HOME%\ext\lib\dependencies"
-    xcopy "dependencies\*" "%AXWAY_HOME%\ext\lib\dependencies\" /Y >nul 2>&1
-    if errorlevel 1 (
-        echo AVISO: Algumas dependencias nao puderam ser copiadas
-    ) else (
-        echo Dependencias copiadas com sucesso
-    )
-    echo.
+  echo Copiando dependencias...
+  if not exist "%AXWAY_HOME%\ext\lib\dependencies" mkdir "%AXWAY_HOME%\ext\lib\dependencies"
+  xcopy "dependencies\*" "%AXWAY_HOME%\ext\lib\dependencies\" /Y >nul 2>&1
+  if errorlevel 1 (
+    echo AVISO: Algumas dependencias nao puderam ser copiadas
+  ) else (
+    echo Dependencias copiadas com sucesso
+  )
+  echo.
 ) else (
-    echo Nenhuma dependencia encontrada para copiar
-    echo.
+  echo Nenhuma dependencia encontrada para copiar
+  echo.
+)
+
+:: Copiar recursos do Policy Studio se existirem
+if exist "resources" (
+  echo Copiando recursos do Policy Studio...
+  if exist "resources\fed" (
+    if not exist "%AXWAY_HOME%\ext\lib\fed" mkdir "%AXWAY_HOME%\ext\lib\fed"
+    xcopy "resources\fed\*" "%AXWAY_HOME%\ext\lib\fed\" /Y >nul 2>&1
+    echo Recursos FED copiados com sucesso
+  )
+  if exist "resources\yaml" (
+    if not exist "%AXWAY_HOME%\ext\lib\yaml" mkdir "%AXWAY_HOME%\ext\lib\yaml"
+    xcopy "resources\yaml\*" "%AXWAY_HOME%\ext\lib\yaml\" /Y >nul 2>&1
+    echo Recursos YAML copiados com sucesso
+  )
+  echo.
+) else (
+  echo Nenhum recurso encontrado para copiar
+  echo.
 )
 
 :: Verificar se Policy Studio esta rodando
