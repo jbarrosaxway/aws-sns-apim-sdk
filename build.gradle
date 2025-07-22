@@ -147,38 +147,41 @@ def processInternationalizationFile(def sourceFile, def destFile) {
     if (destContent.contains("type: AWSLambdaFilter")) {
         println "🔄 Filtro AWSLambdaFilter já existe. Substituindo..."
         
-        // Remover a seção existente do AWSLambdaFilter
+        // Estratégia mais simples: remover todas as seções InternationalizationFilter
+        // que contêm AWSLambdaFilter e adicionar a nova
         def lines = destContent.split('\n')
         def newLines = []
         def skipSection = false
-        def indentLevel = 0
-        def inAWSLambdaSection = false
+        def inInternationalizationFilter = false
         
         for (int i = 0; i < lines.length; i++) {
             def line = lines[i]
             def trimmedLine = line.trim()
-            def currentIndent = line.length() - line.trim().length()
             
-            // Detectar início da seção AWSLambdaFilter
-            if (trimmedLine == "type: AWSLambdaFilter") {
-                skipSection = true
-                inAWSLambdaSection = true
-                indentLevel = currentIndent
+            // Detectar início de InternationalizationFilter
+            if (trimmedLine == "type: InternationalizationFilter") {
+                inInternationalizationFilter = true
+                skipSection = false
                 continue
             }
             
-            // Detectar fim da seção
-            if (skipSection && inAWSLambdaSection) {
-                // Se encontrou um item no mesmo nível ou superior, é o fim da seção
-                if (currentIndent <= indentLevel && trimmedLine != "" && !trimmedLine.startsWith("  ")) {
-                    skipSection = false
-                    inAWSLambdaSection = false
-                    // Não adicionar esta linha, pois é o início da próxima seção
-                    continue
-                } else {
-                    // Ainda dentro da seção AWSLambdaFilter, pular
-                    continue
-                }
+            // Se estamos dentro de InternationalizationFilter, verificar se contém AWSLambdaFilter
+            if (inInternationalizationFilter && trimmedLine == "type: AWSLambdaFilter") {
+                skipSection = true
+                continue
+            }
+            
+            // Detectar fim da seção InternationalizationFilter
+            if (inInternationalizationFilter && trimmedLine.startsWith("-") && trimmedLine != "type: InternationalizationFilter") {
+                inInternationalizationFilter = false
+                skipSection = false
+                // Não adicionar esta linha, pois é o início da próxima seção
+                continue
+            }
+            
+            // Se estamos pulando a seção, continuar até o fim
+            if (skipSection) {
+                continue
             }
             
             newLines.add(line)
