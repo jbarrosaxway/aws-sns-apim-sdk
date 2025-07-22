@@ -51,6 +51,29 @@ jobs:
         
     - name: Build for each version
       run: |
+        # Determinar nova versão baseada no tipo de commit
+        CURRENT_VERSION=$(grep -o 'version = "[^"]*"' build.gradle | cut -d'"' -f2)
+        echo "📋 Versão atual: $CURRENT_VERSION"
+        
+        # Incrementar versão baseada no tipo de commit
+        if [[ "${{ github.event.head_commit.message }}" == *"BREAKING CHANGE"* ]] || [[ "${{ github.event.head_commit.message }}" == *"!:"* ]]; then
+          # MAJOR version
+          NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1+1 ".0.0"}')
+          echo "🚨 Incrementando MAJOR version: $CURRENT_VERSION -> $NEW_VERSION"
+        elif [[ "${{ github.event.head_commit.message }}" == *"feat:"* ]]; then
+          # MINOR version
+          NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1 "." $2+1 ".0"}')
+          echo "✨ Incrementando MINOR version: $CURRENT_VERSION -> $NEW_VERSION"
+        else
+          # PATCH version
+          NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1 "." $2 "." $3+1}')
+          echo "🔧 Incrementando PATCH version: $CURRENT_VERSION -> $NEW_VERSION"
+        fi
+        
+        # Atualizar build.gradle com nova versão
+        sed -i "s/version = \"$CURRENT_VERSION\"/version = \"$NEW_VERSION\"/" build.gradle
+        echo "✅ Versão atualizada no build.gradle: $NEW_VERSION"
+        
         VERSIONS="${{ steps.versions.outputs.versions }}"
         
         for VERSION in ${VERSIONS//,/ }; do
@@ -85,10 +108,9 @@ jobs:
           echo "✅ JAR criado para $VERSION: $JAR_FILE"
           ls -la "$JAR_FILE"
           
-          # Renomear JAR com versão
-          cp "$JAR_FILE" "build/libs/aws-lambda-apim-sdk-$VERSION.jar"
-          rm "$JAR_FILE"
-          echo "✅ JAR renomeado: aws-lambda-apim-sdk-$VERSION.jar"
+          # Copiar JAR para workspace do host com nome da versão
+          cp "$JAR_FILE" "/workspace/aws-lambda-apim-sdk-$VERSION.jar"
+          echo "✅ JAR copiado para workspace: aws-lambda-apim-sdk-$VERSION.jar"
         else
           echo "❌ JAR não encontrado para $VERSION"
           echo "📁 Conteúdo de build/libs:"
@@ -135,5 +157,5 @@ jobs:
             --title "Release for Axway $VERSION" \
             --notes "Build para Axway API Gateway $VERSION" \
             --repo "${{ github.repository }}" \
-            "build/libs/aws-lambda-apim-sdk-$VERSION.jar"
+            "aws-lambda-apim-sdk-$VERSION.jar"
         done 
