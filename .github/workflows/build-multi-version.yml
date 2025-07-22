@@ -111,6 +111,14 @@ jobs:
           # Copiar JAR para diretório atual com nome da versão
           cp "$JAR_FILE" "./aws-lambda-apim-sdk-$VERSION.jar"
           echo "✅ JAR copiado: aws-lambda-apim-sdk-$VERSION.jar"
+          
+          # Verificar se há JARs externos (dependências que não estão no Gateway)
+          echo "🔍 Verificando dependências externas..."
+          if [ -d "${BASE_PATH}/apigateway/system/lib" ]; then
+            # Listar JARs externos que podem ser necessários
+            echo "📋 JARs disponíveis no Axway:"
+            ls -la "${BASE_PATH}/apigateway/system/lib"/*.jar 2>/dev/null || echo "Nenhum JAR encontrado"
+          fi
         else
           echo "❌ JAR não encontrado para $VERSION"
           echo "📁 Conteúdo de build/libs:"
@@ -163,16 +171,81 @@ jobs:
           fi
         done
         
-        # Criar release com todos os JARs
-        if [ -n "$JAR_FILES" ]; then
-          echo "🚀 Criando release com JARs: $JAR_FILES"
+        # Criar ZIPs para cada versão com estrutura organizada
+        VERSIONS="${{ steps.versions.outputs.versions }}"
+        RELEASE_VERSION=$(grep -o 'version = "[^"]*"' build.gradle | cut -d'"' -f2)
+        RELEASE_DATE=$(date +%Y%m%d-%H%M%S)
+        
+        for VERSION in ${VERSIONS//,/ }; do
+          echo "📦 Criando ZIP para versão: $VERSION"
+          
+          # Criar diretório temporário para o ZIP
+          ZIP_DIR="aws-lambda-apim-sdk-${RELEASE_VERSION}-${VERSION}-${RELEASE_DATE}"
+          mkdir -p "$ZIP_DIR"
+          
+          # Copiar JAR principal
+          if [ -f "aws-lambda-apim-sdk-$VERSION.jar" ]; then
+            cp "aws-lambda-apim-sdk-$VERSION.jar" "$ZIP_DIR/"
+            echo "✅ JAR principal copiado: aws-lambda-apim-sdk-$VERSION.jar"
+          fi
+          
+          # Copiar dependências externas (se existirem)
+          VERSION_INFO=$(jq -r ".versions[\"$VERSION\"]" axway-versions.json)
+          BASE_PATH=$(echo "$VERSION_INFO" | jq -r '.base_path')
+          
+          if [ -d "${BASE_PATH}/apigateway/system/lib" ]; then
+            echo "📋 Copiando dependências externas do Axway..."
+            mkdir -p "$ZIP_DIR/dependencies"
+            
+            # Copiar JARs que podem ser necessários (AWS SDK, etc.)
+            find "${BASE_PATH}/apigateway/system/lib" -name "*aws*.jar" -exec cp {} "$ZIP_DIR/dependencies/" \;
+            find "${BASE_PATH}/apigateway/system/lib" -name "*lambda*.jar" -exec cp {} "$ZIP_DIR/dependencies/" \;
+            
+            echo "✅ Dependências copiadas para $ZIP_DIR/dependencies/"
+          fi
+          
+          # Criar README com informações
+          echo "# AWS Lambda APIM SDK" > "$ZIP_DIR/README.md"
+          echo "" >> "$ZIP_DIR/README.md"
+          echo "Versão da Release: $RELEASE_VERSION" >> "$ZIP_DIR/README.md"
+          echo "Versão do Axway: $VERSION" >> "$ZIP_DIR/README.md"
+          echo "Data da Release: $RELEASE_DATE" >> "$ZIP_DIR/README.md"
+          echo "" >> "$ZIP_DIR/README.md"
+          echo "## Instalação" >> "$ZIP_DIR/README.md"
+          echo "" >> "$ZIP_DIR/README.md"
+          echo "1. Copie o JAR principal para sua instalação do Axway" >> "$ZIP_DIR/README.md"
+          echo "2. Copie as dependências (pasta dependencies/) se necessário" >> "$ZIP_DIR/README.md"
+          echo "3. Reinicie o serviço do Axway" >> "$ZIP_DIR/README.md"
+          echo "" >> "$ZIP_DIR/README.md"
+          echo "## Arquivos incluídos" >> "$ZIP_DIR/README.md"
+          echo "" >> "$ZIP_DIR/README.md"
+          echo "- aws-lambda-apim-sdk-$VERSION.jar - SDK principal" >> "$ZIP_DIR/README.md"
+          echo "- dependencies/ - Dependências externas (se aplicável)" >> "$ZIP_DIR/README.md"
+          echo "" >> "$ZIP_DIR/README.md"
+          echo "## Compatibilidade" >> "$ZIP_DIR/README.md"
+          echo "" >> "$ZIP_DIR/README.md"
+          echo "Este SDK foi testado com Axway API Gateway $VERSION" >> "$ZIP_DIR/README.md"
+          
+          # Criar ZIP
+          ZIP_NAME="aws-lambda-apim-sdk-${RELEASE_VERSION}-${VERSION}-${RELEASE_DATE}.zip"
+          zip -r "$ZIP_NAME" "$ZIP_DIR/"
+          echo "✅ ZIP criado: $ZIP_NAME"
+          
+          # Limpar diretório temporário
+          rm -rf "$ZIP_DIR"
+        done
+        
+        # Criar release com ZIPs
+        ZIP_FILES=$(ls aws-lambda-apim-sdk-*.zip 2>/dev/null)
+        if [ -n "$ZIP_FILES" ]; then
+          echo "🚀 Criando release com ZIPs: $ZIP_FILES"
           gh release create "$TAG_NAME" \
             --title "Multi-Version Release $(date +%Y-%m-%d)" \
-            --notes "Build para múltiplas versões do Axway API Gateway - JARs: $JAR_FILES - Versões: $VERSIONS" \
+            --notes "Build para múltiplas versões do Axway API Gateway - Versão: $RELEASE_VERSION - Data: $RELEASE_DATE - ZIPs: $ZIP_FILES - Versões: $VERSIONS" \
             --repo "${{ github.repository }}" \
-            $JAR_FILES
+            $ZIP_FILES
           echo "✅ Release criada com sucesso!"
         else
-          echo "❌ Nenhum JAR encontrado para upload"
+          echo "❌ Nenhum ZIP encontrado para upload"
           exit 1
         fi 
