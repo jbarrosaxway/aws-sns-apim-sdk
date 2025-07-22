@@ -337,8 +337,40 @@ export AWS_SESSION_TOKEN="seu_session_token"  # opcional
 export AWS_DEFAULT_REGION="us-east-1"
 ```
 
-#### 3. IAM Roles (para EKS/EC2)
-Configure IAM Roles para instâncias EC2 ou pods EKS.
+#### 3. IAM Roles (Recomendado para Produção)
+
+**Para EKS (Kubernetes):**
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: axway-api-gateway
+spec:
+  template:
+    spec:
+      serviceAccountName: axway-gateway-sa
+      containers:
+      - name: axway-gateway
+        image: axway/api-gateway:latest
+        # Sem variáveis de ambiente - usa IAM Role automaticamente
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: axway-gateway-sa
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT:role/axway-lambda-role
+```
+
+**Para EC2:**
+- Anexe um IAM Role à instância EC2
+- O filtro Java detectará automaticamente as credenciais
+
+**Vantagens:**
+- ✅ Segurança máxima (sem credenciais estáticas)
+- ✅ Rotação automática de credenciais
+- ✅ Auditoria via CloudTrail
+- ✅ Funciona com filtro Java e script Groovy
 
 ## Uso
 
@@ -361,6 +393,11 @@ Configure IAM Roles para instâncias EC2 ou pods EKS.
 3. **Atributos de saída:**
    - `aws.lambda.response`: Resposta da função Lambda
    - `aws.lambda.http.status.code`: Código de status HTTP
+
+4. **Autenticação AWS (Ordem de Prioridade):**
+   - **Variáveis de ambiente** (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`)
+   - **Arquivo de credenciais** (`~/.aws/credentials`)
+   - **IAM Roles** (detecção automática para EC2/EKS) ← **Recomendado para produção**
 
 ### Script Groovy
 
