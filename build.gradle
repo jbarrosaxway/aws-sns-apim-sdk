@@ -11,6 +11,7 @@ repositories {
 }
 
 // Configuração dinâmica do Axway API Gateway
+// Melhoria: Suporte aprimorado para múltiplas versões do Axway
 def axway_base = System.getProperty('axway.base', '/opt/axway/Axway-7.7.0.20240830')
 def apim_folder = "${axway_base}/apigateway/system"
 def ps_folder = "${axway_base}/policystudio"
