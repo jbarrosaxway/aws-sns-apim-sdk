@@ -86,7 +86,8 @@ jobs:
           ls -la "$JAR_FILE"
           
           # Renomear JAR com versão
-          mv "$JAR_FILE" "build/libs/aws-lambda-apim-sdk-$VERSION.jar"
+          cp "$JAR_FILE" "build/libs/aws-lambda-apim-sdk-$VERSION.jar"
+          rm "$JAR_FILE"
           echo "✅ JAR renomeado: aws-lambda-apim-sdk-$VERSION.jar"
         else
           echo "❌ JAR não encontrado para $VERSION"
