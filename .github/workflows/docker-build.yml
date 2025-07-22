@@ -3,7 +3,7 @@ name: Docker Build
 on:
   workflow_dispatch:  # Execução manual
   push:
-    branches: [ main ]
+    branches: [ master ]
     paths:
       - 'Dockerfile*'
       - 'scripts/docker/**'
