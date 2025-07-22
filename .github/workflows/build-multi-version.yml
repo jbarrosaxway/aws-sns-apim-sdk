@@ -107,7 +107,7 @@ jobs:
             -v "$(pwd):/workspace" \
             -w /workspace \
             "$DOCKER_IMAGE" \
-            gradle -Daxway.base="$BASE_PATH" clean build
+            gradle -Daxway.base="$BASE_PATH" clean build copyExternalDependencies
           
                   # Verificar resultado
         JAR_FILE=$(find build/libs -name "aws-lambda-apim-sdk-*.jar" | head -1)
@@ -227,74 +227,16 @@ jobs:
             echo "✅ JAR do build copiado: $(basename "$BUILD_JAR")"
           fi
           
-          # Copiar dependências externas (JARs que o Gradle baixou)
-          echo "📋 Copiando dependências externas do Gradle..."
-          mkdir -p "$ZIP_DIR/dependencies"
+          # Copiar dependências externas (criadas pela tarefa do Gradle)
+          echo "📋 Copiando dependências externas criadas pelo Gradle..."
           
-          # Capturar JARs que o Gradle baixou durante o build
-          echo "🔍 Capturando JARs baixados pelo Gradle..."
-          
-          # Procurar JARs AWS no diretório de build do Gradle
-          GRADLE_BUILD_DIR="build"
-          if [ -d "$GRADLE_BUILD_DIR" ]; then
-            echo "📁 Procurando JARs em: $GRADLE_BUILD_DIR"
-            
-            # Procurar JARs AWS em todo o diretório de build
-            AWS_JARS=$(find "$GRADLE_BUILD_DIR" -name "*aws-java-sdk-*" -type f 2>/dev/null)
-            if [ -n "$AWS_JARS" ]; then
-              for JAR in $AWS_JARS; do
-                cp "$JAR" "$ZIP_DIR/dependencies/"
-                echo "✅ Copiado JAR do build: $(basename "$JAR")"
-              done
-            fi
-          fi
-          
-          # Procurar JARs AWS no cache do Gradle (backup)
-          GRADLE_CACHE_DIR="$HOME/.gradle/caches/modules-2/files-2.1"
-          if [ ! -d "$GRADLE_CACHE_DIR" ]; then
-            GRADLE_CACHE_DIR="/root/.gradle/caches/modules-2/files-2.1"
-          fi
-          if [ ! -d "$GRADLE_CACHE_DIR" ]; then
-            GRADLE_CACHE_DIR="/workspace/.gradle/caches/modules-2/files-2.1"
-          fi
-          if [ ! -d "$GRADLE_CACHE_DIR" ]; then
-            GRADLE_CACHE_DIR=".gradle/caches/modules-2/files-2.1"
-          fi
-          
-          if [ -d "$GRADLE_CACHE_DIR" ]; then
-            echo "🔍 Procurando AWS SDK Lambda no cache do Gradle..."
-            
-            # Procurar especificamente por aws-java-sdk-lambda
-            LAMBDA_JARS=$(find "$GRADLE_CACHE_DIR" -name "*aws-java-sdk-lambda*" -type f 2>/dev/null)
-            if [ -n "$LAMBDA_JARS" ]; then
-              for JAR in $LAMBDA_JARS; do
-                cp "$JAR" "$ZIP_DIR/dependencies/"
-                echo "✅ Copiado AWS SDK Lambda: $(basename "$JAR")"
-              done
-            else
-              echo "⚠️  AWS SDK Lambda não encontrado no cache do Gradle"
-            fi
-            
-            # Procurar por aws-java-sdk-core (dependência do Lambda)
-            CORE_JARS=$(find "$GRADLE_CACHE_DIR" -name "*aws-java-sdk-core*" -type f 2>/dev/null)
-            if [ -n "$CORE_JARS" ]; then
-              for JAR in $CORE_JARS; do
-                cp "$JAR" "$ZIP_DIR/dependencies/"
-                echo "✅ Copiado AWS SDK Core: $(basename "$JAR")"
-              done
-            else
-              echo "⚠️  AWS SDK Core não encontrado no cache do Gradle"
-            fi
+          if [ -d "dependencies" ]; then
+            echo "📁 Pasta dependencies encontrada, copiando conteúdo..."
+            cp -r dependencies/* "$ZIP_DIR/dependencies/" 2>/dev/null || echo "⚠️  Erro ao copiar dependências"
+            echo "✅ Dependências copiadas para $ZIP_DIR/dependencies/"
+            ls -la "$ZIP_DIR/dependencies/" 2>/dev/null || echo "⚠️  Pasta dependencies vazia"
           else
-            echo "⚠️  Cache do Gradle não encontrado"
-          fi
-          
-          # Verificar se há JARs na pasta dependencies
-          if [ -d "$ZIP_DIR/dependencies" ] && [ "$(ls -A "$ZIP_DIR/dependencies" 2>/dev/null)" ]; then
-            echo "✅ Dependências externas copiadas para $ZIP_DIR/dependencies/"
-            ls -la "$ZIP_DIR/dependencies/"
-          else
-            echo "⚠️  Nenhuma dependência externa encontrada"
+            echo "⚠️  Pasta dependencies não encontrada"
           fi
           
           # Copiar dependências para workspace também (para debug)

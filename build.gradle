@@ -37,6 +37,55 @@ sourceCompatibility = 1.8
 // - Corrige leitura de versão após script de versionamento
 // - Usa outputs do GitHub Actions para comunicar versão entre jobs
 
+// Tarefa para copiar dependências externas
+task copyExternalDependencies(type: Copy) {
+    description = 'Copia dependências externas para pasta dependencies'
+    
+    // Criar pasta de destino
+    def dependenciesDir = file("dependencies")
+    dependenciesDir.mkdirs()
+    
+    // Configurar destino
+    into dependenciesDir
+    
+    // Copiar apenas dependências externas (não do Axway)
+    from configurations.runtimeClasspath
+    
+    // Filtrar apenas JARs AWS que não estão no Axway
+    include { fileTreeElement ->
+        def fileName = fileTreeElement.name
+        if (fileName.contains('aws-java-sdk') && !fileName.contains('axway')) {
+            println "✅ Copiando dependência externa: $fileName"
+            return true
+        }
+        return false
+    }
+    
+    // Renomear para evitar conflitos
+    rename { fileName ->
+        "external-${fileName}"
+    }
+}
+
+// Tarefa para listar dependências
+task listDependencies {
+    description = 'Lista todas as dependências do projeto'
+    
+    doLast {
+        println "📋 Dependências do projeto:"
+        configurations.runtimeClasspath.each { file ->
+            println "  - ${file.name}"
+        }
+        
+        println "\n📋 Dependências AWS:"
+        configurations.runtimeClasspath.each { file ->
+            if (file.name.contains('aws')) {
+                println "  - ${file.name}"
+            }
+        }
+    }
+}
+
 repositories {
     mavenCentral()
 }
