@@ -189,19 +189,48 @@ jobs:
             echo "✅ JAR principal copiado: aws-lambda-apim-sdk-$VERSION.jar"
           fi
           
-          # Copiar dependências externas (se existirem)
-          VERSION_INFO=$(jq -r ".versions[\"$VERSION\"]" axway-versions.json)
-          BASE_PATH=$(echo "$VERSION_INFO" | jq -r '.base_path')
+          # Copiar dependências externas (JARs que o Gradle baixou)
+          echo "📋 Copiando dependências externas do Gradle..."
+          mkdir -p "$ZIP_DIR/dependencies"
           
-          if [ -d "${BASE_PATH}/apigateway/system/lib" ]; then
-            echo "📋 Copiando dependências externas do Axway..."
-            mkdir -p "$ZIP_DIR/dependencies"
+          # Procurar JARs externos no cache do Gradle
+          GRADLE_CACHE_DIR="$HOME/.gradle/caches/modules-2/files-2.1"
+          
+          # Copiar AWS SDK Lambda (dependência externa)
+          if [ -d "$GRADLE_CACHE_DIR" ]; then
+            echo "🔍 Procurando AWS SDK Lambda no cache do Gradle..."
             
-            # Copiar JARs que podem ser necessários (AWS SDK, etc.)
-            find "${BASE_PATH}/apigateway/system/lib" -name "*aws*.jar" -exec cp {} "$ZIP_DIR/dependencies/" \;
-            find "${BASE_PATH}/apigateway/system/lib" -name "*lambda*.jar" -exec cp {} "$ZIP_DIR/dependencies/" \;
+            # Procurar por aws-java-sdk-lambda
+            LAMBDA_JARS=$(find "$GRADLE_CACHE_DIR" -name "*aws-java-sdk-lambda*" -type f 2>/dev/null)
+            if [ -n "$LAMBDA_JARS" ]; then
+              for JAR in $LAMBDA_JARS; do
+                cp "$JAR" "$ZIP_DIR/dependencies/"
+                echo "✅ Copiado: $(basename "$JAR")"
+              done
+            else
+              echo "⚠️  AWS SDK Lambda não encontrado no cache do Gradle"
+            fi
             
-            echo "✅ Dependências copiadas para $ZIP_DIR/dependencies/"
+            # Procurar por aws-java-sdk-core
+            CORE_JARS=$(find "$GRADLE_CACHE_DIR" -name "*aws-java-sdk-core*" -type f 2>/dev/null)
+            if [ -n "$CORE_JARS" ]; then
+              for JAR in $CORE_JARS; do
+                cp "$JAR" "$ZIP_DIR/dependencies/"
+                echo "✅ Copiado: $(basename "$JAR")"
+              done
+            else
+              echo "⚠️  AWS SDK Core não encontrado no cache do Gradle"
+            fi
+          else
+            echo "⚠️  Cache do Gradle não encontrado"
+          fi
+          
+          # Verificar se há JARs na pasta dependencies
+          if [ -d "$ZIP_DIR/dependencies" ] && [ "$(ls -A "$ZIP_DIR/dependencies" 2>/dev/null)" ]; then
+            echo "✅ Dependências externas copiadas para $ZIP_DIR/dependencies/"
+            ls -la "$ZIP_DIR/dependencies/"
+          else
+            echo "⚠️  Nenhuma dependência externa encontrada"
           fi
           
           # Criar README com informações
