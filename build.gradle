@@ -16,6 +16,7 @@ sourceCompatibility = 1.8
 // - Sistema de release unificado funcionando corretamente
 // - Workflow YAML corrigido e funcionando
 // - Sistema robusto para lidar com tags existentes
+// - Action de release atualizada para versão moderna
 
 repositories {
     mavenCentral()
