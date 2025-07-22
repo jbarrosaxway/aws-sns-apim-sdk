@@ -60,9 +60,10 @@ jobs:
         if [ -f ".version_info" ]; then
           source .version_info
           echo "📋 Versão calculada: $NEW_VERSION ($VERSION_TYPE)"
+          RELEASE_VERSION="$NEW_VERSION"
         else
           echo "⚠️  Arquivo .version_info não encontrado, usando versão atual"
-          NEW_VERSION=$(grep -o 'version = "[^"]*"' build.gradle | cut -d'"' -f2)
+          RELEASE_VERSION=$(grep -o 'version = "[^"]*"' build.gradle | cut -d'"' -f2)
         fi
         
         VERSIONS="${{ steps.versions.outputs.versions }}"
@@ -147,6 +148,15 @@ jobs:
         
         echo "📋 Versão final: $RELEASE_VERSION"
         
+        # Verificar se tag já existe
+        if git tag -l "v$RELEASE_VERSION" | grep -q "v$RELEASE_VERSION"; then
+          echo "⚠️  Tag v$RELEASE_VERSION já existe. Incrementando versão..."
+          # Incrementar PATCH version
+          NEW_PATCH=$(echo "$RELEASE_VERSION" | awk -F. '{print $3+1}')
+          RELEASE_VERSION=$(echo "$RELEASE_VERSION" | awk -F. '{print $1 "." $2 "." '$NEW_PATCH'}')
+          echo "📋 Nova versão: $RELEASE_VERSION"
+        fi
+        
         # Gerar tag com semantic version
         TAG_NAME="v${RELEASE_VERSION}"
         echo "📋 Criando tag: $TAG_NAME"
@@ -196,8 +206,15 @@ jobs:
           echo "📋 Copiando dependências externas do Gradle..."
           mkdir -p "$ZIP_DIR/dependencies"
           
-          # Procurar JARs externos no cache do Gradle
+          # Procurar JARs externos no cache do Gradle (caminhos alternativos)
           GRADLE_CACHE_DIR="$HOME/.gradle/caches/modules-2/files-2.1"
+          if [ ! -d "$GRADLE_CACHE_DIR" ]; then
+            GRADLE_CACHE_DIR="/root/.gradle/caches/modules-2/files-2.1"
+          fi
+          if [ ! -d "$GRADLE_CACHE_DIR" ]; then
+            GRADLE_CACHE_DIR="/workspace/.gradle/caches/modules-2/files-2.1"
+          fi
+          echo "🔍 Procurando cache do Gradle em: $GRADLE_CACHE_DIR"
           
           # Copiar AWS SDK Lambda (dependência externa específica)
           if [ -d "$GRADLE_CACHE_DIR" ]; then
