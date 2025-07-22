@@ -56,12 +56,12 @@ Os releases são criados automaticamente no GitHub e incluem:
 
 ### **Versões Suportadas:**
 
-As versões suportadas e suas respectivas imagens Docker estão definidas no arquivo **[📋 axway-versions.json](axway-versions.json)**:
+As versões suportadas estão definidas no arquivo **[📋 axway-versions.json](axway-versions.json)**:
 
-| Versão | Imagem Docker | Descrição |
-|--------|---------------|-----------|
-| **7.7.0.20240830** | `axwayjbarros/aws-lambda-apim-sdk:7.7.0.20240830` | Versão estável de agosto 2024 - AWS SDK detectado automaticamente |
-| **7.7.0.20250530** | `axwayjbarros/aws-lambda-apim-sdk:7.7.0.20250530` | Versão estável de maio 2025 - AWS SDK detectado automaticamente |
+| Versão | Descrição |
+|--------|-----------|
+| **7.7.0.20240830** | Versão estável de agosto 2024 - AWS SDK detectado automaticamente |
+| **7.7.0.20250530** | Versão estável de maio 2025 - AWS SDK detectado automaticamente |
 
 **Versão padrão:** `7.7.0.20240830`
 
@@ -112,13 +112,9 @@ O projeto suporta **configuração dinâmica** do caminho do Axway API Gateway:
 
 ### 🐳 **Docker**
 
-#### **Imagens Docker Publicadas**
+#### **Build com Docker**
 
-Este projeto usa imagens Docker publicadas baseadas no arquivo **[📋 axway-versions.json](axway-versions.json)**:
-
-**Imagens Disponíveis:**
-- `axwayjbarros/aws-lambda-apim-sdk:7.7.0.20240830` - Versão estável de agosto 2024
-- `axwayjbarros/aws-lambda-apim-sdk:7.7.0.20250530` - Versão estável de maio 2025
+Este projeto usa imagens Docker para build automatizado, configuradas no arquivo **[📋 axway-versions.json](axway-versions.json)**.
 
 **Conteúdo das imagens:**
 - Axway API Gateway (versão específica)
@@ -133,13 +129,12 @@ Este projeto usa imagens Docker publicadas baseadas no arquivo **[📋 axway-ver
 # Build do JAR usando a imagem publicada (versão padrão)
 ./scripts/build-with-docker-image.sh
 
-# Ou manualmente (especificando versão):
-docker pull axwayjbarros/aws-lambda-apim-sdk:7.7.0.20240830
+# Ou manualmente:
 docker run --rm \
   -v "$(pwd):/workspace" \
   -v "$(pwd)/build:/workspace/build" \
   -w /workspace \
-  axwayjbarros/aws-lambda-apim-sdk:7.7.0.20240830 \
+  <imagem-docker> \
   bash -c "
     export JAVA_HOME=/opt/java/openjdk-11
     export PATH=\$JAVA_HOME/bin:\$PATH
