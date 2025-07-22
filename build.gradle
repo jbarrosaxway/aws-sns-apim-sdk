@@ -6,6 +6,8 @@ group 'com.axway'
 version '1.0.2'
 sourceCompatibility = 1.8
 
+// Comentário para simular release - build.gradle incluído no ZIP da release
+
 // Melhoria: Sistema de build otimizado para Docker
 // - Suporte aprimorado para ambiente containerizado
 // - Configuração automática de dependências Axway
