@@ -256,6 +256,12 @@ jobs:
             echo "✅ Gradlew Windows copiado: gradlew.bat"
           fi
           
+          # Copiar build.gradle para permitir uso da tarefa installWindows
+          if [ -f "build.gradle" ]; then
+            cp build.gradle "$ZIP_DIR/"
+            echo "✅ Build.gradle copiado: build.gradle"
+          fi
+          
           # Copiar recursos do Policy Studio (fed e yaml)
           if [ -d "src/main/resources/fed" ]; then
             mkdir -p "$ZIP_DIR/resources/fed"
@@ -336,6 +342,15 @@ jobs:
           echo "2. Copie as dependências (pasta dependencies/) se necessário" >> "$ZIP_DIR/README.md"
           echo "3. Reinicie o Policy Studio e API Gateway" >> "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
+          echo "### Instalação via Gradle (Windows)" >> "$ZIP_DIR/README.md"
+          echo "1. Abra o prompt de comando no diretório do ZIP" >> "$ZIP_DIR/README.md"
+          echo "2. Execute: gradlew installWindows" >> "$ZIP_DIR/README.md"
+          echo "3. Digite o caminho do projeto Policy Studio quando solicitado" >> "$ZIP_DIR/README.md"
+          echo "" >> "$ZIP_DIR/README.md"
+          echo "**Ou com caminho específico:**" >> "$ZIP_DIR/README.md"
+          echo "1. Execute: gradlew -Dproject.path=C:\\caminho\\do\\projeto installWindowsToProject" >> "$ZIP_DIR/README.md"
+          echo "2. O caminho será usado automaticamente sem interação" >> "$ZIP_DIR/README.md"
+          echo "" >> "$ZIP_DIR/README.md"
           echo "## Arquivos incluídos" >> "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
           echo "- aws-lambda-apim-sdk-*.jar - SDK principal (versão original do build)" >> "$ZIP_DIR/README.md"
@@ -345,6 +360,7 @@ jobs:
           echo "- install-windows.bat - Script de instalação para Windows" >> "$ZIP_DIR/README.md"
           echo "- install-linux.sh - Script de instalação para Linux" >> "$ZIP_DIR/README.md"
           echo "- gradlew / gradlew.bat - Gradle Wrapper para builds" >> "$ZIP_DIR/README.md"
+          echo "- build.gradle - Configuração do Gradle (inclui tarefas installWindows e installWindowsToProject)" >> "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
           echo "## Compatibilidade" >> "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
