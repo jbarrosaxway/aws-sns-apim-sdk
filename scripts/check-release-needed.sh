@@ -112,6 +112,7 @@ RELEASE_FILES=(
     "settings.gradle"
     "Dockerfile"
     "docker-compose"
+    "axway-versions.json"
     "*.java"
     "*.groovy"
     "*.yaml"
