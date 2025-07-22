@@ -18,18 +18,11 @@ fields:
     defaultValues:
     - data: RequestResponse
     cardinality: 1
-    enum:
-      - RequestResponse
-      - Event
-      - DryRun
   logType:
     type: string
     defaultValues:
     - data: None
     cardinality: 1
-    enum:
-      - None
-      - Tail
   qualifier:
     type: string
     defaultValues:

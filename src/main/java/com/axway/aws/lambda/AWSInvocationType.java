@@ -1,56 +1,28 @@
 package com.axway.aws.lambda;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Enum para os tipos de invocação do AWS Lambda
+ * Tipos de invocação do AWS Lambda
  */
-public enum AWSInvocationType {
+public class AWSInvocationType {
     
-    REQUEST_RESPONSE("RequestResponse", "RequestResponse"),
-    EVENT("Event", "Event"),
-    DRY_RUN("DryRun", "DryRun");
+    public static Map<String, String> invocationType;
     
-    private final String value;
-    private final String displayName;
-    
-    AWSInvocationType(String value, String displayName) {
-        this.value = value;
-        this.displayName = displayName;
-    }
-    
-    public String getValue() {
-        return value;
-    }
-    
-    public String getDisplayName() {
-        return displayName;
-    }
-    
-    @Override
-    public String toString() {
-        return displayName;
+    static {
+        Map<String, String> init = new HashMap<>();
+        init.put("RequestResponse", "RequestResponse");
+        init.put("Event", "Event");
+        init.put("DryRun", "DryRun");
+        invocationType = Collections.unmodifiableMap(init);
     }
     
     /**
      * Retorna todos os valores como array de strings para o ComboAttribute
      */
     public static String[] getValues() {
-        AWSInvocationType[] types = values();
-        String[] result = new String[types.length];
-        for (int i = 0; i < types.length; i++) {
-            result[i] = types[i].getValue();
-        }
-        return result;
-    }
-    
-    /**
-     * Retorna todos os display names como array de strings para o ComboAttribute
-     */
-    public static String[] getDisplayNames() {
-        AWSInvocationType[] types = values();
-        String[] result = new String[types.length];
-        for (int i = 0; i < types.length; i++) {
-            result[i] = types[i].getDisplayName();
-        }
-        return result;
+        return invocationType.keySet().toArray(new String[0]);
     }
 } 
