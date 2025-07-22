@@ -55,8 +55,15 @@ Os releases são criados automaticamente no GitHub e incluem:
 ```
 
 ### **Versões Suportadas:**
-- **Axway API Gateway 7.7.0.20240830** ✅
-- **Axway API Gateway 7.7.0.20250230** ✅
+
+As versões suportadas e suas respectivas imagens Docker estão definidas no arquivo **[📋 axway-versions.json](axway-versions.json)**:
+
+| Versão | Imagem Docker | Descrição |
+|--------|---------------|-----------|
+| **7.7.0.20240830** | `axwayjbarros/aws-lambda-apim-sdk:7.7.0.20240830` | Versão estável de agosto 2024 - AWS SDK detectado automaticamente |
+| **7.7.0.20250530** | `axwayjbarros/aws-lambda-apim-sdk:7.7.0.20250530` | Versão estável de maio 2025 - AWS SDK detectado automaticamente |
+
+**Versão padrão:** `7.7.0.20240830`
 
 ---
 
@@ -105,10 +112,16 @@ O projeto suporta **configuração dinâmica** do caminho do Axway API Gateway:
 
 ### 🐳 **Docker**
 
-#### **Imagem Docker Publicada**
+#### **Imagens Docker Publicadas**
 
-Este projeto usa a imagem Docker publicada `axwayjbarros/aws-lambda-apim-sdk:1.0.0` que contém:
-- Axway API Gateway 7.7.0.20240830
+Este projeto usa imagens Docker publicadas baseadas no arquivo **[📋 axway-versions.json](axway-versions.json)**:
+
+**Imagens Disponíveis:**
+- `axwayjbarros/aws-lambda-apim-sdk:7.7.0.20240830` - Versão estável de agosto 2024
+- `axwayjbarros/aws-lambda-apim-sdk:7.7.0.20250530` - Versão estável de maio 2025
+
+**Conteúdo das imagens:**
+- Axway API Gateway (versão específica)
 - Java 11 OpenJDK
 - AWS SDK for Java 1.12.314
 - Gradle para build
@@ -117,16 +130,16 @@ Este projeto usa a imagem Docker publicada `axwayjbarros/aws-lambda-apim-sdk:1.0
 #### **Build usando Docker**
 
 ```bash
-# Build do JAR usando a imagem publicada
+# Build do JAR usando a imagem publicada (versão padrão)
 ./scripts/build-with-docker-image.sh
 
-# Ou manualmente:
-docker pull axwayjbarros/aws-lambda-apim-sdk:1.0.0
+# Ou manualmente (especificando versão):
+docker pull axwayjbarros/aws-lambda-apim-sdk:7.7.0.20240830
 docker run --rm \
   -v "$(pwd):/workspace" \
   -v "$(pwd)/build:/workspace/build" \
   -w /workspace \
-  axwayjbarros/aws-lambda-apim-sdk:1.0.0 \
+  axwayjbarros/aws-lambda-apim-sdk:7.7.0.20240830 \
   bash -c "
     export JAVA_HOME=/opt/java/openjdk-11
     export PATH=\$JAVA_HOME/bin:\$PATH
