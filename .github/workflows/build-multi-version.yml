@@ -108,9 +108,9 @@ jobs:
           echo "✅ JAR criado para $VERSION: $JAR_FILE"
           ls -la "$JAR_FILE"
           
-          # Copiar JAR para workspace do host com nome da versão
-          cp "$JAR_FILE" "/workspace/aws-lambda-apim-sdk-$VERSION.jar"
-          echo "✅ JAR copiado para workspace: aws-lambda-apim-sdk-$VERSION.jar"
+          # Copiar JAR para diretório atual com nome da versão
+          cp "$JAR_FILE" "./aws-lambda-apim-sdk-$VERSION.jar"
+          echo "✅ JAR copiado: aws-lambda-apim-sdk-$VERSION.jar"
         else
           echo "❌ JAR não encontrado para $VERSION"
           echo "📁 Conteúdo de build/libs:"
@@ -126,36 +126,51 @@ jobs:
         path: build/libs/aws-lambda-apim-sdk-*.jar
         retention-days: 30
         
-    - name: Create Release for each version
+    - name: Create Single Release with all JARs
       if: github.event_name != 'pull_request' && contains(github.ref, 'master')
       run: |
+        # Configurar git
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+        
+        # Gerar tag única
+        TAG_NAME="v$(date +%Y%m%d-%H%M%S)"
+        echo "📋 Criando tag: $TAG_NAME"
+        
+        # Verificar se tag já existe
+        if git tag -l "$TAG_NAME" | grep -q "$TAG_NAME"; then
+          echo "⚠️  Tag $TAG_NAME já existe. Pulando criação."
+        else
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
+          echo "✅ Tag $TAG_NAME criada e enviada!"
+        fi
+        
+        # Preparar lista de JARs para upload
+        JAR_FILES=""
         VERSIONS="${{ steps.versions.outputs.versions }}"
         
         for VERSION in ${VERSIONS//,/ }; do
-          echo "🚀 Criando release para versão: $VERSION"
-          
-          # Configurar git
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-          
-          # Gerar tag com versão do Axway
-          TAG_NAME="v$VERSION-$(date +%Y%m%d)"
-          echo "📋 Criando tag: $TAG_NAME"
-          
-          # Verificar se tag já existe
-          if git tag -l "$TAG_NAME" | grep -q "$TAG_NAME"; then
-            echo "⚠️  Tag $TAG_NAME já existe. Pulando criação."
+          JAR_FILE="aws-lambda-apim-sdk-$VERSION.jar"
+          if [ -f "$JAR_FILE" ]; then
+            JAR_FILES="$JAR_FILES $JAR_FILE"
+            echo "✅ JAR encontrado: $JAR_FILE"
           else
-            git tag "$TAG_NAME"
-            git push origin "$TAG_NAME"
-            echo "✅ Tag $TAG_NAME criada e enviada!"
+            echo "❌ JAR não encontrado: $JAR_FILE"
           fi
-          
-          # Criar release
+        done
+        
+        # Criar release com todos os JARs
+        if [ -n "$JAR_FILES" ]; then
+          echo "🚀 Criando release com JARs: $JAR_FILES"
           gh release create "$TAG_NAME" \
-            --title "Release for Axway $VERSION" \
-            --notes "Build para Axway API Gateway $VERSION" \
+            --title "Multi-Version Release $(date +%Y-%m-%d)" \
+            --notes "Build para múltiplas versões do Axway API Gateway - JARs: $JAR_FILES - Versões: $VERSIONS" \
             --repo "${{ github.repository }}" \
-            "aws-lambda-apim-sdk-$VERSION.jar"
-        done 
+            $JAR_FILES
+          echo "✅ Release criada com sucesso!"
+        else
+          echo "❌ Nenhum JAR encontrado para upload"
+          exit 1
+        fi 
