@@ -49,6 +49,9 @@ task copyExternalDependencies(type: Copy) {
     // Configurar destino
     into dependenciesDir
     
+    // Estratégia para lidar com duplicatas
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    
     // Copiar apenas dependências externas (não do Axway)
     from configurations.runtimeClasspath
     
