@@ -44,9 +44,30 @@ dependencies {
         
         // Verificar se AWS SDK está disponível no Axway
         def awsSdkJars = fileTree(dir: "${apim_folder}/lib", include: '*aws*.jar')
-        if (awsSdkJars.files.size() > 0) {
-            println "✅ AWS SDK encontrado no Axway: ${awsSdkJars.files.size()} JARs"
+        def awsSdkModulesJars = fileTree(dir: "${apim_folder}/lib/modules/aws", include: '*.jar')
+        
+        if (awsSdkJars.files.size() > 0 || awsSdkModulesJars.files.size() > 0) {
+            println "✅ AWS SDK encontrado no Axway: ${awsSdkJars.files.size() + awsSdkModulesJars.files.size()} JARs"
             implementation awsSdkJars
+            implementation awsSdkModulesJars
+            
+            // Detectar versão do AWS SDK do Axway
+            def detectedVersion = null
+            awsSdkModulesJars.files.each { jar ->
+                def matcher = jar.name =~ /aws-java-sdk-.*-(\d+\.\d+\.\d+)\.jar/
+                if (matcher.find() && !detectedVersion) {
+                    detectedVersion = matcher.group(1)
+                    println "🔍 Versão detectada do AWS SDK: $detectedVersion"
+                }
+            }
+            
+            // Verificar se AWS SDK Lambda está disponível
+            def awsLambdaJar = awsSdkModulesJars.files.find { it.name.contains('lambda') }
+            if (!awsLambdaJar) {
+                def lambdaVersion = detectedVersion ?: fallbackAwsSdkVersion
+                println "⚠️  AWS SDK Lambda não encontrado no Axway, adicionando externo: $lambdaVersion"
+                implementation group: 'com.amazonaws', name: 'aws-java-sdk-lambda', version: lambdaVersion
+            }
         } else {
             println "⚠️  AWS SDK não encontrado no Axway, usando fallback: $fallbackAwsSdkVersion"
             implementation group: 'com.amazonaws', name: 'aws-java-sdk-lambda', version: fallbackAwsSdkVersion
