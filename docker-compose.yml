@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  axway-api-gateway:
+    image: aws-lambda-apim-sdk:latest
+    container_name: axway-api-gateway
+    ports:
+      - "8080:8080"   # HTTP
+      - "8443:8443"   # HTTPS
+      - "8090:8090"   # Admin
+      - "8091:8091"   # Metrics
+    environment:
+      - AXWAY_HOME=/opt/Axway
+      - JAVA_HOME=/opt/java/openjdk-11
+    volumes:
+      - axway_data:/opt/Axway/apigateway/posix/conf
+      - axway_logs:/opt/Axway/apigateway/posix/logs
+      - axway_ssl:/opt/Axway/apigateway/posix/ssl
+    restart: unless-stopped
+    networks:
+      - axway-network
+
+volumes:
+  axway_data:
+    driver: local
+  axway_logs:
+    driver: local
+  axway_ssl:
+    driver: local
+
+networks:
+  axway-network:
+    driver: bridge 

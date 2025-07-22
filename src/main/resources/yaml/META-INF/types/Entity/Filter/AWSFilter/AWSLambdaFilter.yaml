@@ -7,8 +7,33 @@ fields:
     defaultValues:
     - {}
     cardinality: 1
-  awsProfileName:
+  awsRegion:
     type: string
     defaultValues:
     - {}
+    cardinality: 1
+  invocationType:
+    type: string
+    defaultValues:
+    - RequestResponse
+    cardinality: 1
+  logType:
+    type: string
+    defaultValues:
+    - None
+    cardinality: 1
+  qualifier:
+    type: string
+    defaultValues:
+    - {}
+    cardinality: 1
+  maxRetries:
+    type: string
+    defaultValues:
+    - 3
+    cardinality: 1
+  retryDelay:
+    type: string
+    defaultValues:
+    - 1000
     cardinality: 1

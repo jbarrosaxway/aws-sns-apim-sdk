@@ -1,0 +1,89 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Login to Axway Registry
+      uses: docker/login-action@v3
+      with:
+        registry: docker.repository.axway.com
+        username: ${{ secrets.AXWAY_REGISTRY_USERNAME }}
+        password: ${{ secrets.AXWAY_REGISTRY_PASSWORD }}
+        
+    - name: Build Docker image for build
+      run: |
+        # Build da imagem de build (com Axway + Gradle)
+        docker build -f Dockerfile.build -t aws-lambda-apim-sdk-build:latest .
+        
+    - name: Build JAR using Docker
+      run: |
+        # Executar build do JAR dentro do container
+        docker run --rm \
+          -v "$(pwd)/build:/workspace/build" \
+          aws-lambda-apim-sdk-build:latest \
+          gradle buildJarLinux
+          
+    - name: Generate changelog
+      id: changelog
+      run: |
+        echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+        git log --oneline $(git describe --tags --abbrev=0 HEAD^)..HEAD >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        
+    - name: Create Release
+      uses: actions/create-release@v1
+      id: create_release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          ## Changes in this Release
+          
+          ${{ steps.changelog.outputs.CHANGELOG }}
+          
+          ## Installation
+          
+          Download the JAR file from the assets below and follow the installation guide in the README.
+          
+          ## Usage
+          
+          This JAR contains the AWS Lambda integration for Axway API Gateway. 
+          Follow the installation guide in the README for setup instructions.
+        draft: false
+        prerelease: false
+        
+    - name: Upload JAR to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./build/libs/aws-lambda-apim-sdk-*.jar
+        asset_name: aws-lambda-apim-sdk-${{ github.ref_name }}.jar
+        asset_content_type: application/java-archive
+        
+    - name: Test JAR
+      run: |
+        # Verificar se o JAR foi criado
+        ls -la build/libs/aws-lambda-apim-sdk-*.jar
+        # Verificar conteúdo do JAR
+        jar -tf build/libs/aws-lambda-apim-sdk-*.jar | head -10
+        # Verificar tamanho do JAR
+        du -h build/libs/aws-lambda-apim-sdk-*.jar 

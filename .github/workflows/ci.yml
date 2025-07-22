@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Login to Axway Registry
+      uses: docker/login-action@v3
+      with:
+        registry: docker.repository.axway.com
+        username: ${{ secrets.AXWAY_REGISTRY_USERNAME }}
+        password: ${{ secrets.AXWAY_REGISTRY_PASSWORD }}
+        
+    - name: Build Docker image for build
+      run: |
+        # Build da imagem de build (com Axway + Gradle)
+        docker build -f Dockerfile.build -t aws-lambda-apim-sdk-build:latest .
+        
+    - name: Build JAR using Docker
+      run: |
+        # Executar build do JAR dentro do container
+        docker run --rm \
+          -v "$(pwd)/build:/workspace/build" \
+          aws-lambda-apim-sdk-build:latest \
+          gradle buildJarLinux
+          
+    - name: Upload JAR artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: aws-lambda-apim-sdk
+        path: build/libs/aws-lambda-apim-sdk-*.jar
+        
+    - name: Test JAR
+      run: |
+        # Verificar se o JAR foi criado
+        ls -la build/libs/aws-lambda-apim-sdk-*.jar
+        # Verificar conteúdo do JAR
+        jar -tf build/libs/aws-lambda-apim-sdk-*.jar | head -10
+        # Verificar tamanho do JAR
+        du -h build/libs/aws-lambda-apim-sdk-*.jar 

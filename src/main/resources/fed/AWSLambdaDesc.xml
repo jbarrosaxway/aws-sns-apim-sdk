@@ -1,18 +1,22 @@
-<!-- This type defines the filter configuration data for the Jabber filter 
-	which sends an Instant message to an account on Google Talk "class" - The 
-	filter classname. "fromEmailAddress" - The email address of the person sending 
-	the instant message "password" - Password of the person sending the instant 
-	message "resourceName" - Unique resource name "toEmailaddress" - The email 
-	address of the person receiving the instant message "messageStr" - The content 
-	of the message -->
+<!-- This type defines the filter configuration data for the AWS Lambda filter 
+	which invokes AWS Lambda functions from Axway API Gateway "class" - The 
+	filter classname. "functionName" - The name of the AWS Lambda function to invoke
+	"awsRegion" - The AWS region where the function is located "invocationType" - 
+	The type of invocation (RequestResponse, Event, DryRun) "logType" - The type 
+	of logging (None, Tail) "qualifier" - The version or alias of the function
+	"maxRetries" - Maximum number of retry attempts "retryDelay" - Delay between 
+	retry attempts in milliseconds -->
 
 <entityStoreData>
 	<entityType name="AWSLambdaFilter" extends="AWSFilter">
 		<constant name="class" type="string" value="com.axway.aws.lambda.AWSLambdaFilter" />
 		<field name="functionName" type="string" cardinality="1" />
-<!--		<field cardinality="?" name="awsCredential" type="^ApiKeyProfile"/>-->
-<!--		<field default="us-east-1" name="region" type="string"/>-->
-		<field name="awsProfileName" type="string" cardinality="1" />
+		<field name="awsRegion" type="string" cardinality="1" />
+		<field name="invocationType" type="string" cardinality="1" />
+		<field name="logType" type="string" cardinality="1" />
+		<field name="qualifier" type="string" cardinality="1" />
+		<field name="maxRetries" type="string" cardinality="1" />
+		<field name="retryDelay" type="string" cardinality="1" />
 	</entityType>
 
 	
@@ -27,8 +31,7 @@
 			<value>AWSLambdaFilter</value>
 		</fval>
 		<fval name="logFatal">
-			<value>Error in the AWS Lambda  Error:
-				${circuit.exception}</value>
+			<value>Error in the AWS Lambda filter. Error: ${circuit.exception}</value>
 		</fval>
 		<fval name="logFailure">
 			<value>Failed in the AWS Lambda filter</value>

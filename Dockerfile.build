@@ -1,0 +1,40 @@
+# Dockerfile para BUILD - contém Axway para compilar o JAR
+FROM docker.repository.axway.com/apigateway-docker-prod/7.7/gateway:7.7.0.20240830-4-BN0145-ubi9
+
+# Definir variáveis de ambiente
+ENV AXWAY_HOME=/opt/Axway
+ENV JAVA_HOME=/opt/java/openjdk-11
+ENV PATH=$JAVA_HOME/bin:$PATH
+
+# Instalar dependências necessárias para build
+USER root
+RUN dnf update -y && \
+    dnf install -y \
+    curl \
+    wget \
+    unzip \
+    tar \
+    gzip \
+    java-11-openjdk \
+    java-11-openjdk-devel \
+    git \
+    && dnf clean all
+
+# Configurar Java 11 como padrão
+RUN alternatives --set java java-11-openjdk.x86_64 && \
+    alternatives --set javac java-11-openjdk.x86_64
+
+# Instalar Gradle
+RUN curl -O https://downloads.gradle.org/distributions/gradle-7.6-bin.zip && \
+    unzip gradle-7.6-bin.zip -d /opt && \
+    ln -s /opt/gradle-7.6/bin/gradle /usr/local/bin/gradle && \
+    rm gradle-7.6-bin.zip
+
+# Criar diretório de trabalho
+WORKDIR /workspace
+
+# Copiar código fonte
+COPY . .
+
+# Comando para build
+CMD ["gradle", "buildJarLinux"] 

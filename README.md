@@ -66,6 +66,84 @@ O projeto suporta **configuração dinâmica** do caminho do Axway API Gateway:
 
 > 📖 **Guia Completo Windows**: Veja [INSTALACAO_WINDOWS.md](INSTALACAO_WINDOWS.md) para instruções detalhadas.
 
+### 🐳 **Docker**
+
+#### **Imagem Docker para Build e Desenvolvimento**
+
+Este projeto inclui suporte para Docker usando a imagem oficial do Axway API Gateway. A imagem é **apenas para build e desenvolvimento**, não para execução do gateway:
+
+```bash
+# Build da imagem
+./scripts/docker/build-image.sh
+
+# Ou manualmente:
+./gradlew buildJarLinux
+docker build -t aws-lambda-apim-sdk:latest .
+
+# Testar a imagem
+docker run --rm aws-lambda-apim-sdk:latest java -version
+docker run --rm aws-lambda-apim-sdk:latest ls -la /opt/aws-lambda-sdk/
+```
+
+> ⚠️ **Nota**: Esta imagem contém o SDK integrado ao Axway API Gateway e é destinada para desenvolvimento e build de projetos que dependem do SDK, não para execução do gateway em produção.
+
+#### **Estrutura de JARs na Imagem**
+
+A imagem inclui os seguintes JARs organizados:
+
+```
+/opt/aws-lambda-sdk/
+└── aws-lambda-apim-sdk-*.jar          # Nosso SDK
+
+/opt/Axway/apigateway/groups/emt-group/emt-service/ext/lib/
+├── aws-lambda-apim-sdk-*.jar          # Nosso SDK (cópia)
+├── aws-java-sdk-lambda-*.jar          # AWS Lambda SDK
+├── aws-java-sdk-core-*.jar            # AWS Core SDK
+└── jackson-*.jar                      # Jackson JSON library
+```
+
+#### **Configuração do Registry Privado**
+
+Para usar a imagem oficial do Axway, configure as credenciais:
+
+**GitHub Actions:**
+1. Vá para **Settings > Secrets and variables > Actions**
+2. Adicione os secrets:
+   - `AXWAY_REGISTRY_USERNAME`: seu usuário Axway
+   - `AXWAY_REGISTRY_PASSWORD`: sua senha Axway
+
+**Build Local:**
+```bash
+# Login manual
+docker login docker.repository.axway.com
+
+# Ou usando variáveis de ambiente
+export AXWAY_USERNAME=seu_usuario
+export AXWAY_PASSWORD=sua_senha
+./scripts/docker/build-image.sh
+```
+
+#### **Especificações da Imagem:**
+- **Base**: Axway API Gateway 7.7.0.20240830-4-BN0145-ubi9
+- **Java**: OpenJDK 11.0.27
+- **SDK**: aws-lambda-apim-sdk integrado em `/opt/aws-lambda-sdk/`
+- **JARs**: Copiados para `/opt/Axway/apigateway/groups/emt-group/emt-service/ext/lib/`
+- **Uso**: Build e desenvolvimento de projetos que dependem do SDK
+
+#### **Scripts de Debug:**
+```bash
+# Verificar JARs disponíveis na imagem base
+./scripts/docker/check-axway-jars.sh
+
+# Build completo com Docker
+./scripts/docker/build-with-docker.sh
+
+# Debug da imagem base
+./scripts/docker/debug-image.sh
+```
+
+> 📖 **Guia Completo Docker**: Veja [DOCKER_GUIDE.md](DOCKER_GUIDE.md) para instruções detalhadas.
+
 ### ⚠️ **Importante: Build do JAR**
 
 O **build do JAR deve ser feito no Linux** devido às dependências do Axway API Gateway. Para Windows:
@@ -281,3 +359,92 @@ Please read [Contributing.md](https://github.com/Axway-API-Management-Plus/Commo
 
 ## License
 [Apache License 2.0](LICENSE)
+
+## 🚀 **CI/CD Pipeline**
+
+### **GitHub Actions**
+
+O projeto inclui workflows automatizados que usam Docker para build:
+
+#### **CI (Continuous Integration)**
+- **Trigger**: Push para `main`, `develop` ou Pull Requests
+- **Ações**:
+  - ✅ Login no registry Axway (para imagem base)
+  - ✅ Build da imagem Docker de build (com Axway + Gradle)
+  - ✅ Build do JAR dentro do container Docker
+  - ✅ Upload do JAR como artifact
+  - ✅ Testes do JAR
+
+#### **Release**
+- **Trigger**: Push de tags (`v*`)
+- **Ações**:
+  - ✅ Login no registry Axway
+  - ✅ Build da imagem Docker de build
+  - ✅ Build do JAR dentro do container
+  - ✅ Geração de changelog
+  - ✅ Criação de GitHub Release
+  - ✅ Upload do JAR para o release
+  - ✅ Testes do JAR
+
+### **Fluxo de Build**
+
+```
+1. Login no Axway Registry
+   ↓
+2. Build da imagem Docker (com Axway + Gradle)
+   ↓
+3. Execução do build do JAR dentro do container
+   ↓
+4. Geração do JAR final
+   ↓
+5. Upload para GitHub Release/Artifacts
+```
+
+### **Por que usar Docker?**
+
+- **✅ Ambiente Consistente**: Mesmo ambiente Axway sempre
+- **✅ Dependências Garantidas**: Axway + Gradle + Java 11
+- **✅ Isolamento**: Build isolado em container
+- **✅ Reproduzibilidade**: Mesmo resultado sempre
+- **✅ Não Publica Imagem**: Apenas usa para build
+
+### **Artefatos Gerados**
+
+#### **JAR Principal**
+```
+aws-lambda-apim-sdk-1.0.1.jar
+├── Filtro Java AWS Lambda
+├── Classes de UI do Policy Studio
+├── Dependências AWS SDK
+└── Configurações YAML
+```
+
+#### **Localização**
+- **GitHub Releases**: Disponível para download
+- **GitHub Actions Artifacts**: Durante CI/CD
+- **Local**: `build/libs/aws-lambda-apim-sdk-*.jar`
+
+### **Como Usar**
+
+#### **Download do JAR**
+1. Vá para **Releases** no GitHub
+2. Baixe o JAR da versão desejada
+3. Siga o guia de instalação
+
+#### **Build Local**
+```bash
+# Build do JAR (requer Axway local)
+./gradlew buildJarLinux
+
+# Ou usando Docker (recomendado)
+./scripts/docker/build-with-docker.sh
+```
+
+#### **Docker para Desenvolvimento**
+```bash
+# Build da imagem para desenvolvimento
+./scripts/docker/build-image.sh
+
+# Testar
+docker run --rm aws-lambda-apim-sdk:latest java -version
+```
