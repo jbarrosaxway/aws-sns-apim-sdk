@@ -18,11 +18,4 @@ public class AWSInvocationType {
         init.put("DryRun", "DryRun");
         invocationType = Collections.unmodifiableMap(init);
     }
-    
-    /**
-     * Retorna todos os valores como array de strings para o ComboAttribute
-     */
-    public static String[] getValues() {
-        return invocationType.keySet().toArray(new String[0]);
-    }
 } 

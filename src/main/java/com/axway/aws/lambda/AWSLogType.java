@@ -17,11 +17,4 @@ public class AWSLogType {
         init.put("Tail", "Tail");
         logType = Collections.unmodifiableMap(init);
     }
-    
-    /**
-     * Retorna todos os valores como array de strings para o ComboAttribute
-     */
-    public static String[] getValues() {
-        return logType.keySet().toArray(new String[0]);
-    }
 } 

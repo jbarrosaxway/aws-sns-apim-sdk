@@ -15,12 +15,12 @@
 			<!-- Invocation Configuration -->
 			<ComboAttribute field="invocationType" label="AWS_LAMBDA_INVOCATION_TYPE_LABEL"
 				displayName="AWS_LAMBDA_INVOCATION_TYPE_NAME" description="AWS_LAMBDA_INVOCATION_TYPE_DESCRIPTION"
-				contentSource="com.axway.aws.lambda.AWSInvocationType.getValues"
+				contentSource="com.axway.aws.lambda.AWSInvocationType.invocationType"
 				includeBlank="false" required="true" stretch="true" />
 			
 			<ComboAttribute field="logType" label="AWS_LAMBDA_LOG_TYPE_LABEL"
 				displayName="AWS_LAMBDA_LOG_TYPE_NAME" description="AWS_LAMBDA_LOG_TYPE_DESCRIPTION"
-				contentSource="com.axway.aws.lambda.AWSLogType.getValues"
+				contentSource="com.axway.aws.lambda.AWSLogType.logType"
 				includeBlank="false" required="true" stretch="true" />
 			
 			<!-- Advanced Configuration -->
