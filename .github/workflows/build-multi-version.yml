@@ -144,8 +144,8 @@ jobs:
         git config --local user.name "github-actions[bot]"
         git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
         
-        # Gerar tag única
-        TAG_NAME="v$(date +%Y%m%d-%H%M%S)"
+        # Gerar tag com semantic version
+        TAG_NAME="v${RELEASE_VERSION}"
         echo "📋 Criando tag: $TAG_NAME"
         
         # Verificar se tag já existe
@@ -277,7 +277,7 @@ jobs:
         if [ -n "$ZIP_FILES" ]; then
           echo "🚀 Criando release com ZIPs: $ZIP_FILES"
           gh release create "$TAG_NAME" \
-            --title "Multi-Version Release $(date +%Y-%m-%d)" \
+            --title "Release v${RELEASE_VERSION} - Multi-Version" \
             --notes "Build para múltiplas versões do Axway API Gateway - Versão: $RELEASE_VERSION - Data: $RELEASE_DATE - ZIPs: $ZIP_FILES - Versões: $VERSIONS" \
             --repo "${{ github.repository }}" \
             $ZIP_FILES
