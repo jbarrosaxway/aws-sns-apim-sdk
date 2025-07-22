@@ -21,6 +21,7 @@ sourceCompatibility = 1.8
 // - Detecção de JAR corrigida e configuração simplificada
 // - Problema de permissão ao renomear JAR corrigido
 // - Versionamento automático implementado
+// - Release única com múltiplos JARs implementada
 
 repositories {
     mavenCentral()
