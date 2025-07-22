@@ -26,6 +26,7 @@ sourceCompatibility = 1.8
 // - Simulação de release para teste do sistema completo
 // - Teste de ZIPs organizados com dependências
 // - Corrige cópia de JARs externos do cache do Gradle
+// - Inclui JARs do build + dependências do Gradle
 
 repositories {
     mavenCentral()
