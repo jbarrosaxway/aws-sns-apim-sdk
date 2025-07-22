@@ -6,6 +6,11 @@ group 'com.axway'
 version '1.0.1'
 sourceCompatibility = 1.8
 
+// Melhoria: Sistema de build otimizado para Docker
+// - Suporte aprimorado para ambiente containerizado
+// - Configuração automática de dependências Axway
+// - Build consistente entre ambientes
+
 repositories {
     mavenCentral()
 }
