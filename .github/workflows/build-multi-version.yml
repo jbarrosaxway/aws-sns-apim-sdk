@@ -265,16 +265,16 @@ jobs:
             echo "✅ Pasta gradle copiada: gradle/"
           fi
           
-          # Copiar recursos do Policy Studio (fed e yaml)
+          # Copiar recursos do Policy Studio (fed e yaml) - manter estrutura original
           if [ -d "src/main/resources/fed" ]; then
-            mkdir -p "$ZIP_DIR/resources/fed"
-            cp -r src/main/resources/fed/* "$ZIP_DIR/resources/fed/"
+            mkdir -p "$ZIP_DIR/src/main/resources/fed"
+            cp -r src/main/resources/fed/* "$ZIP_DIR/src/main/resources/fed/"
             echo "✅ Recursos FED copiados: src/main/resources/fed/"
           fi
           
           if [ -d "src/main/resources/yaml" ]; then
-            mkdir -p "$ZIP_DIR/resources/yaml"
-            cp -r src/main/resources/yaml/* "$ZIP_DIR/resources/yaml/"
+            mkdir -p "$ZIP_DIR/src/main/resources/yaml"
+            cp -r src/main/resources/yaml/* "$ZIP_DIR/src/main/resources/yaml/"
             echo "✅ Recursos YAML copiados: src/main/resources/yaml/"
           fi
           
@@ -354,8 +354,8 @@ jobs:
           echo "" >> "$ZIP_DIR/README.md"
           echo "- aws-lambda-apim-sdk-*.jar - SDK principal (versão original do build)" >> "$ZIP_DIR/README.md"
           echo "- dependencies/ - Dependências externas do Gradle" >> "$ZIP_DIR/README.md"
-          echo "- resources/fed/ - Recursos FED do Policy Studio" >> "$ZIP_DIR/README.md"
-          echo "- resources/yaml/ - Recursos YAML do Policy Studio" >> "$ZIP_DIR/README.md"
+          echo "- src/main/resources/fed/ - Recursos FED do Policy Studio" >> "$ZIP_DIR/README.md"
+          echo "- src/main/resources/yaml/ - Recursos YAML do Policy Studio" >> "$ZIP_DIR/README.md"
           echo "- install-linux.sh - Script de instalação para Linux" >> "$ZIP_DIR/README.md"
           echo "- gradlew / gradlew.bat - Gradle Wrapper para builds" >> "$ZIP_DIR/README.md"
           echo "- gradle/ - Pasta do Gradle Wrapper (necessária para executar tarefas)" >> "$ZIP_DIR/README.md"
