@@ -292,7 +292,6 @@ jobs:
           echo "" >> "$ZIP_DIR/README.md"
           echo "## Arquivos incluídos" >> "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
-          echo "- aws-lambda-apim-sdk-$VERSION.jar - SDK principal (renomeado)" >> "$ZIP_DIR/README.md"
           echo "- aws-lambda-apim-sdk-*.jar - SDK principal (versão original do build)" >> "$ZIP_DIR/README.md"
           echo "- dependencies/ - Dependências externas do Gradle" >> "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
