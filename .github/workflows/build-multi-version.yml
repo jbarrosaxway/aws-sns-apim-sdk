@@ -51,28 +51,19 @@ jobs:
         
     - name: Build for each version
       run: |
-        # Determinar nova versão baseada no tipo de commit
-        CURRENT_VERSION=$(grep -o 'version = "[^"]*"' build.gradle | cut -d'"' -f2)
-        echo "📋 Versão atual: $CURRENT_VERSION"
+        # Usar script de versionamento semântico
+        echo "🔍 Executando versionamento semântico..."
+        chmod +x scripts/version-bump.sh
+        ./scripts/version-bump.sh
         
-        # Incrementar versão baseada no tipo de commit
-        if [[ "${{ github.event.head_commit.message }}" == *"BREAKING CHANGE"* ]] || [[ "${{ github.event.head_commit.message }}" == *"!:"* ]]; then
-          # MAJOR version
-          NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1+1 ".0.0"}')
-          echo "🚨 Incrementando MAJOR version: $CURRENT_VERSION -> $NEW_VERSION"
-        elif [[ "${{ github.event.head_commit.message }}" == *"feat:"* ]]; then
-          # MINOR version
-          NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1 "." $2+1 ".0"}')
-          echo "✨ Incrementando MINOR version: $CURRENT_VERSION -> $NEW_VERSION"
+        # Ler versão atualizada do arquivo .version_info
+        if [ -f ".version_info" ]; then
+          source .version_info
+          echo "📋 Versão calculada: $NEW_VERSION ($VERSION_TYPE)"
         else
-          # PATCH version
-          NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1 "." $2 "." $3+1}')
-          echo "🔧 Incrementando PATCH version: $CURRENT_VERSION -> $NEW_VERSION"
+          echo "⚠️  Arquivo .version_info não encontrado, usando versão atual"
+          NEW_VERSION=$(grep -o 'version = "[^"]*"' build.gradle | cut -d'"' -f2)
         fi
-        
-        # Atualizar build.gradle com nova versão
-        sed -i "s/version = \"$CURRENT_VERSION\"/version = \"$NEW_VERSION\"/" build.gradle
-        echo "✅ Versão atualizada no build.gradle: $NEW_VERSION"
         
         VERSIONS="${{ steps.versions.outputs.versions }}"
         
@@ -208,30 +199,39 @@ jobs:
           # Procurar JARs externos no cache do Gradle
           GRADLE_CACHE_DIR="$HOME/.gradle/caches/modules-2/files-2.1"
           
-          # Copiar AWS SDK Lambda (dependência externa)
+          # Copiar AWS SDK Lambda (dependência externa específica)
           if [ -d "$GRADLE_CACHE_DIR" ]; then
             echo "🔍 Procurando AWS SDK Lambda no cache do Gradle..."
             
-            # Procurar por aws-java-sdk-lambda
+            # Procurar especificamente por aws-java-sdk-lambda
             LAMBDA_JARS=$(find "$GRADLE_CACHE_DIR" -name "*aws-java-sdk-lambda*" -type f 2>/dev/null)
             if [ -n "$LAMBDA_JARS" ]; then
               for JAR in $LAMBDA_JARS; do
                 cp "$JAR" "$ZIP_DIR/dependencies/"
-                echo "✅ Copiado: $(basename "$JAR")"
+                echo "✅ Copiado AWS SDK Lambda: $(basename "$JAR")"
               done
             else
               echo "⚠️  AWS SDK Lambda não encontrado no cache do Gradle"
             fi
             
-            # Procurar por aws-java-sdk-core
+            # Procurar por aws-java-sdk-core (dependência do Lambda)
             CORE_JARS=$(find "$GRADLE_CACHE_DIR" -name "*aws-java-sdk-core*" -type f 2>/dev/null)
             if [ -n "$CORE_JARS" ]; then
               for JAR in $CORE_JARS; do
                 cp "$JAR" "$ZIP_DIR/dependencies/"
-                echo "✅ Copiado: $(basename "$JAR")"
+                echo "✅ Copiado AWS SDK Core: $(basename "$JAR")"
               done
             else
               echo "⚠️  AWS SDK Core não encontrado no cache do Gradle"
+            fi
+            
+            # Procurar por outros JARs AWS que podem ser necessários
+            AWS_JARS=$(find "$GRADLE_CACHE_DIR" -name "*aws-java-sdk-*" -type f 2>/dev/null | head -5)
+            if [ -n "$AWS_JARS" ]; then
+              for JAR in $AWS_JARS; do
+                cp "$JAR" "$ZIP_DIR/dependencies/"
+                echo "✅ Copiado AWS SDK: $(basename "$JAR")"
+              done
             fi
           else
             echo "⚠️  Cache do Gradle não encontrado"
