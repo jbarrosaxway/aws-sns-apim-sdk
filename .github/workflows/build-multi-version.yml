@@ -79,17 +79,21 @@ jobs:
             "$DOCKER_IMAGE" \
             gradle -Daxway.base="$BASE_PATH" clean build
           
-          # Verificar resultado
-          if [ -f "build/libs/aws-lambda-apim-sdk-*.jar" ]; then
-            echo "✅ JAR criado para $VERSION"
-            ls -la build/libs/aws-lambda-apim-sdk-*.jar
-            
-            # Renomear JAR com versão
-            mv build/libs/aws-lambda-apim-sdk-*.jar "build/libs/aws-lambda-apim-sdk-$VERSION.jar"
-          else
-            echo "❌ JAR não encontrado para $VERSION"
-            exit 1
-          fi
+                  # Verificar resultado
+        JAR_FILE=$(find build/libs -name "aws-lambda-apim-sdk-*.jar" | head -1)
+        if [ -n "$JAR_FILE" ]; then
+          echo "✅ JAR criado para $VERSION: $JAR_FILE"
+          ls -la "$JAR_FILE"
+          
+          # Renomear JAR com versão
+          mv "$JAR_FILE" "build/libs/aws-lambda-apim-sdk-$VERSION.jar"
+          echo "✅ JAR renomeado: aws-lambda-apim-sdk-$VERSION.jar"
+        else
+          echo "❌ JAR não encontrado para $VERSION"
+          echo "📁 Conteúdo de build/libs:"
+          ls -la build/libs/ || echo "Diretório build/libs não existe"
+          exit 1
+        fi
         done
         
     - name: Upload JARs as artifacts
