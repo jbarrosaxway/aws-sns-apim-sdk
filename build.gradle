@@ -29,6 +29,7 @@ sourceCompatibility = 1.8
 // - Inclui JARs do build + dependências do Gradle
 // - Corrige semantic versioning na tag da release
 // - Corrige ordem de definição do semantic version
+// - Corrige duplicação de JARs e cópia de dependências
 
 repositories {
     mavenCentral()
