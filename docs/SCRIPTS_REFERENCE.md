@@ -24,11 +24,7 @@ Este documento lista todos os scripts essenciais mantidos no projeto e suas fun�
 - **Comando:** `./scripts/build-with-docker-image.sh`
 - **Saída:** JAR em `build/libs/aws-lambda-apim-sdk-*.jar`
 
-#### `scripts/test-published-image.sh`
-- **Função:** Testa a imagem Docker publicada
-- **Uso:** Manual (validação)
-- **Comando:** `./scripts/test-published-image.sh`
-- **Saída:** Relatório de testes da imagem
+
 
 ### 📁 **Scripts por Plataforma**
 
@@ -66,19 +62,7 @@ Este documento lista todos os scripts essenciais mantidos no projeto e suas fun�
 - **Comando:** `.\scripts\windows\test-internationalization.ps1`
 - **Saída:** Relatório de testes de internacionalização
 
-#### **Docker** (`scripts/docker/`)
 
-##### `scripts/docker/build-image.sh`
-- **Função:** Build da imagem Docker
-- **Uso:** Manual (desenvolvimento)
-- **Comando:** `./scripts/docker/build-image.sh`
-- **Saída:** Imagem Docker `axwayjbarros/aws-lambda-apim-sdk:latest`
-
-##### `scripts/docker/build-with-docker.sh`
-- **Função:** Build do projeto usando Docker
-- **Uso:** Manual (desenvolvimento)
-- **Comando:** `./scripts/docker/build-with-docker.sh`
-- **Saída:** JAR buildado usando Docker
 
 ## Estrutura Final
 
@@ -87,18 +71,14 @@ scripts/
 ├── 🔧 Scripts Principais
 │   ├── check-release-needed.sh          # Análise de release
 │   ├── version-bump.sh                  # Versionamento semântico
-│   ├── build-with-docker-image.sh       # Build com Docker
-│   └── test-published-image.sh          # Teste da imagem
+│   └── build-with-docker-image.sh       # Build com Docker
 ├── 📁 linux/
 │   └── install-filter.sh                # Instalação Linux
-├── 📁 windows/
-│   ├── install-filter-windows.ps1       # Instalação PowerShell
-│   ├── install-filter-windows.cmd       # Instalação CMD
-│   ├── configurar-projeto-windows.ps1   # Configuração projeto
-│   └── test-internationalization.ps1    # Teste internacionalização
-└── 📁 docker/
-    ├── build-image.sh                   # Build da imagem
-    └── build-with-docker.sh             # Build com Docker
+└── 📁 windows/
+    ├── install-filter-windows.ps1       # Instalação PowerShell
+    ├── install-filter-windows.cmd       # Instalação CMD
+    ├── configurar-projeto-windows.ps1   # Configuração projeto
+    └── test-internationalization.ps1    # Teste internacionalização
 ```
 
 ## Scripts Removidos

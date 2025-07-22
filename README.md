@@ -104,7 +104,7 @@ docker run --rm \
 
 ```bash
 # Testar a imagem publicada
-./scripts/test-published-image.sh
+
 
 # Ou manualmente:
 docker pull axwayjbarros/aws-lambda-apim-sdk:1.0.0

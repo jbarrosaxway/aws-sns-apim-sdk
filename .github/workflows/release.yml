@@ -82,16 +82,6 @@ jobs:
           
           Download the JAR file from the assets below and follow the installation guide in the README.
           
-          ### Docker Installation
-          
-          ```bash
-          # Pull the Docker image
-          docker pull axwayjbarros/aws-lambda-apim-sdk:1.0.0
-          
-          # Run with docker-compose
-          docker-compose up -d
-          ```
-          
           ## Usage
           
           This JAR contains the AWS Lambda integration for Axway API Gateway. 

@@ -56,32 +56,20 @@ jobs:
           echo "release_needed=false" >> $GITHUB_OUTPUT
         fi
         
-    - name: Build JAR using published image
+    - name: Build JAR
       run: |
-        # Executar build do JAR usando a imagem publicada
-        docker run --rm \
-          -v "$(pwd):/workspace" \
-          -v "$(pwd)/build:/workspace/build" \
-          -v "$(pwd)/.gradle:/workspace/.gradle" \
-          -w /workspace \
-          axwayjbarros/aws-lambda-apim-sdk:1.0.0 \
-          bash -c "
-            echo '🔧 Configurando ambiente...'
-            export JAVA_HOME=/opt/java/openjdk-11
-            export PATH=\$JAVA_HOME/bin:\$PATH
-            
-            echo '📦 Verificando Java...'
-            java -version
-            
-            echo '📦 Verificando Gradle...'
-            gradle --version || echo 'Gradle não encontrado, instalando...'
-            
-            echo '🔨 Executando build...'
-            gradle -Daxway.base=/opt/Axway clean build
-            
-            echo '📋 Verificando resultado...'
-            ls -la build/libs/ || echo 'Diretório build/libs não encontrado'
-          "
+        echo '🔧 Configurando ambiente...'
+        echo '📦 Verificando Java...'
+        java -version
+        
+        echo '📦 Verificando Gradle...'
+        ./gradlew --version
+        
+        echo '🔨 Executando build...'
+        ./gradlew clean build
+        
+        echo '📋 Verificando resultado...'
+        ls -la build/libs/ || echo 'Diretório build/libs não encontrado'
         
     - name: Test JAR
       run: |
