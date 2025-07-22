@@ -1,4 +1,4 @@
-name: Build JAR
+  name: Build JAR
 
 on:
   push:
@@ -101,10 +101,10 @@ jobs:
         path: build/libs/aws-lambda-apim-sdk-*.jar
         retention-days: 30
         
-    - name: Create Tag and Release
+    - name: Create Release
       if: steps.release_check.outputs.release_needed == 'true' && github.event_name != 'pull_request' && contains(github.ref, 'master')
       run: |
-        echo "🚀 Criando tag e release automaticamente..."
+        echo "🚀 Criando release automaticamente..."
         
         # Configurar git com token
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
@@ -122,11 +122,65 @@ jobs:
         # Criar tag
         git tag "v$NEW_VERSION"
         
-        # Push da tag (isso acionará o workflow de release)
+        # Push da tag
         git push origin "v$NEW_VERSION"
         
         echo "✅ Tag v$NEW_VERSION criada e enviada!"
-        echo "🔄 Workflow de release será acionado automaticamente"
+        
+    - name: Generate changelog
+      if: steps.release_check.outputs.release_needed == 'true' && github.event_name != 'pull_request' && contains(github.ref, 'master')
+      id: changelog
+      run: |
+        source .release_check
+        NEW_VERSION="$NEW_VERSION"
+        
+        echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+        git log --oneline $(git describe --tags --abbrev=0 HEAD^)..HEAD >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        
+    - name: Create GitHub Release
+      if: steps.release_check.outputs.release_needed == 'true' && github.event_name != 'pull_request' && contains(github.ref, 'master')
+      uses: actions/create-release@v1
+      id: create_release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.release_check.outputs.new_version }}
+        release_name: Release v${{ steps.release_check.outputs.new_version }}
+        body: |
+          ## Changes in this Release
+          
+          ${{ steps.changelog.outputs.CHANGELOG }}
+          
+          ## Build Information
+          
+          This release was built using the Docker image `axwayjbarros/aws-lambda-apim-sdk:1.0.0` which contains:
+          - Axway API Gateway 7.7.0.20240830
+          - Java 11 OpenJDK
+          - AWS SDK for Java 1.12.314
+          - All necessary dependencies for building the filter
+          
+          ## Installation
+          
+          Download the JAR file from the assets below and follow the installation guide in the README.
+          
+          ## Usage
+          
+          This JAR contains the AWS Lambda integration for Axway API Gateway. 
+          Follow the installation guide in the README for setup instructions.
+        draft: false
+        prerelease: false
+        
+    - name: Upload JAR to Release
+      if: steps.release_check.outputs.release_needed == 'true' && github.event_name != 'pull_request' && contains(github.ref, 'master')
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./build/libs/aws-lambda-apim-sdk-*.jar
+        asset_name: aws-lambda-apim-sdk-v${{ steps.release_check.outputs.new_version }}.jar
+        asset_content_type: application/java-archive
         
     - name: Comment on PR
       if: github.event_name == 'pull_request'
