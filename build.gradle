@@ -25,6 +25,7 @@ sourceCompatibility = 1.8
 // - GH_TOKEN adicionado para autenticação do GitHub CLI
 // - Simulação de release para teste do sistema completo
 // - Teste de ZIPs organizados com dependências
+// - Corrige cópia de JARs externos do cache do Gradle
 
 repositories {
     mavenCentral()

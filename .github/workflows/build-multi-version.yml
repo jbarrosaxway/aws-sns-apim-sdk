@@ -183,10 +183,17 @@ jobs:
           ZIP_DIR="aws-lambda-apim-sdk-${RELEASE_VERSION}-${VERSION}-${RELEASE_DATE}"
           mkdir -p "$ZIP_DIR"
           
-          # Copiar JAR principal
+          # Copiar JAR principal (build)
           if [ -f "aws-lambda-apim-sdk-$VERSION.jar" ]; then
             cp "aws-lambda-apim-sdk-$VERSION.jar" "$ZIP_DIR/"
             echo "✅ JAR principal copiado: aws-lambda-apim-sdk-$VERSION.jar"
+          fi
+          
+          # Copiar JAR do build/libs (versão compilada)
+          BUILD_JAR=$(find build/libs -name "aws-lambda-apim-sdk-*.jar" | head -1)
+          if [ -n "$BUILD_JAR" ]; then
+            cp "$BUILD_JAR" "$ZIP_DIR/"
+            echo "✅ JAR do build copiado: $(basename "$BUILD_JAR")"
           fi
           
           # Copiar dependências externas (JARs que o Gradle baixou)
@@ -248,8 +255,9 @@ jobs:
           echo "" >> "$ZIP_DIR/README.md"
           echo "## Arquivos incluídos" >> "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
-          echo "- aws-lambda-apim-sdk-$VERSION.jar - SDK principal" >> "$ZIP_DIR/README.md"
-          echo "- dependencies/ - Dependências externas (se aplicável)" >> "$ZIP_DIR/README.md"
+          echo "- aws-lambda-apim-sdk-$VERSION.jar - SDK principal (renomeado)" >> "$ZIP_DIR/README.md"
+          echo "- aws-lambda-apim-sdk-*.jar - SDK principal (versão original do build)" >> "$ZIP_DIR/README.md"
+          echo "- dependencies/ - Dependências externas do Gradle" >> "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
           echo "## Compatibilidade" >> "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
