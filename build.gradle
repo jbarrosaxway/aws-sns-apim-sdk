@@ -30,6 +30,7 @@ sourceCompatibility = 1.8
 // - Corrige semantic versioning na tag da release
 // - Corrige ordem de definição do semantic version
 // - Corrige duplicação de JARs e cópia de dependências
+// - Restaura versionamento semântico com script correto
 
 repositories {
     mavenCentral()
