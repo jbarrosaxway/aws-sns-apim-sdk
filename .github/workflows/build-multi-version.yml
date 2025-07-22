@@ -234,6 +234,28 @@ jobs:
             echo "✅ JAR do build copiado: $(basename "$BUILD_JAR")"
           fi
           
+          # Copiar scripts de instalação
+          if [ -f "scripts/install-windows.bat" ]; then
+            cp scripts/install-windows.bat "$ZIP_DIR/"
+            echo "✅ Script Windows copiado: install-windows.bat"
+          fi
+          
+          if [ -f "scripts/install-linux.sh" ]; then
+            cp scripts/install-linux.sh "$ZIP_DIR/"
+            echo "✅ Script Linux copiado: install-linux.sh"
+          fi
+          
+          # Copiar gradlew se existir
+          if [ -f "gradlew" ]; then
+            cp gradlew "$ZIP_DIR/"
+            echo "✅ Gradlew copiado: gradlew"
+          fi
+          
+          if [ -f "gradlew.bat" ]; then
+            cp gradlew.bat "$ZIP_DIR/"
+            echo "✅ Gradlew Windows copiado: gradlew.bat"
+          fi
+          
           # Copiar dependências externas (criadas pela tarefa do Gradle)
           echo "📋 Copiando dependências externas criadas pelo Gradle..."
           mkdir -p "$ZIP_DIR/dependencies"
@@ -286,14 +308,28 @@ jobs:
           echo "" >> "$ZIP_DIR/README.md"
           echo "## Instalação" >> "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
-          echo "1. Copie o JAR principal para sua instalação do Axway" >> "$ZIP_DIR/README.md"
+          echo "### Instalação Automática" >> "$ZIP_DIR/README.md"
+          echo "" >> "$ZIP_DIR/README.md"
+          echo "**Windows:**" >> "$ZIP_DIR/README.md"
+          echo "1. Defina a variável AXWAY_HOME (ex: C:\\Axway\\API_Gateway\\7.7.0.20240830)" >> "$ZIP_DIR/README.md"
+          echo "2. Execute: install-windows.bat" >> "$ZIP_DIR/README.md"
+          echo "" >> "$ZIP_DIR/README.md"
+          echo "**Linux:**" >> "$ZIP_DIR/README.md"
+          echo "1. Defina a variável AXWAY_HOME (ex: /opt/Axway/API_Gateway/7.7.0.20240830)" >> "$ZIP_DIR/README.md"
+          echo "2. Execute: ./install-linux.sh" >> "$ZIP_DIR/README.md"
+          echo "" >> "$ZIP_DIR/README.md"
+          echo "### Instalação Manual" >> "$ZIP_DIR/README.md"
+          echo "1. Copie o JAR principal para \$AXWAY_HOME/ext/lib/" >> "$ZIP_DIR/README.md"
           echo "2. Copie as dependências (pasta dependencies/) se necessário" >> "$ZIP_DIR/README.md"
-          echo "3. Reinicie o serviço do Axway" >> "$ZIP_DIR/README.md"
+          echo "3. Reinicie o Policy Studio e API Gateway" >> "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
           echo "## Arquivos incluídos" >> "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
           echo "- aws-lambda-apim-sdk-*.jar - SDK principal (versão original do build)" >> "$ZIP_DIR/README.md"
           echo "- dependencies/ - Dependências externas do Gradle" >> "$ZIP_DIR/README.md"
+          echo "- install-windows.bat - Script de instalação para Windows" >> "$ZIP_DIR/README.md"
+          echo "- install-linux.sh - Script de instalação para Linux" >> "$ZIP_DIR/README.md"
+          echo "- gradlew / gradlew.bat - Gradle Wrapper para builds" >> "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
           echo "## Compatibilidade" >> "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
