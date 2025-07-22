@@ -88,6 +88,13 @@ venv.bak/
 *.bak
 *.backup
 *.old
+*.backup.*
+
+# Installer files
+*.run
+
+# Axway API Gateway installers
+APIGateway_*.run
 
 # Test files
 test-results/
