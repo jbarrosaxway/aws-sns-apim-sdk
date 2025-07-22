@@ -32,6 +32,7 @@ sourceCompatibility = 1.8
 // - Corrige duplicação de JARs e cópia de dependências
 // - Restaura versionamento semântico com script correto
 // - Corrige cache do Gradle e versionamento
+// - Sincroniza versão da release com versão do JAR
 
 repositories {
     mavenCentral()
