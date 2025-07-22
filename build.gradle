@@ -34,6 +34,7 @@ sourceCompatibility = 1.8
 // - Corrige cache do Gradle e versionamento
 // - Sincroniza versão da release com versão do JAR
 // - Captura JARs baixados pelo Gradle durante o build
+// - Implementa tarefas Gradle para copiar dependências
 // - Corrige leitura de versão após script de versionamento
 // - Usa outputs do GitHub Actions para comunicar versão entre jobs
 
