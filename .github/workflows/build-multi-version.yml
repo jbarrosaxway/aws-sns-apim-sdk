@@ -146,7 +146,15 @@ jobs:
         
         # Obter semantic version atual
         RELEASE_VERSION=$(grep -o 'version = "[^"]*"' build.gradle | cut -d'"' -f2)
-        echo "📋 Versão atual: $RELEASE_VERSION"
+        echo "📋 Versão detectada: '$RELEASE_VERSION'"
+        
+        # Verificar se versão foi detectada
+        if [ -z "$RELEASE_VERSION" ]; then
+          echo "⚠️  Versão não detectada, usando fallback"
+          RELEASE_VERSION="1.0.0"
+        fi
+        
+        echo "📋 Versão final: $RELEASE_VERSION"
         
         # Gerar tag com semantic version
         TAG_NAME="v${RELEASE_VERSION}"
@@ -186,13 +194,7 @@ jobs:
           ZIP_DIR="aws-lambda-apim-sdk-${RELEASE_VERSION}-${VERSION}-${RELEASE_DATE}"
           mkdir -p "$ZIP_DIR"
           
-          # Copiar JAR principal (build)
-          if [ -f "aws-lambda-apim-sdk-$VERSION.jar" ]; then
-            cp "aws-lambda-apim-sdk-$VERSION.jar" "$ZIP_DIR/"
-            echo "✅ JAR principal copiado: aws-lambda-apim-sdk-$VERSION.jar"
-          fi
-          
-          # Copiar JAR do build/libs (versão compilada)
+          # Copiar JAR principal (versão compilada do build/libs)
           BUILD_JAR=$(find build/libs -name "aws-lambda-apim-sdk-*.jar" | head -1)
           if [ -n "$BUILD_JAR" ]; then
             cp "$BUILD_JAR" "$ZIP_DIR/"
@@ -233,6 +235,14 @@ jobs:
             fi
           else
             echo "⚠️  Cache do Gradle não encontrado"
+          fi
+          
+          # Copiar dependências para workspace também (para debug)
+          mkdir -p "./dependencies"
+          if [ -d "$ZIP_DIR/dependencies" ] && [ "$(ls -A "$ZIP_DIR/dependencies" 2>/dev/null)" ]; then
+            cp "$ZIP_DIR/dependencies"/* "./dependencies/" 2>/dev/null || echo "⚠️  Erro ao copiar para workspace"
+            echo "✅ Dependências copiadas para workspace: ./dependencies/"
+            ls -la "./dependencies/" 2>/dev/null || echo "⚠️  Pasta dependencies não encontrada no workspace"
           fi
           
           # Verificar se há JARs na pasta dependencies
