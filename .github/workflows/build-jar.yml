@@ -2,13 +2,13 @@ name: Build JAR
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ master, main, develop ]
     paths:
       - 'src/**'
       - 'build.gradle'
       - 'gradle/**'
   pull_request:
-    branches: [ master, main ]
+    branches: [ master, main, develop ]
   workflow_dispatch:  # Execução manual
 
 jobs:
