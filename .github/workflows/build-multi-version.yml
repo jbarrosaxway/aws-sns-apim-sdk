@@ -66,6 +66,16 @@ jobs:
           RELEASE_VERSION=$(grep -o 'version = "[^"]*"' build.gradle | cut -d'"' -f2)
         fi
         
+        # Verificar se versão foi detectada corretamente
+        echo "📋 Versão lida do build.gradle: '$RELEASE_VERSION'"
+        if [ -z "$RELEASE_VERSION" ] || [ "$RELEASE_VERSION" = "" ]; then
+          echo "⚠️  Versão vazia detectada, tentando ler novamente..."
+          # Tentar ler novamente após um pequeno delay
+          sleep 2
+          RELEASE_VERSION=$(grep -o 'version = "[^"]*"' build.gradle | cut -d'"' -f2)
+          echo "📋 Versão após retry: '$RELEASE_VERSION'"
+        fi
+        
         VERSIONS="${{ steps.versions.outputs.versions }}"
         
         for VERSION in ${VERSIONS//,/ }; do
@@ -138,15 +148,22 @@ jobs:
         
         # Obter versão atualizada do build.gradle (após script de versionamento)
         RELEASE_VERSION=$(grep -o 'version = "[^"]*"' build.gradle | cut -d'"' -f2)
-        echo "📋 Versão detectada: '$RELEASE_VERSION'"
+        echo "📋 Versão detectada na release: '$RELEASE_VERSION'"
         
         # Verificar se versão foi detectada
+        if [ -z "$RELEASE_VERSION" ] || [ "$RELEASE_VERSION" = "" ]; then
+          echo "⚠️  Versão não detectada na release, tentando ler novamente..."
+          sleep 2
+          RELEASE_VERSION=$(grep -o 'version = "[^"]*"' build.gradle | cut -d'"' -f2)
+          echo "📋 Versão após retry na release: '$RELEASE_VERSION'"
+        fi
+        
         if [ -z "$RELEASE_VERSION" ]; then
-          echo "⚠️  Versão não detectada, usando fallback"
+          echo "⚠️  Versão ainda não detectada, usando fallback"
           RELEASE_VERSION="1.0.0"
         fi
         
-        echo "📋 Versão final: $RELEASE_VERSION"
+        echo "📋 Versão final da release: $RELEASE_VERSION"
         
         # Verificar se tag já existe
         if git tag -l "v$RELEASE_VERSION" | grep -q "v$RELEASE_VERSION"; then
