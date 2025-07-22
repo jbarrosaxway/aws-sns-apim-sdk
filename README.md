@@ -64,7 +64,7 @@ O projeto suporta **configuração dinâmica** do caminho do Axway API Gateway:
 ./gradlew installWindowsToProject
 ```
 
-> 📖 **Guia Completo Windows**: Veja [INSTALACAO_WINDOWS.md](INSTALACAO_WINDOWS.md) para instruções detalhadas.
+> 📖 **Guia Completo Windows**: Veja **[📋 Guia de Instalação Windows](docs/INSTALACAO_WINDOWS.md)** para instruções detalhadas.
 
 ### 🐳 **Docker**
 
@@ -157,7 +157,7 @@ O projeto usa a imagem para build automatizado:
 - **Release**: `.github/workflows/release.yml`
 - **Imagem**: `axwayjbarros/aws-lambda-apim-sdk:1.0.0`
 
-> 📖 **Guia Completo Docker**: Veja [DOCKER_GUIDE.md](DOCKER_GUIDE.md) para instruções detalhadas.
+> 📖 **Docker**: A documentação Docker está integrada nesta seção do README.
 
 ### ⚠️ **Importante: Build do JAR**
 
@@ -205,6 +205,37 @@ O **build do JAR deve ser feito no Linux** devido às dependências do Axway API
 # Apenas build
 ./gradlew clean build
 ```
+
+## 📚 Documentação
+
+Este projeto possui documentação completa organizada por tópicos:
+
+### 🚀 **Guias de Instalação**
+- **[📋 Guia de Instalação Windows](docs/INSTALACAO_WINDOWS.md)** - Instruções detalhadas para Windows
+- **[🔧 Configuração Dinâmica](docs/CONFIGURACAO_DINAMICA.md)** - Como configurar caminhos do Axway dinamicamente
+
+### 🔧 **Desenvolvimento e Build**
+- **[🏷️ Guia de Releases](docs/RELEASE_GUIDE.md)** - Como criar releases e versionamento
+- **[📊 Versionamento Semântico](docs/SEMANTIC_VERSIONING.md)** - Sistema automático de versionamento
+
+### 📝 **Documentação Técnica**
+- **[🔍 Atualizações de Campos](docs/ATUALIZACOES_CAMPOS_FILTRO.md)** - Histórico de mudanças nos campos do filtro
+- **[🔐 Melhorias de Autenticação AWS](docs/MELHORIAS_AUTENTICACAO_AWS.md)** - Configurações avançadas de autenticação
+- **[📖 Documentação Groovy](docs/AWS_LAMBDA_GROOVY_DOCUMENTATION.md)** - Guia completo para scripts Groovy
+
+### 📋 **Estrutura da Documentação**
+```
+docs/
+├── 📋 INSTALACAO_WINDOWS.md              # Instalação no Windows
+├── 🔧 CONFIGURACAO_DINAMICA.md           # Configuração dinâmica
+├── 🏷️ RELEASE_GUIDE.md                   # Guia de releases
+├── 📊 SEMANTIC_VERSIONING.md             # Versionamento semântico
+├── 🔍 ATUALIZACOES_CAMPOS_FILTRO.md     # Histórico de campos
+├── 🔐 MELHORIAS_AUTENTICACAO_AWS.md     # Autenticação AWS
+└── 📖 AWS_LAMBDA_GROOVY_DOCUMENTATION.md # Documentação Groovy
+```
+
+---
 
 ## Instalação Manual (Alternativa)
 
@@ -294,7 +325,7 @@ Configure IAM Roles para instâncias EC2 ou pods EKS.
 
 ### Script Groovy
 
-Para informações detalhadas sobre o script Groovy, incluindo configuração Kubernetes, troubleshooting e parâmetros específicos, consulte o arquivo `AWS_LAMBDA_GROOVY_DOCUMENTATION.md`.
+Para informações detalhadas sobre o script Groovy, incluindo configuração Kubernetes, troubleshooting e parâmetros específicos, consulte o arquivo **[📖 Documentação Groovy](docs/AWS_LAMBDA_GROOVY_DOCUMENTATION.md)**.
 
 **Uso básico:**
 1. **Copiar script:**
@@ -309,7 +340,14 @@ Para informações detalhadas sobre o script Groovy, incluindo configuração Ku
 ```
 aws-lambda-apim-sdk/
 ├── README.md                                # Documentação principal
-├── AWS_LAMBDA_GROOVY_DOCUMENTATION.md      # Guia específico Groovy
+├── docs/                                    # 📚 Documentação organizada
+│   ├── 📋 INSTALACAO_WINDOWS.md            # Instalação Windows
+│   ├── 🔧 CONFIGURACAO_DINAMICA.md         # Configuração dinâmica
+│   ├── 🏷️ RELEASE_GUIDE.md                 # Guia de releases
+│   ├── 📊 SEMANTIC_VERSIONING.md           # Versionamento semântico
+│   ├── 🔍 ATUALIZACOES_CAMPOS_FILTRO.md   # Histórico de campos
+│   ├── 🔐 MELHORIAS_AUTENTICACAO_AWS.md   # Autenticação AWS
+│   └── 📖 AWS_LAMBDA_GROOVY_DOCUMENTATION.md # Documentação Groovy
 ├── build.gradle                             # Configuração build + tasks
 ├── aws-lambda-filter.groovy                # Script Groovy
 ├── scripts/
