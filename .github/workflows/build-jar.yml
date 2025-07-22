@@ -56,17 +56,18 @@ jobs:
           echo "release_needed=false" >> $GITHUB_OUTPUT
         fi
         
-    - name: Build JAR
+    - name: Build JAR with Docker
       run: |
-        echo '🔧 Configurando ambiente...'
-        echo '📦 Verificando Java...'
-        java -version
+        echo '🐳 Executando build com Docker...'
+        echo '📦 Imagem: axwayjbarros/aws-lambda-apim-sdk:1.0.0'
+        echo '🔧 Parâmetro axway.base: /opt/Axway'
         
-        echo '📦 Verificando Gradle...'
-        ./gradlew --version
-        
-        echo '🔨 Executando build...'
-        ./gradlew clean build
+        # Executar build dentro do container Docker
+        docker run --rm \
+          -v "$(pwd):/workspace" \
+          -w /workspace \
+          axwayjbarros/aws-lambda-apim-sdk:1.0.0 \
+          gradle -Daxway.base=/opt/Axway clean build
         
         echo '📋 Verificando resultado...'
         ls -la build/libs/ || echo 'Diretório build/libs não encontrado'
@@ -177,7 +178,7 @@ jobs:
               
               📦 **JAR criado:** ${jarFile}
               📏 **Tamanho:** ${sizeInMB} MB
-              🔧 **Build com:** axwayjbarros/aws-lambda-apim-sdk:1.0.0${releaseInfo}
+              🐳 **Build com:** axwayjbarros/aws-lambda-apim-sdk:1.0.0${releaseInfo}
               
               O JAR está disponível como artifact para download.`
             });
