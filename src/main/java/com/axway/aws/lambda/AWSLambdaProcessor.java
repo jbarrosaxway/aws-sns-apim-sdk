@@ -152,7 +152,7 @@ public class AWSLambdaProcessor extends MessageProcessor {
 				
 			} catch (Exception e) {
 				lastException = e;
-				Trace.warning("Tentativa " + attempt + " falhou: " + e.getMessage());
+				Trace.error("Tentativa " + attempt + " falhou: " + e.getMessage());
 				
 				// Se não é a última tentativa, aguardar antes de tentar novamente
 				if (attempt < maxRetriesInt) {
