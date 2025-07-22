@@ -17,6 +17,7 @@ sourceCompatibility = 1.8
 // - Workflow YAML corrigido e funcionando
 // - Sistema robusto para lidar com tags existentes
 // - Action de release atualizada para versão moderna
+// - Sistema de detecção automática de versão AWS SDK implementado
 
 repositories {
     mavenCentral()
