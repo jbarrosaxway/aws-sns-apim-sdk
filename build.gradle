@@ -35,6 +35,7 @@ sourceCompatibility = 1.8
 // - Sincroniza versão da release com versão do JAR
 // - Captura JARs baixados pelo Gradle durante o build
 // - Corrige leitura de versão após script de versionamento
+// - Usa outputs do GitHub Actions para comunicar versão entre jobs
 
 repositories {
     mavenCentral()
