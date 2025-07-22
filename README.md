@@ -2,6 +2,39 @@
 
 Este projeto oferece integração com AWS Lambda através de filtros customizados para o Axway API Gateway, suportando tanto filtros Java quanto scripts Groovy.
 
+## 🚀 Guia Rápido
+
+### Instalação a partir do Release GitHub
+
+1. **Baixar o ZIP da release mais recente**
+2. **Extrair e copiar os arquivos:**
+   ```bash
+   # Copiar JAR principal
+   cp aws-lambda-apim-sdk-*.jar /opt/Axway/apigateway/groups/group-2/instance-1/ext/lib/
+   
+   # Copiar dependência AWS SDK
+   cp dependencies/external-aws-java-sdk-lambda-*.jar /opt/Axway/apigateway/groups/group-2/instance-1/ext/lib/
+   ```
+
+3. **Reiniciar o gateway:**
+   ```bash
+   apigateway stop
+   apigateway start
+   ```
+
+4. **Adicionar ao Policy Studio:**
+   - Abra o Policy Studio
+   - Vá em **Window > Preferences > Runtime Dependencies**
+   - Adicione os JARs ao classpath
+   - Reinicie o Policy Studio com `-clean`
+
+5. **Usar o filtro:**
+   - Procure por **"AWS Lambda Filter"** na paleta
+   - Configure os parâmetros necessários
+   - Teste a integração
+
+---
+
 ## API Management Version Compatibility
 
 Este artefato foi testado com sucesso nas seguintes versões:
