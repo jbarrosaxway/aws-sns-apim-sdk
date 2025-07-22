@@ -259,6 +259,12 @@ jobs:
             echo "✅ Build.gradle copiado: build.gradle"
           fi
           
+          # Copiar pasta gradle (necessária para o Gradle Wrapper)
+          if [ -d "gradle" ]; then
+            cp -r gradle "$ZIP_DIR/"
+            echo "✅ Pasta gradle copiada: gradle/"
+          fi
+          
           # Copiar recursos do Policy Studio (fed e yaml)
           if [ -d "src/main/resources/fed" ]; then
             mkdir -p "$ZIP_DIR/resources/fed"
@@ -352,6 +358,7 @@ jobs:
           echo "- resources/yaml/ - Recursos YAML do Policy Studio" >> "$ZIP_DIR/README.md"
           echo "- install-linux.sh - Script de instalação para Linux" >> "$ZIP_DIR/README.md"
           echo "- gradlew / gradlew.bat - Gradle Wrapper para builds" >> "$ZIP_DIR/README.md"
+          echo "- gradle/ - Pasta do Gradle Wrapper (necessária para executar tarefas)" >> "$ZIP_DIR/README.md"
           echo "- build.gradle - Configuração do Gradle (inclui tarefas installWindows e installWindowsToProject)" >> "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
           echo "## Compatibilidade" >> "$ZIP_DIR/README.md"
