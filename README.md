@@ -23,6 +23,43 @@ O projeto oferece duas abordagens para integração com AWS Lambda:
 - Configuração dinâmica
 - Debugging detalhado
 
+## 📦 Releases do GitHub
+
+### **Downloads Automáticos**
+
+Os releases são criados automaticamente no GitHub e incluem:
+
+#### **Arquivos Disponíveis em Cada Release:**
+- **JAR Principal** - `aws-lambda-apim-sdk-*.jar` (compilado para múltiplas versões do Axway)
+- **Dependências Externas** - pasta `dependencies/` com JARs AWS SDK
+- **Recursos Policy Studio** - `src/main/resources/fed/` e `src/main/resources/yaml/`
+- **Gradle Wrapper** - `gradlew`, `gradlew.bat` e pasta `gradle/`
+- **Configuração Gradle** - `build.gradle` com tarefas de instalação
+- **Script Linux** - `install-linux.sh` para instalação automática
+
+#### **Instalação a partir do Release:**
+
+**Windows (Recomendado):**
+```bash
+# Extraia o ZIP do release
+# Navegue até a pasta extraída
+# Execute a tarefa Gradle:
+.\gradlew "-Dproject.path=C:\Users\jbarros\apiprojects\DIGIO-POC-AKS-NEW" installWindowsToProject
+```
+
+**Linux:**
+```bash
+# Extraia o ZIP do release
+# Execute o script de instalação:
+./install-linux.sh
+```
+
+### **Versões Suportadas:**
+- **Axway API Gateway 7.7.0.20240830** ✅
+- **Axway API Gateway 7.7.0.20250230** ✅
+
+---
+
 ## Build e Instalação
 
 ### 🔧 Configuração Dinâmica
