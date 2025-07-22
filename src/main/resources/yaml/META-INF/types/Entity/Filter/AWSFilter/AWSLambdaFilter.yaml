@@ -17,15 +17,19 @@ fields:
     type: string
     defaultValues:
     - data: RequestResponse
-    - data: Event
-    - data: DryRun
     cardinality: 1
+    enum:
+      - RequestResponse
+      - Event
+      - DryRun
   logType:
     type: string
     defaultValues:
     - data: None
-    - data: Tail
     cardinality: 1
+    enum:
+      - None
+      - Tail
   qualifier:
     type: string
     defaultValues:

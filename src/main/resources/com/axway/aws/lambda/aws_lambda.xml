@@ -14,17 +14,14 @@
 			
 			<!-- Invocation Configuration -->
 			<ComboAttribute field="invocationType" label="AWS_LAMBDA_INVOCATION_TYPE_LABEL"
-				displayName="AWS_LAMBDA_INVOCATION_TYPE_NAME" description="AWS_LAMBDA_INVOCATION_TYPE_DESCRIPTION">
-				<option value="RequestResponse">RequestResponse</option>
-				<option value="Event">Event</option>
-				<option value="DryRun">DryRun</option>
-			</ComboAttribute>
+				displayName="AWS_LAMBDA_INVOCATION_TYPE_NAME" description="AWS_LAMBDA_INVOCATION_TYPE_DESCRIPTION"
+				contentSource="com.axway.aws.lambda.AWSInvocationType.getValues"
+				includeBlank="false" required="true" stretch="true" />
 			
 			<ComboAttribute field="logType" label="AWS_LAMBDA_LOG_TYPE_LABEL"
-				displayName="AWS_LAMBDA_LOG_TYPE_NAME" description="AWS_LAMBDA_LOG_TYPE_DESCRIPTION">
-				<option value="None">None</option>
-				<option value="Tail">Tail</option>
-			</ComboAttribute>
+				displayName="AWS_LAMBDA_LOG_TYPE_NAME" description="AWS_LAMBDA_LOG_TYPE_DESCRIPTION"
+				contentSource="com.axway.aws.lambda.AWSLogType.getValues"
+				includeBlank="false" required="true" stretch="true" />
 			
 			<!-- Advanced Configuration -->
 			<TextAttribute field="qualifier" label="AWS_LAMBDA_QUALIFIER_LABEL"

@@ -68,79 +68,94 @@ O projeto suporta **configuração dinâmica** do caminho do Axway API Gateway:
 
 ### 🐳 **Docker**
 
-#### **Imagem Docker para Build e Desenvolvimento**
+#### **Imagem Docker Publicada**
 
-Este projeto inclui suporte para Docker usando a imagem oficial do Axway API Gateway. A imagem é **apenas para build e desenvolvimento**, não para execução do gateway:
+Este projeto usa a imagem Docker publicada `axwayjbarros/aws-lambda-apim-sdk:1.0.0` que contém:
+- Axway API Gateway 7.7.0.20240830
+- Java 11 OpenJDK
+- AWS SDK for Java 1.12.314
+- Gradle para build
+- Todas as dependências necessárias
+
+#### **Build usando Docker**
 
 ```bash
-# Build da imagem
-./scripts/docker/build-image.sh
+# Build do JAR usando a imagem publicada
+./scripts/build-with-docker-image.sh
 
 # Ou manualmente:
-./gradlew buildJarLinux
-docker build -t aws-lambda-apim-sdk:latest .
-
-# Testar a imagem
-docker run --rm aws-lambda-apim-sdk:latest java -version
-docker run --rm aws-lambda-apim-sdk:latest ls -la /opt/aws-lambda-sdk/
+docker pull axwayjbarros/aws-lambda-apim-sdk:1.0.0
+docker run --rm \
+  -v "$(pwd):/workspace" \
+  -v "$(pwd)/build:/workspace/build" \
+  -w /workspace \
+  axwayjbarros/aws-lambda-apim-sdk:1.0.0 \
+  bash -c "
+    export JAVA_HOME=/opt/java/openjdk-11
+    export PATH=\$JAVA_HOME/bin:\$PATH
+    gradle clean build
+  "
+```
 ```
 
-> ⚠️ **Nota**: Esta imagem contém o SDK integrado ao Axway API Gateway e é destinada para desenvolvimento e build de projetos que dependem do SDK, não para execução do gateway em produção.
+> 💡 **Dica**: O GitHub Actions usa a imagem publicada `axwayjbarros/aws-lambda-apim-sdk:1.0.0`.
+
+#### **Testar Imagem Publicada**
+
+```bash
+# Testar a imagem publicada
+./scripts/test-published-image.sh
+
+# Ou manualmente:
+docker pull axwayjbarros/aws-lambda-apim-sdk:1.0.0
+docker run --rm axwayjbarros/aws-lambda-apim-sdk:1.0.0 java -version
+docker run --rm axwayjbarros/aws-lambda-apim-sdk:1.0.0 ls -la /opt/Axway/
+```
+
+> ⚠️ **Nota**: Esta imagem é **apenas para build**, não para execução de aplicação.
 
 #### **Estrutura de JARs na Imagem**
 
 A imagem inclui os seguintes JARs organizados:
 
 ```
-/opt/aws-lambda-sdk/
-└── aws-lambda-apim-sdk-*.jar          # Nosso SDK
-
-/opt/Axway/apigateway/groups/emt-group/emt-service/ext/lib/
-├── aws-lambda-apim-sdk-*.jar          # Nosso SDK (cópia)
+/opt/Axway/apigateway/lib/
 ├── aws-java-sdk-lambda-*.jar          # AWS Lambda SDK
 ├── aws-java-sdk-core-*.jar            # AWS Core SDK
 └── jackson-*.jar                      # Jackson JSON library
 ```
 
-#### **Configuração do Registry Privado**
+#### **Uso da Imagem para Build**
 
-Para usar a imagem oficial do Axway, configure as credenciais:
+A imagem `axwayjbarros/aws-lambda-apim-sdk:1.0.0` é usada **apenas para build**, não para execução. Ela contém todas as bibliotecas do Axway API Gateway necessárias para compilar o projeto:
 
-**GitHub Actions:**
-1. Vá para **Settings > Secrets and variables > Actions**
-2. Adicione os secrets:
-   - `AXWAY_REGISTRY_USERNAME`: seu usuário Axway
-   - `AXWAY_REGISTRY_PASSWORD`: sua senha Axway
-
-**Build Local:**
 ```bash
-# Login manual
-docker login docker.repository.axway.com
-
-# Ou usando variáveis de ambiente
-export AXWAY_USERNAME=seu_usuario
-export AXWAY_PASSWORD=sua_senha
-./scripts/docker/build-image.sh
+# Build usando a imagem (apenas bibliotecas)
+docker run --rm \
+  -v "$(pwd):/workspace" \
+  -v "$(pwd)/build:/workspace/build" \
+  -w /workspace \
+  axwayjbarros/aws-lambda-apim-sdk:1.0.0 \
+  bash -c "
+    export JAVA_HOME=/opt/java/openjdk-11
+    export PATH=\$JAVA_HOME/bin:\$PATH
+    gradle clean build
+  "
 ```
 
 #### **Especificações da Imagem:**
 - **Base**: Axway API Gateway 7.7.0.20240830-4-BN0145-ubi9
 - **Java**: OpenJDK 11.0.27
-- **SDK**: aws-lambda-apim-sdk integrado em `/opt/aws-lambda-sdk/`
-- **JARs**: Copiados para `/opt/Axway/apigateway/groups/emt-group/emt-service/ext/lib/`
-- **Uso**: Build e desenvolvimento de projetos que dependem do SDK
+- **Bibliotecas**: Todas as libs do Axway API Gateway disponíveis
+- **Uso**: Apenas para build do projeto, não para execução
 
-#### **Scripts de Debug:**
-```bash
-# Verificar JARs disponíveis na imagem base
-./scripts/docker/check-axway-jars.sh
+#### **GitHub Actions**
 
-# Build completo com Docker
-./scripts/docker/build-with-docker.sh
+O projeto usa a imagem para build automatizado:
 
-# Debug da imagem base
-./scripts/docker/debug-image.sh
-```
+- **Build Contínuo**: `.github/workflows/build-jar.yml`
+- **Release**: `.github/workflows/release.yml`
+- **Imagem**: `axwayjbarros/aws-lambda-apim-sdk:1.0.0`
 
 > 📖 **Guia Completo Docker**: Veja [DOCKER_GUIDE.md](DOCKER_GUIDE.md) para instruções detalhadas.
 

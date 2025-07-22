@@ -18,25 +18,43 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
       
-    - name: Login to Axway Registry
+    - name: Login to Docker Hub
       uses: docker/login-action@v3
       with:
-        registry: docker.repository.axway.com
-        username: ${{ secrets.AXWAY_REGISTRY_USERNAME }}
-        password: ${{ secrets.AXWAY_REGISTRY_PASSWORD }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
         
-    - name: Build Docker image for build
+    - name: Pull published Docker image
       run: |
-        # Build da imagem de build (com Axway + Gradle)
-        docker build -f Dockerfile.build -t aws-lambda-apim-sdk-build:latest .
+        # Pull da imagem publicada
+        docker pull axwayjbarros/aws-lambda-apim-sdk:1.0.0
         
-    - name: Build JAR using Docker
+    - name: Build JAR using published image
       run: |
-        # Executar build do JAR dentro do container
+        # Executar build do JAR usando a imagem publicada
         docker run --rm \
+          -v "$(pwd):/workspace" \
           -v "$(pwd)/build:/workspace/build" \
-          aws-lambda-apim-sdk-build:latest \
-          gradle buildJarLinux
+          -v "$(pwd)/.gradle:/workspace/.gradle" \
+          -w /workspace \
+          axwayjbarros/aws-lambda-apim-sdk:1.0.0 \
+          bash -c "
+            echo '🔧 Configurando ambiente...'
+            export JAVA_HOME=/opt/java/openjdk-11
+            export PATH=\$JAVA_HOME/bin:\$PATH
+            
+            echo '📦 Verificando Java...'
+            java -version
+            
+            echo '📦 Verificando Gradle...'
+            gradle --version || echo 'Gradle não encontrado, instalando...'
+            
+            echo '🔨 Executando build...'
+            gradle clean build
+            
+            echo '📋 Verificando resultado...'
+            ls -la build/libs/ || echo 'Diretório build/libs não encontrado'
+          "
           
     - name: Generate changelog
       id: changelog
@@ -58,9 +76,27 @@ jobs:
           
           ${{ steps.changelog.outputs.CHANGELOG }}
           
+          ## Build Information
+          
+          This release was built using the Docker image `axwayjbarros/aws-lambda-apim-sdk:1.0.0` which contains:
+          - Axway API Gateway 7.7.0.20240830
+          - Java 11 OpenJDK
+          - AWS SDK for Java 1.12.314
+          - All necessary dependencies for building the filter
+          
           ## Installation
           
           Download the JAR file from the assets below and follow the installation guide in the README.
+          
+          ### Docker Installation
+          
+          ```bash
+          # Pull the Docker image
+          docker pull axwayjbarros/aws-lambda-apim-sdk:1.0.0
+          
+          # Run with docker-compose
+          docker-compose up -d
+          ```
           
           ## Usage
           
@@ -82,8 +118,17 @@ jobs:
     - name: Test JAR
       run: |
         # Verificar se o JAR foi criado
-        ls -la build/libs/aws-lambda-apim-sdk-*.jar
+        echo "🔍 Verificando JAR criado..."
+        ls -la build/libs/aws-lambda-apim-sdk-*.jar || echo "❌ JAR não encontrado"
+        
         # Verificar conteúdo do JAR
-        jar -tf build/libs/aws-lambda-apim-sdk-*.jar | head -10
+        echo "📋 Conteúdo do JAR:"
+        jar -tf build/libs/aws-lambda-apim-sdk-*.jar | head -10 || echo "❌ Não foi possível verificar conteúdo"
+        
         # Verificar tamanho do JAR
-        du -h build/libs/aws-lambda-apim-sdk-*.jar 
+        echo "📏 Tamanho do JAR:"
+        du -h build/libs/aws-lambda-apim-sdk-*.jar || echo "❌ Não foi possível verificar tamanho"
+        
+        # Verificar se o JAR contém as classes principais
+        echo "🔍 Verificando classes principais..."
+        jar -tf build/libs/aws-lambda-apim-sdk-*.jar | grep -E "(AWSLambdaFilter|AWSLambdaProcessor)" || echo "❌ Classes principais não encontradas" 

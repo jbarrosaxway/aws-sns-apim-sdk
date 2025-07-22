@@ -73,6 +73,7 @@ public class AWSLambdaProcessor extends MessageProcessor {
 		Trace.info("=== Configuração Lambda (Java Filter) ===");
 		Trace.info("Função: " + functionName);
 		Trace.info("Região: " + (awsRegion != null ? awsRegion : "inferida"));
+		// tipos possíveis: RequestResponse, Event, DryRun
 		Trace.info("Tipo: " + invocationType);
 		Trace.info("Log Type: " + logType);
 		Trace.info("Max Retries: " + maxRetries);
