@@ -17,10 +17,7 @@ Este projeto oferece integração com AWS Lambda através de filtros customizado
    ```
 
 3. **Reiniciar o gateway:**
-   ```bash
-   apigateway stop
-   apigateway start
-   ```
+   - Use o método apropriado para sua instalação (serviço, script, etc.)
 
 4. **Adicionar ao Policy Studio:**
    - Abra o Policy Studio
