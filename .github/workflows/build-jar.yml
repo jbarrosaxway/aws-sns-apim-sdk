@@ -54,7 +54,7 @@ jobs:
             gradle --version || echo 'Gradle não encontrado, instalando...'
             
             echo '🔨 Executando build...'
-            gradle clean build
+            gradle -Daxway.base=/opt/Axway clean build
             
             echo '📋 Verificando resultado...'
             ls -la build/libs/ || echo 'Diretório build/libs não encontrado'
