@@ -187,6 +187,12 @@ jobs:
         if [ "$RELEASE_VERSION" != "$ORIGINAL_VERSION" ]; then
           sed -i "s/version = \"[^\"]*\"/version = \"$RELEASE_VERSION\"/" build.gradle
           echo "✅ build.gradle atualizado com versão: $RELEASE_VERSION"
+          
+          # Fazer commit da mudança de versão
+          git add build.gradle
+          git commit -m "chore: atualiza versão para $RELEASE_VERSION [skip ci]"
+          git push origin master
+          echo "✅ Commit da versão $RELEASE_VERSION enviado"
         fi
         
         echo "📋 Versão final: $RELEASE_VERSION (Tag: $TAG_NAME)"
