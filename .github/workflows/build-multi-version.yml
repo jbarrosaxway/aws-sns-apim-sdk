@@ -234,11 +234,8 @@ jobs:
             echo "✅ JAR do build copiado: $(basename "$BUILD_JAR")"
           fi
           
-          # Copiar scripts de instalação
-          if [ -f "scripts/install-windows.bat" ]; then
-            cp scripts/install-windows.bat "$ZIP_DIR/"
-            echo "✅ Script Windows copiado: install-windows.bat"
-          fi
+          # Copiar scripts de instalação (apenas Linux)
+          # Nota: install-windows.bat removido - usar tarefas Gradle no Windows
           
           if [ -f "scripts/install-linux.sh" ]; then
             cp scripts/install-linux.sh "$ZIP_DIR/"
@@ -329,10 +326,6 @@ jobs:
           echo "" >> "$ZIP_DIR/README.md"
           echo "### Instalação Automática" >> "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
-          echo "**Windows:**" >> "$ZIP_DIR/README.md"
-          echo "1. Defina a variável AXWAY_HOME (ex: C:\\Axway\\API_Gateway\\7.7.0.20240830)" >> "$ZIP_DIR/README.md"
-          echo "2. Execute: install-windows.bat" >> "$ZIP_DIR/README.md"
-          echo "" >> "$ZIP_DIR/README.md"
           echo "**Linux:**" >> "$ZIP_DIR/README.md"
           echo "1. Defina a variável AXWAY_HOME (ex: /opt/Axway/API_Gateway/7.7.0.20240830)" >> "$ZIP_DIR/README.md"
           echo "2. Execute: ./install-linux.sh" >> "$ZIP_DIR/README.md"
@@ -357,7 +350,6 @@ jobs:
           echo "- dependencies/ - Dependências externas do Gradle" >> "$ZIP_DIR/README.md"
           echo "- resources/fed/ - Recursos FED do Policy Studio" >> "$ZIP_DIR/README.md"
           echo "- resources/yaml/ - Recursos YAML do Policy Studio" >> "$ZIP_DIR/README.md"
-          echo "- install-windows.bat - Script de instalação para Windows" >> "$ZIP_DIR/README.md"
           echo "- install-linux.sh - Script de instalação para Linux" >> "$ZIP_DIR/README.md"
           echo "- gradlew / gradlew.bat - Gradle Wrapper para builds" >> "$ZIP_DIR/README.md"
           echo "- build.gradle - Configuração do Gradle (inclui tarefas installWindows e installWindowsToProject)" >> "$ZIP_DIR/README.md"
