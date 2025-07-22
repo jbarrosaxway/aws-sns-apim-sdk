@@ -45,57 +45,64 @@ sourceContent=$(cat test-new-content.yaml)
 if echo "$destContent" | grep -q "type: AWSLambdaFilter"; then
     echo "🔄 Filtro AWSLambdaFilter já existe. Substituindo..."
     
-    # Remover a seção existente do AWSLambdaFilter
     # Usar awk para processar linha por linha
     awk '
-    BEGIN { skipSection = 0; inAWSLambdaSection = 0; indentLevel = 0; }
+    BEGIN { 
+        skipSection = 0; 
+        inInternationalizationFilter = 0; 
+        foundAWSLambdaFilter = 0;
+        indentLevel = 0;
+        sectionIndent = 0;
+    }
     {
         line = $0
         trimmedLine = line
         gsub(/^[ \t]+/, "", trimmedLine)
         currentIndent = length(line) - length(trimmedLine)
         
-        # Detectar início da seção InternationalizationFilter que contém AWSLambdaFilter
+        # Detectar início de InternationalizationFilter
         if (trimmedLine == "type: InternationalizationFilter") {
-            # Verificar se a próxima seção contém AWSLambdaFilter
-            hasAWSLambdaFilter = 0
-            for (i = NR; i <= NR + 10 && i <= NF; i++) {
-                if (trimmedLine == "type: AWSLambdaFilter") {
-                    hasAWSLambdaFilter = 1
-                    break
-                }
-            }
-            
-            if (hasAWSLambdaFilter) {
-                skipSection = 1
-                inAWSLambdaSection = 1
-                indentLevel = currentIndent
-                print "   🔍 Encontrada seção InternationalizationFilter com AWSLambdaFilter" > "/dev/stderr"
-                next
-            }
+            inInternationalizationFilter = 1
+            sectionIndent = currentIndent
+            skipSection = 0
+            next
         }
         
-        # Detectar fim da seção
-        if (skipSection && inAWSLambdaSection) {
-            # Se encontrou um item no mesmo nível ou superior, é o fim da seção
-            if (currentIndent <= indentLevel && trimmedLine != "" && substr(trimmedLine, 1, 2) != "  ") {
-                skipSection = 0
-                inAWSLambdaSection = 0
-                print "   🔍 Fim da seção detectado: " trimmedLine > "/dev/stderr"
-                # Não adicionar esta linha, pois é o início da próxima seção
-                next
+        # Se estamos dentro de InternationalizationFilter, verificar se contém AWSLambdaFilter
+        if (inInternationalizationFilter && trimmedLine == "type: AWSLambdaFilter") {
+            if (foundAWSLambdaFilter) {
+                # Já encontramos uma seção AWSLambdaFilter, pular esta seção inteira
+                skipSection = 1
+                print "   ⏭️  Pulando seção duplicada AWSLambdaFilter" > "/dev/stderr"
             } else {
-                # Ainda dentro da seção InternationalizationFilter, pular
-                print "   ⏭️  Pulando linha: " trimmedLine > "/dev/stderr"
-                next
+                # Primeira ocorrência, manter
+                foundAWSLambdaFilter = 1
+                skipSection = 0
             }
+            next
+        }
+        
+        # Detectar fim da seção InternationalizationFilter
+        if (inInternationalizationFilter && currentIndent <= sectionIndent && trimmedLine ~ /^-/ && trimmedLine != "type: InternationalizationFilter") {
+            inInternationalizationFilter = 0
+            skipSection = 0
+            # Não adicionar esta linha, pois é o início da próxima seção
+            next
+        }
+        
+        # Se estamos pulando a seção, continuar até o fim
+        if (skipSection) {
+            print "   ⏭️  Pulando linha: " trimmedLine > "/dev/stderr"
+            next
         }
         
         print line
     }' test-internationalization.yaml > test-temp.yaml
     
+    # Substituir o arquivo
+    mv test-temp.yaml test-internationalization.yaml
+    
     # Adicionar o novo conteúdo
-    cat test-temp.yaml > test-internationalization.yaml
     echo "" >> test-internationalization.yaml
     cat test-new-content.yaml >> test-internationalization.yaml
     
@@ -106,7 +113,7 @@ echo "📄 Arquivo após substituição:"
 cat test-internationalization.yaml
 
 # Limpar arquivos de teste
-rm -f test-internationalization.yaml test-new-content.yaml test-temp.yaml
+rm -f test-internationalization.yaml test-new-content.yaml
 
 echo ""
 echo "🧹 Arquivos de teste removidos" 

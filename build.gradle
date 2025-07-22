@@ -147,53 +147,8 @@ def processInternationalizationFile(def sourceFile, def destFile) {
     if (destContent.contains("type: AWSLambdaFilter")) {
         println "🔄 Filtro AWSLambdaFilter já existe. Substituindo..."
         
-        // Estratégia mais simples: remover todas as seções InternationalizationFilter
-        // que contêm AWSLambdaFilter e adicionar a nova
-        def lines = destContent.split('\n')
-        def newLines = []
-        def skipSection = false
-        def inInternationalizationFilter = false
-        
-        for (int i = 0; i < lines.length; i++) {
-            def line = lines[i]
-            def trimmedLine = line.trim()
-            
-            // Detectar início de InternationalizationFilter
-            if (trimmedLine == "type: InternationalizationFilter") {
-                inInternationalizationFilter = true
-                skipSection = false
-                continue
-            }
-            
-            // Se estamos dentro de InternationalizationFilter, verificar se contém AWSLambdaFilter
-            if (inInternationalizationFilter && trimmedLine == "type: AWSLambdaFilter") {
-                skipSection = true
-                continue
-            }
-            
-            // Detectar fim da seção InternationalizationFilter
-            if (inInternationalizationFilter && trimmedLine.startsWith("-") && trimmedLine != "type: InternationalizationFilter") {
-                inInternationalizationFilter = false
-                skipSection = false
-                // Não adicionar esta linha, pois é o início da próxima seção
-                continue
-            }
-            
-            // Se estamos pulando a seção, continuar até o fim
-            if (skipSection) {
-                continue
-            }
-            
-            newLines.add(line)
-        }
-        
-        // Adicionar o novo conteúdo
-        def updatedContent = newLines.join('\n')
-        if (updatedContent.endsWith('\n')) {
-            destFile.text = updatedContent + sourceContent
-        } else {
-            destFile.text = updatedContent + '\n' + sourceContent
-        }
+            // Estratégia simples: substituir completamente o arquivo
+    destFile.text = sourceContent
         
         println "✅ Seção AWSLambdaFilter atualizada: ${destFile.name}"
         return true
