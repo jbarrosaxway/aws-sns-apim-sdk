@@ -1,0 +1,31 @@
+{
+  "versions": {
+    "7.7.0.20240830": {
+      "name": "Axway API Gateway 7.7.0.20240830",
+      "installer": "APIGateway_7.7.20240830_Install_linux-x86-64_BN04.run",
+      "docker_image": "axwayjbarros/aws-lambda-apim-sdk:7.7.0.20240830",
+      "base_path": "/opt/axway/Axway-7.7.0.20240830",
+      "aws_sdk_version": "1.12.314",
+      "java_version": "11",
+      "gradle_version": "7.6",
+      "description": "Versão estável de agosto 2024"
+    },
+    "7.7.0.20250230": {
+      "name": "Axway API Gateway 7.7.0.20250230",
+      "installer": "APIGateway_7.7.20250230_Install_linux-x86-64_BN04.run",
+      "docker_image": "axwayjbarros/aws-lambda-apim-sdk:7.7.0.20250230",
+      "base_path": "/opt/axway/Axway-7.7.0.20250230",
+      "aws_sdk_version": "1.12.314",
+      "java_version": "11",
+      "gradle_version": "7.6",
+      "description": "Versão de fevereiro 2025 (futura)"
+    }
+  },
+  "default_version": "7.7.0.20240830",
+  "build_config": {
+    "use_axway_aws_sdk": true,
+    "fallback_aws_sdk_version": "1.12.314",
+    "docker_registry": "axwayjbarros",
+    "repository_name": "aws-lambda-apim-sdk"
+  }
+} 

@@ -34,9 +34,30 @@ def ps_folder = "${axway_base}/policystudio"
 //def ps_folder_alt = "${axway_base_alt}/policystudio"
 
 dependencies {
-    // AWS SDK - versões testadas e funcionais
-    implementation group: 'com.amazonaws', name: 'aws-java-sdk-lambda', version: '1.12.314'
-    implementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: '1.12.314'
+    // Configuração dinâmica de dependências baseada no Axway
+    def useAxwayAwsSdk = System.getProperty('use.axway.aws.sdk', 'true').toBoolean()
+    def fallbackAwsSdkVersion = System.getProperty('fallback.aws.sdk.version', '1.12.314')
+    
+    if (useAxwayAwsSdk) {
+        // Usar AWS SDK do Axway (recomendado)
+        println "🔍 Usando AWS SDK do Axway: ${apim_folder}/lib"
+        
+        // Verificar se AWS SDK está disponível no Axway
+        def awsSdkJars = fileTree(dir: "${apim_folder}/lib", include: '*aws*.jar')
+        if (awsSdkJars.files.size() > 0) {
+            println "✅ AWS SDK encontrado no Axway: ${awsSdkJars.files.size()} JARs"
+            implementation awsSdkJars
+        } else {
+            println "⚠️  AWS SDK não encontrado no Axway, usando fallback: $fallbackAwsSdkVersion"
+            implementation group: 'com.amazonaws', name: 'aws-java-sdk-lambda', version: fallbackAwsSdkVersion
+            implementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: fallbackAwsSdkVersion
+        }
+    } else {
+        // Usar AWS SDK externo (fallback)
+        println "🔧 Usando AWS SDK externo: $fallbackAwsSdkVersion"
+        implementation group: 'com.amazonaws', name: 'aws-java-sdk-lambda', version: fallbackAwsSdkVersion
+        implementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: fallbackAwsSdkVersion
+    }
     
     // Axway API Gateway libs
     implementation fileTree( dir: "${apim_folder}/lib", include: '*.jar')

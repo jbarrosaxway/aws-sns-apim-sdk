@@ -1,0 +1,134 @@
+name: Build Multi-Version JARs
+
+on:
+  push:
+    branches: [ master, main, develop ]
+    paths:
+      - 'src/**'
+      - 'build.gradle'
+      - 'gradle/**'
+      - 'axway-versions.json'
+  pull_request:
+    branches: [ master, main, develop ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Axway version to build'
+        required: false
+        default: '7.7.0.20240830'
+        type: string
+
+jobs:
+  build-multi-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: read
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Parse versions
+      id: versions
+      run: |
+        if [ "${{ github.event.inputs.version }}" != "" ]; then
+          # Build específico
+          echo "versions=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          # Build todas as versões
+          versions=$(jq -r '.versions | keys[]' axway-versions.json | tr '\n' ',' | sed 's/,$//')
+          echo "versions=$versions" >> $GITHUB_OUTPUT
+        fi
+        
+        echo "📋 Versões para build: ${{ steps.versions.outputs.versions }}"
+        
+    - name: Build for each version
+      run: |
+        VERSIONS="${{ steps.versions.outputs.versions }}"
+        
+        for VERSION in ${VERSIONS//,/ }; do
+          echo "🔧 Build para versão: $VERSION"
+          
+          # Extrair informações da versão
+          VERSION_INFO=$(jq -r ".versions[\"$VERSION\"]" axway-versions.json)
+          DOCKER_IMAGE=$(echo "$VERSION_INFO" | jq -r '.docker_image')
+          BASE_PATH=$(echo "$VERSION_INFO" | jq -r '.base_path')
+          
+          echo "🐳 Docker image: $DOCKER_IMAGE"
+          echo "📁 Base path: $BASE_PATH"
+          
+          # Pull da imagem Docker (se existir)
+          if docker pull "$DOCKER_IMAGE" 2>/dev/null; then
+            echo "✅ Imagem encontrada: $DOCKER_IMAGE"
+          else
+            echo "⚠️  Imagem não encontrada: $DOCKER_IMAGE"
+            echo "📋 Build da imagem será necessário"
+          fi
+          
+          # Build com Docker
+          docker run --rm \
+            -v "$(pwd):/workspace" \
+            -w /workspace \
+            "$DOCKER_IMAGE" \
+            gradle -Daxway.base="$BASE_PATH" clean build
+          
+          # Verificar resultado
+          if [ -f "build/libs/aws-lambda-apim-sdk-*.jar" ]; then
+            echo "✅ JAR criado para $VERSION"
+            ls -la build/libs/aws-lambda-apim-sdk-*.jar
+            
+            # Renomear JAR com versão
+            mv build/libs/aws-lambda-apim-sdk-*.jar "build/libs/aws-lambda-apim-sdk-$VERSION.jar"
+          else
+            echo "❌ JAR não encontrado para $VERSION"
+            exit 1
+          fi
+        done
+        
+    - name: Upload JARs as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: aws-lambda-apim-sdk-jars
+        path: build/libs/aws-lambda-apim-sdk-*.jar
+        retention-days: 30
+        
+    - name: Create Release for each version
+      if: github.event_name != 'pull_request' && contains(github.ref, 'master')
+      run: |
+        VERSIONS="${{ steps.versions.outputs.versions }}"
+        
+        for VERSION in ${VERSIONS//,/ }; do
+          echo "🚀 Criando release para versão: $VERSION"
+          
+          # Configurar git
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          
+          # Gerar tag com versão do Axway
+          TAG_NAME="v$VERSION-$(date +%Y%m%d)"
+          echo "📋 Criando tag: $TAG_NAME"
+          
+          # Verificar se tag já existe
+          if git tag -l "$TAG_NAME" | grep -q "$TAG_NAME"; then
+            echo "⚠️  Tag $TAG_NAME já existe. Pulando criação."
+          else
+            git tag "$TAG_NAME"
+            git push origin "$TAG_NAME"
+            echo "✅ Tag $TAG_NAME criada e enviada!"
+          fi
+          
+          # Criar release
+          gh release create "$TAG_NAME" \
+            --title "Release for Axway $VERSION" \
+            --notes "Build para Axway API Gateway $VERSION" \
+            --repo "${{ github.repository }}" \
+            "build/libs/aws-lambda-apim-sdk-$VERSION.jar"
+        done 
