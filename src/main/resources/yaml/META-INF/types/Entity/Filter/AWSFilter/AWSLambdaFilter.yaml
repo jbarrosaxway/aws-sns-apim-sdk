@@ -17,11 +17,14 @@ fields:
     type: string
     defaultValues:
     - data: RequestResponse
+    - data: Event
+    - data: DryRun
     cardinality: 1
   logType:
     type: string
     defaultValues:
     - data: None
+    - data: Tail
     cardinality: 1
   qualifier:
     type: string
