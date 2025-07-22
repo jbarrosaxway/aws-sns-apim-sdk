@@ -217,6 +217,7 @@ Este projeto possui documentação completa organizada por tópicos:
 ### 🔧 **Desenvolvimento e Build**
 - **[🏷️ Guia de Releases](docs/RELEASE_GUIDE.md)** - Como criar releases e versionamento
 - **[📊 Versionamento Semântico](docs/SEMANTIC_VERSIONING.md)** - Sistema automático de versionamento
+- **[🤖 Sistema de Release Automático](docs/AUTOMATIC_RELEASE_SYSTEM.md)** - Análise inteligente e criação automática de releases
 
 ### 📝 **Documentação Técnica**
 - **[🔍 Atualizações de Campos](docs/ATUALIZACOES_CAMPOS_FILTRO.md)** - Histórico de mudanças nos campos do filtro

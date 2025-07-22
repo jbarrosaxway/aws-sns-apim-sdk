@@ -35,21 +35,31 @@ jobs:
         # Pull da imagem publicada
         docker pull axwayjbarros/aws-lambda-apim-sdk:1.0.0
         
-    - name: Semantic Versioning
+    - name: Check if Release is Needed
+      id: release_check
       run: |
-        echo "🔍 Analisando mudanças para versionamento semântico..."
-        ./scripts/version-bump.sh
+        echo "🔍 Verificando se release é necessário..."
+        ./scripts/check-release-needed.sh
         
-        if [ -f .version_info ]; then
-          source .version_info
-          echo "📋 Informações da versão:"
-          echo "   Tipo: $VERSION_TYPE"
-          echo "   Versão anterior: $OLD_VERSION"
-          echo "   Nova versão: $NEW_VERSION"
-          echo "   Mudanças detectadas: $CHANGES_DETECTED"
-          echo "   É PR: $PR_DETECTED"
+        if [ -f .release_check ]; then
+          source .release_check
+          echo "📋 Resultado da análise:"
+          echo "   Release necessário: $RELEASE_NEEDED"
+          echo "   Arquivos relevantes: $RELEVANT_FILES"
+          
+          if [ "$RELEASE_NEEDED" = "true" ]; then
+            echo "🔴 Release será criado!"
+            echo "version_type=$VERSION_TYPE" >> $GITHUB_OUTPUT
+            echo "old_version=$OLD_VERSION" >> $GITHUB_OUTPUT
+            echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            echo "release_needed=true" >> $GITHUB_OUTPUT
+          else
+            echo "🟢 Nenhum release necessário"
+            echo "release_needed=false" >> $GITHUB_OUTPUT
+          fi
         else
-          echo "⚠️  Arquivo .version_info não encontrado"
+          echo "⚠️  Arquivo .release_check não encontrado"
+          echo "release_needed=false" >> $GITHUB_OUTPUT
         fi
         
     - name: Build JAR using published image
@@ -104,26 +114,29 @@ jobs:
         path: build/libs/aws-lambda-apim-sdk-*.jar
         retention-days: 30
         
-    - name: Commit version bump
-      if: github.event_name != 'pull_request' && contains(github.ref, 'master')
+    - name: Create Tag and Release
+      if: steps.release_check.outputs.release_needed == 'true' && github.event_name != 'pull_request' && contains(github.ref, 'master')
       run: |
-        if [ -f .version_info ]; then
-          source .version_info
-          if [ "$PR_DETECTED" = "false" ] && [ "$CHANGES_DETECTED" = "true" ]; then
-            echo "🚀 Commitando nova versão: $NEW_VERSION"
-            
-            git config --local user.email "action@github.com"
-            git config --local user.name "GitHub Action"
-            
-            git add build.gradle
-            git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
-            git push origin master
-          else
-            echo "⏭️  Pulando commit da versão (PR ou sem mudanças)"
-          fi
-        else
-          echo "⚠️  Arquivo .version_info não encontrado"
-        fi
+        echo "🚀 Criando tag e release automaticamente..."
+        
+        # Configurar git
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Obter informações da versão
+        source .release_check
+        NEW_VERSION="$NEW_VERSION"
+        
+        echo "📋 Criando tag: v$NEW_VERSION"
+        
+        # Criar tag
+        git tag "v$NEW_VERSION"
+        
+        # Push da tag (isso acionará o workflow de release)
+        git push origin "v$NEW_VERSION"
+        
+        echo "✅ Tag v$NEW_VERSION criada e enviada!"
+        echo "🔄 Workflow de release será acionado automaticamente"
         
     - name: Comment on PR
       if: github.event_name == 'pull_request'
@@ -140,30 +153,38 @@ jobs:
             const stats = fs.statSync(jarPath);
             const sizeInMB = (stats.size / (1024 * 1024)).toFixed(2);
             
-            // Ler informações da versão se disponível
-            let versionInfo = '';
+            // Ler informações do release se disponível
+            let releaseInfo = '';
             try {
               const fs = require('fs');
-              if (fs.existsSync('.version_info')) {
-                const versionData = fs.readFileSync('.version_info', 'utf8');
-                const lines = versionData.split('\n');
-                const versionMap = {};
+              if (fs.existsSync('.release_check')) {
+                const releaseData = fs.readFileSync('.release_check', 'utf8');
+                const lines = releaseData.split('\n');
+                const releaseMap = {};
                 lines.forEach(line => {
                   const [key, value] = line.split('=');
-                  if (key && value) versionMap[key] = value;
+                  if (key && value) releaseMap[key] = value;
                 });
                 
-                if (versionMap.VERSION_TYPE && versionMap.NEW_VERSION) {
-                  versionInfo = `
+                if (releaseMap.RELEASE_NEEDED === 'true' && releaseMap.NEW_VERSION) {
+                  releaseInfo = `
                   
-                  🔢 **Versionamento Semântico:**
-                  📊 **Tipo:** ${versionMap.VERSION_TYPE}
-                  📈 **Nova versão:** ${versionMap.NEW_VERSION}
-                  📋 **Versão anterior:** ${versionMap.OLD_VERSION}`;
+                  🔢 **Análise de Release:**
+                  📊 **Release necessário:** ${releaseMap.RELEASE_NEEDED}
+                  📈 **Nova versão:** ${releaseMap.NEW_VERSION}
+                  📋 **Versão anterior:** ${releaseMap.OLD_VERSION}
+                  🔍 **Tipo:** ${releaseMap.VERSION_TYPE}
+                  📁 **Arquivos relevantes:** ${releaseMap.RELEVANT_FILES}`;
+                } else {
+                  releaseInfo = `
+                  
+                  🟢 **Análise de Release:**
+                  📊 **Release necessário:** ${releaseMap.RELEASE_NEEDED || 'false'}
+                  📋 **Motivo:** Nenhuma mudança relevante detectada`;
                 }
               }
             } catch (e) {
-              console.log('Não foi possível ler informações da versão:', e.message);
+              console.log('Não foi possível ler informações do release:', e.message);
             }
             
             github.rest.issues.createComment({
@@ -174,7 +195,7 @@ jobs:
               
               📦 **JAR criado:** ${jarFile}
               📏 **Tamanho:** ${sizeInMB} MB
-              🔧 **Build com:** axwayjbarros/aws-lambda-apim-sdk:1.0.0${versionInfo}
+              🔧 **Build com:** axwayjbarros/aws-lambda-apim-sdk:1.0.0${releaseInfo}
               
               O JAR está disponível como artifact para download.`
             });
