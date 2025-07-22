@@ -56,6 +56,9 @@ aws-config.txt
 secrets.txt
 credentials.txt
 
+# License files (temporary for build)
+license.txt
+
 # Temporary files
 *.tmp
 *.temp
