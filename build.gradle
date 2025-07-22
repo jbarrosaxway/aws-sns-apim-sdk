@@ -57,7 +57,6 @@ task installWindows {
     description = 'Instala apenas os arquivos YAML no Windows (sem build do JAR)'
     
     doFirst {
-        println "🚀 Instalando arquivos YAML do filtro AWS Lambda no Windows..."
         println "📋 Nota: O JAR deve ser buildado no Linux e copiado manualmente"
         println ""
         println "📂 Exemplos de projetos Policy Studio:"
@@ -73,63 +72,8 @@ task installWindows {
             throw new GradleException("❌ Caminho do projeto não informado!")
         }
         
-        // Validar se o caminho existe
-        def projectDir = new File(projectPath)
-        if (!projectDir.exists()) {
-            println "⚠️  Aviso: O diretório não existe. Criando..."
-            projectDir.mkdirs()
-        }
-        
-        // Criar estrutura de diretórios
-        def metaInfDir = new File(projectPath, "META-INF/types/Entity/Filter/AWSFilter")
-        def systemDir = new File(projectPath, "System")
-        
-        metaInfDir.mkdirs()
-        systemDir.mkdirs()
-        
-        // Copiar arquivos YAML
-        def sourceYamlDir = new File("src/main/resources/yaml")
-        
-        // Copiar AWSLambdaFilter.yaml
-        def sourceFilterYaml = new File(sourceYamlDir, "META-INF/types/Entity/Filter/AWSFilter/AWSLambdaFilter.yaml")
-        def destFilterYaml = new File(metaInfDir, "AWSLambdaFilter.yaml")
-        
-        if (sourceFilterYaml.exists()) {
-            destFilterYaml.text = sourceFilterYaml.text
-            println "✅ Copiado: AWSLambdaFilter.yaml"
-        } else {
-            println "❌ Arquivo não encontrado: ${sourceFilterYaml.absolutePath}"
-        }
-        
-        // Adicionar conteúdo ao Internationalization Default.yaml
-        def sourceIntlYaml = new File(sourceYamlDir, "System/Internationalization Default.yaml")
-        def destIntlYaml = new File(systemDir, "Internationalization Default.yaml")
-        
-        if (sourceIntlYaml.exists()) {
-            if (destIntlYaml.exists()) {
-                // Adicionar ao final do arquivo existente
-                destIntlYaml.append("\n" + sourceIntlYaml.text)
-                println "✅ Conteúdo adicionado ao final: Internationalization Default.yaml"
-            } else {
-                // Criar novo arquivo
-                destIntlYaml.text = sourceIntlYaml.text
-                println "✅ Criado: Internationalization Default.yaml"
-            }
-        } else {
-            println "❌ Arquivo não encontrado: ${sourceIntlYaml.absolutePath}"
-        }
-        
-        println ""
-        println "🎉 Instalação dos arquivos YAML concluída!"
-        println "📁 Projeto Policy Studio: ${projectPath}"
-        println ""
-        println "📋 Próximos passos:"
-        println "1. Copie o JAR buildado no Linux para o Windows"
-        println "2. Abra o Policy Studio"
-        println "3. Vá em Window > Preferences > Runtime Dependencies"
-        println "4. Adicione o JAR: aws-lambda-apim-sdk-1.0.1.jar"
-        println "5. Reinicie o Policy Studio com -clean"
-        println "6. Procure por 'AWS Lambda Filter' na paleta"
+        // Usar função auxiliar para instalar arquivos YAML
+        installYamlFiles(projectPath, "installWindows")
     }
 }
 
@@ -226,15 +170,84 @@ def processInternationalizationFile(def sourceFile, def destFile) {
     }
 }
 
+// Função auxiliar para instalar arquivos YAML no Windows
+def installYamlFiles(def projectPath, def taskName) {
+    println "🚀 Instalando arquivos YAML do filtro AWS Lambda no Windows..."
+    println "📋 Task: ${taskName}"
+    println "📁 Projeto: ${projectPath}"
+    println ""
+    
+    // Validar se o caminho existe
+    def projectDir = new File(projectPath)
+    if (!projectDir.exists()) {
+        println "⚠️  Aviso: O diretório não existe. Criando..."
+        projectDir.mkdirs()
+    }
+    
+    // Criar estrutura de diretórios
+    def (metaInfDir, systemDir) = createProjectStructure(projectPath)
+    
+    // Copiar arquivos YAML
+    def sourceYamlDir = new File("src/main/resources/yaml")
+    
+    // Copiar arquivos YAML
+    copyYamlFiles(sourceYamlDir, metaInfDir, systemDir)
+    
+    println ""
+    println "🎉 Instalação dos arquivos YAML concluída!"
+    println "📁 Projeto Policy Studio: ${projectPath}"
+    println ""
+    showNextSteps()
+}
+
+// Função auxiliar para mostrar próximos passos
+def showNextSteps() {
+    println "📋 Próximos passos:"
+    println "1. Copie o JAR buildado no Linux para o Windows"
+    println "2. Abra o Policy Studio"
+    println "3. Vá em Window > Preferences > Runtime Dependencies"
+    println "4. Adicione o JAR: aws-lambda-apim-sdk-1.0.1.jar"
+    println "5. Reinicie o Policy Studio com -clean"
+    println "6. Procure por 'AWS Lambda Filter' na paleta"
+}
+
+// Função auxiliar para criar estrutura de diretórios do projeto
+def createProjectStructure(def projectPath) {
+    def metaInfDir = new File(projectPath, "META-INF/types/Entity/Filter/AWSFilter")
+    def systemDir = new File(projectPath, "System")
+    
+    metaInfDir.mkdirs()
+    systemDir.mkdirs()
+    
+    return [metaInfDir, systemDir]
+}
+
+// Função auxiliar para copiar arquivos YAML
+def copyYamlFiles(def sourceYamlDir, def metaInfDir, def systemDir) {
+    // Copiar AWSLambdaFilter.yaml
+    def sourceFilterYaml = new File(sourceYamlDir, "META-INF/types/Entity/Filter/AWSFilter/AWSLambdaFilter.yaml")
+    def destFilterYaml = new File(metaInfDir, "AWSLambdaFilter.yaml")
+    
+    if (sourceFilterYaml.exists()) {
+        destFilterYaml.text = sourceFilterYaml.text
+        println "✅ Copiado: AWSLambdaFilter.yaml"
+    } else {
+        println "❌ Arquivo não encontrado: ${sourceFilterYaml.absolutePath}"
+    }
+    
+    // Processar arquivo de internacionalização
+    def sourceIntlYaml = new File(sourceYamlDir, "System/Internationalization Default.yaml")
+    def destIntlYaml = new File(systemDir, "Internationalization Default.yaml")
+    
+    processInternationalizationFile(sourceIntlYaml, destIntlYaml)
+}
+
 // Task para instalação Windows com caminho específico
 task installWindowsToProject {
     group = 'Installation'
     description = 'Instala YAML em projeto Policy Studio específico'
     
     doFirst {
-        println "🚀 Instalando arquivos YAML em projeto específico..."
-        println ""
-        
         // Obter caminho do projeto via propriedade do sistema
         def projectPath = System.getProperty('project.path')
         
@@ -249,46 +262,8 @@ task installWindowsToProject {
         
         println "📁 Projeto: ${projectPath}"
         
-        // Executar a mesma lógica da task installWindows
-        def projectDir = new File(projectPath)
-        if (!projectDir.exists()) {
-            println "⚠️  Aviso: O diretório não existe. Criando..."
-            projectDir.mkdirs()
-        }
-        
-        def metaInfDir = new File(projectPath, "META-INF/types/Entity/Filter/AWSFilter")
-        def systemDir = new File(projectPath, "System")
-        
-        metaInfDir.mkdirs()
-        systemDir.mkdirs()
-        
-        def sourceYamlDir = new File("src/main/resources/yaml")
-        
-        def sourceFilterYaml = new File(sourceYamlDir, "META-INF/types/Entity/Filter/AWSFilter/AWSLambdaFilter.yaml")
-        def destFilterYaml = new File(metaInfDir, "AWSLambdaFilter.yaml")
-        
-        if (sourceFilterYaml.exists()) {
-            destFilterYaml.text = sourceFilterYaml.text
-            println "✅ Copiado: AWSLambdaFilter.yaml"
-        } else {
-            println "❌ Arquivo não encontrado: ${sourceFilterYaml.absolutePath}"
-        }
-        
-        def sourceIntlYaml = new File(sourceYamlDir, "System/Internationalization Default.yaml")
-        def destIntlYaml = new File(systemDir, "Internationalization Default.yaml")
-        
-        // Processar arquivo de internacionalização com verificação inteligente
-        processInternationalizationFile(sourceIntlYaml, destIntlYaml)
-        
-        println ""
-        println "🎉 Instalação concluída no projeto: ${projectPath}"
-        println ""
-        println "📋 Próximos passos:"
-        println "1. Abra o Policy Studio"
-        println "2. Vá em Window > Preferences > Runtime Dependencies"
-        println "3. Adicione o JAR: aws-lambda-apim-sdk-1.0.1.jar"
-        println "4. Reinicie o Policy Studio com -clean"
-        println "5. Procure por 'Invoke Lambda Function' na paleta"
+        // Usar função auxiliar para instalar arquivos YAML
+        installYamlFiles(projectPath, "installWindowsToProject")
     }
 }
 
