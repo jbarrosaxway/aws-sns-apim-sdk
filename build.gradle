@@ -22,6 +22,7 @@ sourceCompatibility = 1.8
 // - Problema de permissão ao renomear JAR corrigido
 // - Versionamento automático implementado
 // - Release única com múltiplos JARs implementada
+// - GH_TOKEN adicionado para autenticação do GitHub CLI
 
 repositories {
     mavenCentral()
