@@ -1,39 +1,40 @@
 ---
 name: AWSLambdaFilter
+version: 1
 class: com.axway.aws.lambda.AWSLambdaFilter
 fields:
   functionName:
     type: string
     defaultValues:
-    - {}
+    - data: ""
     cardinality: 1
   awsRegion:
     type: string
     defaultValues:
-    - {}
+    - data: us-east-1
     cardinality: 1
   invocationType:
     type: string
     defaultValues:
-    - {}
+    - data: RequestResponse
     cardinality: 1
   logType:
     type: string
     defaultValues:
-    - {}
+    - data: None
     cardinality: 1
   qualifier:
     type: string
     defaultValues:
-    - {}
+    - data: ""
     cardinality: 1
   maxRetries:
     type: string
     defaultValues:
-    - {}
+    - data: "3"
     cardinality: 1
   retryDelay:
     type: string
     defaultValues:
-    - {}
+    - data: "1000"
     cardinality: 1

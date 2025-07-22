@@ -133,6 +133,79 @@ task installWindows {
     }
 }
 
+// Função auxiliar para processar arquivo de internacionalização
+def processInternationalizationFile(def sourceFile, def destFile) {
+    if (!sourceFile.exists()) {
+        println "❌ Arquivo não encontrado: ${sourceFile.absolutePath}"
+        return false
+    }
+    
+    def sourceContent = sourceFile.text.trim()
+    def destContent = destFile.exists() ? destFile.text : ""
+    
+    // Verificar se o filtro AWSLambdaFilter já existe no arquivo
+    if (destContent.contains("type: AWSLambdaFilter")) {
+        println "🔄 Filtro AWSLambdaFilter já existe. Substituindo..."
+        
+        // Remover a seção existente do AWSLambdaFilter
+        def lines = destContent.split('\n')
+        def newLines = []
+        def skipSection = false
+        def indentLevel = 0
+        def inAWSLambdaSection = false
+        
+        for (int i = 0; i < lines.length; i++) {
+            def line = lines[i]
+            def trimmedLine = line.trim()
+            def currentIndent = line.length() - line.trim().length()
+            
+            // Detectar início da seção AWSLambdaFilter
+            if (trimmedLine == "type: AWSLambdaFilter") {
+                skipSection = true
+                inAWSLambdaSection = true
+                indentLevel = currentIndent
+                continue
+            }
+            
+            // Detectar fim da seção
+            if (skipSection && inAWSLambdaSection) {
+                // Se encontrou um item no mesmo nível ou superior, é o fim da seção
+                if (currentIndent <= indentLevel && trimmedLine != "" && !trimmedLine.startsWith("  ")) {
+                    skipSection = false
+                    inAWSLambdaSection = false
+                    // Não adicionar esta linha, pois é o início da próxima seção
+                    continue
+                } else {
+                    // Ainda dentro da seção AWSLambdaFilter, pular
+                    continue
+                }
+            }
+            
+            newLines.add(line)
+        }
+        
+        // Adicionar o novo conteúdo
+        def updatedContent = newLines.join('\n')
+        if (updatedContent.endsWith('\n')) {
+            destFile.text = updatedContent + sourceContent
+        } else {
+            destFile.text = updatedContent + '\n' + sourceContent
+        }
+        
+        println "✅ Seção AWSLambdaFilter atualizada: ${destFile.name}"
+        return true
+    } else {
+        // Adicionar ao final se não existir
+        if (destContent.endsWith('\n')) {
+            destFile.text = destContent + sourceContent
+        } else {
+            destFile.text = destContent + '\n' + sourceContent
+        }
+        println "✅ Conteúdo adicionado ao final: ${destFile.name}"
+        return true
+    }
+}
+
 // Task para instalação Windows com caminho específico
 task installWindowsToProject {
     group = 'Installation'
@@ -184,20 +257,18 @@ task installWindowsToProject {
         def sourceIntlYaml = new File(sourceYamlDir, "System/Internationalization Default.yaml")
         def destIntlYaml = new File(systemDir, "Internationalization Default.yaml")
         
-        if (sourceIntlYaml.exists()) {
-            if (destIntlYaml.exists()) {
-                destIntlYaml.append("\n" + sourceIntlYaml.text)
-                println "✅ Conteúdo adicionado ao final: Internationalization Default.yaml"
-            } else {
-                destIntlYaml.text = sourceIntlYaml.text
-                println "✅ Criado: Internationalization Default.yaml"
-            }
-        } else {
-            println "❌ Arquivo não encontrado: ${sourceIntlYaml.absolutePath}"
-        }
+        // Processar arquivo de internacionalização com verificação inteligente
+        processInternationalizationFile(sourceIntlYaml, destIntlYaml)
         
         println ""
         println "🎉 Instalação concluída no projeto: ${projectPath}"
+        println ""
+        println "📋 Próximos passos:"
+        println "1. Abra o Policy Studio"
+        println "2. Vá em Window > Preferences > Runtime Dependencies"
+        println "3. Adicione o JAR: aws-lambda-apim-sdk-1.0.1.jar"
+        println "4. Reinicie o Policy Studio com -clean"
+        println "5. Procure por 'Invoke Lambda Function' na paleta"
     }
 }
 

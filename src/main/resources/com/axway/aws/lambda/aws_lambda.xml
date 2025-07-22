@@ -2,13 +2,39 @@
 	<panel columns="2">
 		<NameAttribute />
 
-		<!-- Lambda Settings -->
-		<group label="AWS_LAMBDA_SETTINGS_LABEL" columns="2" span="2"
-			fill="false">
+		<!-- AWS Lambda Configuration -->
+		<group label="AWS_LAMBDA_SETTINGS_LABEL" columns="2" span="2" fill="false">
+			
+			<!-- Function Configuration -->
 			<TextAttribute field="functionName" label="AWS_LAMBDA_FUNCTION_LABEL"
-				displayName="AWS_LAMBDA_FUNCTION_NAME" />
-			<TextAttribute field="awsProfileName" label="AWS_LAMBDA_AWS_PROFILE_LABEL"
-						   displayName="AWS_LAMBDA_AWS_PROFILE_NAME" />
+				displayName="AWS_LAMBDA_FUNCTION_NAME" description="AWS_LAMBDA_FUNCTION_DESCRIPTION" />
+			
+			<TextAttribute field="awsRegion" label="AWS_LAMBDA_REGION_LABEL"
+				displayName="AWS_LAMBDA_REGION_NAME" description="AWS_LAMBDA_REGION_DESCRIPTION" />
+			
+			<!-- Invocation Configuration -->
+			<ComboAttribute field="invocationType" label="AWS_LAMBDA_INVOCATION_TYPE_LABEL"
+				displayName="AWS_LAMBDA_INVOCATION_TYPE_NAME" description="AWS_LAMBDA_INVOCATION_TYPE_DESCRIPTION">
+				<option value="RequestResponse">RequestResponse</option>
+				<option value="Event">Event</option>
+				<option value="DryRun">DryRun</option>
+			</ComboAttribute>
+			
+			<ComboAttribute field="logType" label="AWS_LAMBDA_LOG_TYPE_LABEL"
+				displayName="AWS_LAMBDA_LOG_TYPE_NAME" description="AWS_LAMBDA_LOG_TYPE_DESCRIPTION">
+				<option value="None">None</option>
+				<option value="Tail">Tail</option>
+			</ComboAttribute>
+			
+			<!-- Advanced Configuration -->
+			<TextAttribute field="qualifier" label="AWS_LAMBDA_QUALIFIER_LABEL"
+				displayName="AWS_LAMBDA_QUALIFIER_NAME" description="AWS_LAMBDA_QUALIFIER_DESCRIPTION" />
+			
+			<TextAttribute field="maxRetries" label="AWS_LAMBDA_MAX_RETRIES_LABEL"
+				displayName="AWS_LAMBDA_MAX_RETRIES_NAME" description="AWS_LAMBDA_MAX_RETRIES_DESCRIPTION" />
+			
+			<TextAttribute field="retryDelay" label="AWS_LAMBDA_RETRY_DELAY_LABEL"
+				displayName="AWS_LAMBDA_RETRY_DELAY_NAME" description="AWS_LAMBDA_RETRY_DELAY_DESCRIPTION" />
 			
 		</group>
 
