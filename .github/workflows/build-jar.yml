@@ -117,15 +117,21 @@ jobs:
         source .release_check
         NEW_VERSION="$NEW_VERSION"
         
-        echo "📋 Criando tag: v$NEW_VERSION"
+        echo "📋 Verificando tag: v$NEW_VERSION"
         
-        # Criar tag
-        git tag "v$NEW_VERSION"
+        # Verificar se a tag já existe
+        if git tag -l "v$NEW_VERSION" | grep -q "v$NEW_VERSION"; then
+          echo "⚠️  Tag v$NEW_VERSION já existe. Pulando criação da tag."
+        else
+          echo "📋 Criando tag: v$NEW_VERSION"
+          # Criar tag
+          git tag "v$NEW_VERSION"
+          # Push da tag
+          git push origin "v$NEW_VERSION"
+          echo "✅ Tag v$NEW_VERSION criada e enviada!"
+        fi
         
-        # Push da tag
-        git push origin "v$NEW_VERSION"
-        
-        echo "✅ Tag v$NEW_VERSION criada e enviada!"
+        echo "🔄 Continuando com criação do release..."
         
     - name: Generate changelog
       if: steps.release_check.outputs.release_needed == 'true' && github.event_name != 'pull_request' && contains(github.ref, 'master')
