@@ -334,6 +334,39 @@ task setAxwayPath {
     }
 }
 
+// Task para mostrar informações do projeto
+task showProjectInfo {
+    group = 'Help'
+    description = 'Mostra informações detalhadas do projeto'
+    
+    doLast {
+        println "📋 Informações do Projeto AWS Lambda APIM SDK"
+        println "=============================================="
+        println ""
+        println "🏷️  Versão atual: ${version}"
+        println "📦 Grupo: ${group}"
+        println "🔧 Java: ${sourceCompatibility}"
+        println ""
+        println "📁 Estrutura do Projeto:"
+        println "  - src/main/java/     # Código fonte Java"
+        println "  - src/main/resources/ # Recursos (YAML, etc.)"
+        println "  - scripts/           # Scripts de instalação"
+        println "  - docs/              # Documentação"
+        println ""
+        println "🔗 Dependências Principais:"
+        println "  - AWS SDK Lambda: 1.12.314"
+        println "  - AWS SDK Core: 1.12.314"
+        println "  - Axway API Gateway: 7.7.0.20240830"
+        println ""
+        println "🚀 Funcionalidades:"
+        println "  - Filtro AWS Lambda para Axway API Gateway"
+        println "  - Suporte a múltiplas versões do Axway"
+        println "  - Instalação automatizada (Linux/Windows)"
+        println "  - Versionamento semântico automático"
+        println "  - Sistema de release automático"
+    }
+}
+
 // Task para mostrar todas as tasks disponíveis
 task showTasks {
     group = 'Help'
@@ -349,6 +382,7 @@ task showTasks {
         println ""
         println "🔧 Configuração:"
         println "  ./gradlew setAxwayPath            # Mostra configuração do Axway"
+        println "  ./gradlew showProjectInfo         # Mostra informações do projeto"
         println ""
         println "🔧 Instalação Linux:"
         println "  ./gradlew installLinux            # Instala no Linux (JAR + YAML)"
