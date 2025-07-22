@@ -24,17 +24,17 @@ jobs:
         username: ${{ secrets.AXWAY_REGISTRY_USERNAME }}
         password: ${{ secrets.AXWAY_REGISTRY_PASSWORD }}
         
-    - name: Build Docker image for build
+    - name: Pull pre-built Docker image
       run: |
-        # Build da imagem de build (com Axway + Gradle)
-        docker build -f Dockerfile.build -t aws-lambda-apim-sdk-build:latest .
+        # Usar imagem pré-construída do Docker Hub
+        docker pull axwayjbarros/aws-lambda-apim-sdk:1.0.0
         
     - name: Build JAR using Docker
       run: |
         # Executar build do JAR dentro do container
         docker run --rm \
           -v "$(pwd)/build:/workspace/build" \
-          aws-lambda-apim-sdk-build:latest \
+          axwayjbarros/aws-lambda-apim-sdk:1.0.0 \
           gradle buildJarLinux
           
     - name: Upload JAR artifact
