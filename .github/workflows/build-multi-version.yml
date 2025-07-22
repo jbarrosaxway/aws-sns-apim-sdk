@@ -107,7 +107,7 @@ jobs:
             -v "$(pwd):/workspace" \
             -w /workspace \
             "$DOCKER_IMAGE" \
-            gradle -Daxway.base="$BASE_PATH" clean build copyExternalDependencies
+            gradle -Daxway.base="$BASE_PATH" clean build copyExternalDependencies listDependencies
           
                   # Verificar resultado
         JAR_FILE=$(find build/libs -name "aws-lambda-apim-sdk-*.jar" | head -1)
@@ -169,31 +169,32 @@ jobs:
         
         echo "📋 Versão final da release: $RELEASE_VERSION"
         
-        # Verificar se tag já existe
-        if git tag -l "v$RELEASE_VERSION" | grep -q "v$RELEASE_VERSION"; then
-          echo "⚠️  Tag v$RELEASE_VERSION já existe. Incrementando versão..."
+        # Verificar se tag já existe e incrementar se necessário
+        TAG_NAME="v${RELEASE_VERSION}"
+        ORIGINAL_VERSION="$RELEASE_VERSION"
+        
+        # Loop para encontrar uma versão disponível
+        while git tag -l "$TAG_NAME" | grep -q "$TAG_NAME"; do
+          echo "⚠️  Tag $TAG_NAME já existe. Incrementando versão..."
           # Incrementar PATCH version
           NEW_PATCH=$(echo "$RELEASE_VERSION" | awk -F. '{print $3+1}')
           RELEASE_VERSION=$(echo "$RELEASE_VERSION" | awk -F. '{print $1 "." $2 "." '$NEW_PATCH'}')
-          echo "📋 Nova versão: $RELEASE_VERSION"
-          
-          # Atualizar build.gradle com a nova versão
+          TAG_NAME="v${RELEASE_VERSION}"
+          echo "📋 Tentando nova versão: $RELEASE_VERSION"
+        done
+        
+        # Atualizar build.gradle se a versão mudou
+        if [ "$RELEASE_VERSION" != "$ORIGINAL_VERSION" ]; then
           sed -i "s/version = \"[^\"]*\"/version = \"$RELEASE_VERSION\"/" build.gradle
           echo "✅ build.gradle atualizado com versão: $RELEASE_VERSION"
         fi
         
-        # Gerar tag com semantic version
-        TAG_NAME="v${RELEASE_VERSION}"
-        echo "📋 Criando tag: $TAG_NAME"
+        echo "📋 Versão final: $RELEASE_VERSION (Tag: $TAG_NAME)"
         
-        # Verificar se tag já existe
-        if git tag -l "$TAG_NAME" | grep -q "$TAG_NAME"; then
-          echo "⚠️  Tag $TAG_NAME já existe. Pulando criação."
-        else
-          git tag "$TAG_NAME"
-          git push origin "$TAG_NAME"
-          echo "✅ Tag $TAG_NAME criada e enviada!"
-        fi
+        # Criar tag
+        git tag "$TAG_NAME"
+        git push origin "$TAG_NAME"
+        echo "✅ Tag $TAG_NAME criada e enviada!"
         
         # Preparar lista de JARs para upload
         JAR_FILES=""
@@ -229,22 +230,37 @@ jobs:
           
           # Copiar dependências externas (criadas pela tarefa do Gradle)
           echo "📋 Copiando dependências externas criadas pelo Gradle..."
+          mkdir -p "$ZIP_DIR/dependencies"
           
-          if [ -d "dependencies" ]; then
-            echo "📁 Pasta dependencies encontrada, copiando conteúdo..."
+          # Verificar se a tarefa do Gradle criou a pasta dependencies
+          if [ -d "dependencies" ] && [ "$(ls -A dependencies 2>/dev/null)" ]; then
+            echo "📁 Pasta dependencies encontrada com conteúdo:"
+            ls -la dependencies/
             cp -r dependencies/* "$ZIP_DIR/dependencies/" 2>/dev/null || echo "⚠️  Erro ao copiar dependências"
             echo "✅ Dependências copiadas para $ZIP_DIR/dependencies/"
-            ls -la "$ZIP_DIR/dependencies/" 2>/dev/null || echo "⚠️  Pasta dependencies vazia"
           else
-            echo "⚠️  Pasta dependencies não encontrada"
+            echo "⚠️  Pasta dependencies não encontrada ou vazia"
+            echo "🔍 Verificando se há JARs AWS no build/libs..."
+            
+            # Fallback: procurar JARs AWS no build/libs
+            AWS_JARS=$(find build/libs -name "*aws-java-sdk-*" -type f 2>/dev/null)
+            if [ -n "$AWS_JARS" ]; then
+              echo "✅ Encontrados JARs AWS no build/libs:"
+              for JAR in $AWS_JARS; do
+                echo "  - $(basename "$JAR")"
+                cp "$JAR" "$ZIP_DIR/dependencies/"
+              done
+            else
+              echo "⚠️  Nenhum JAR AWS encontrado no build/libs"
+            fi
           fi
           
-          # Copiar dependências para workspace também (para debug)
-          mkdir -p "./dependencies"
+          # Verificar conteúdo final da pasta dependencies
           if [ -d "$ZIP_DIR/dependencies" ] && [ "$(ls -A "$ZIP_DIR/dependencies" 2>/dev/null)" ]; then
-            cp "$ZIP_DIR/dependencies"/* "./dependencies/" 2>/dev/null || echo "⚠️  Erro ao copiar para workspace"
-            echo "✅ Dependências copiadas para workspace: ./dependencies/"
-            ls -la "./dependencies/" 2>/dev/null || echo "⚠️  Pasta dependencies não encontrada no workspace"
+            echo "✅ Dependências finais em $ZIP_DIR/dependencies/:"
+            ls -la "$ZIP_DIR/dependencies/"
+          else
+            echo "⚠️  Pasta dependencies final vazia"
           fi
           
           # Verificar se há JARs na pasta dependencies
