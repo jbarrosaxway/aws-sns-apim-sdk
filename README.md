@@ -1,170 +1,170 @@
 # AWS Lambda Integration for Axway API Gateway
 
-Este projeto oferece integração com AWS Lambda através de filtros customizados para o Axway API Gateway, suportando tanto filtros Java quanto scripts Groovy.
+This project provides integration with AWS Lambda through custom filters for Axway API Gateway, supporting both Java filters and Groovy scripts.
 
-## 🚀 Guia Rápido
+## 🚀 Quick Start Guide
 
-### Instalação a partir do Release GitHub
+### Installation from GitHub Release
 
-1. **Baixar o ZIP da release mais recente**
-2. **Extrair e copiar os arquivos:**
+1. **Download the latest release ZIP**
+2. **Extract and copy the files:**
    ```bash
-   # Copiar JAR principal
+   # Copy main JAR
    cp aws-lambda-apim-sdk-*.jar /opt/Axway/apigateway/groups/group-2/instance-1/ext/lib/
    
-   # Copiar dependência AWS SDK
+   # Copy AWS SDK dependency
    cp dependencies/external-aws-java-sdk-lambda-*.jar /opt/Axway/apigateway/groups/group-2/instance-1/ext/lib/
    ```
 
-3. **Reiniciar o gateway:**
-   - Use o método apropriado para sua instalação (serviço, script, etc.)
+3. **Restart the gateway:**
+   - Use the appropriate method for your installation (service, script, etc.)
 
-4. **Adicionar ao Policy Studio:**
-   - Abra o Policy Studio
-   - Vá em **Window > Preferences > Runtime Dependencies**
-   - Adicione os JARs ao classpath
-   - Reinicie o Policy Studio com `-clean`
+4. **Add to Policy Studio:**
+   - Open Policy Studio
+   - Go to **Window > Preferences > Runtime Dependencies**
+   - Add the JARs to the classpath
+   - Restart Policy Studio with `-clean`
 
-5. **Usar o filtro:**
-   - Procure por **"AWS Lambda Filter"** na paleta
-   - Configure os parâmetros necessários
-   - Teste a integração
+5. **Use the filter:**
+   - Search for **"AWS Lambda Filter"** in the palette
+   - Configure the required parameters
+   - Test the integration
 
 ---
 
 ## API Management Version Compatibility
 
-Este artefato foi testado com sucesso nas seguintes versões:
+This artifact has been successfully tested with the following versions:
 - **Axway API Gateway 7.7.0.20240830** ✅
 
-## Visão Geral
+## Overview
 
-O projeto oferece duas abordagens para integração com AWS Lambda:
+The project offers two approaches for AWS Lambda integration:
 
-### 1. Filtro Java (Recomendado)
-- Interface gráfica no Policy Studio
-- Configuração via parâmetros visuais
-- Performance nativa do gateway
-- Build automatizado
+### 1. Java Filter (Recommended)
+- Graphical interface in Policy Studio
+- Configuration via visual parameters
+- Native gateway performance
+- Automated build
 
-### 2. Script Groovy (Alternativa)
-- Flexibilidade total
-- Edição direta do script
-- Configuração dinâmica
-- Debugging detalhado
+### 2. Groovy Script (Alternative)
+- Full flexibility
+- Direct script editing
+- Dynamic configuration
+- Detailed debugging
 
-## 📦 Releases do GitHub
+## 📦 GitHub Releases
 
-### **Downloads Automáticos**
+### **Automatic Downloads**
 
-Os releases são criados automaticamente no GitHub e incluem:
+Releases are automatically created on GitHub and include:
 
-#### **Arquivos Disponíveis em Cada Release:**
-- **JAR Principal** - `aws-lambda-apim-sdk-*.jar` (compilado para múltiplas versões do Axway)
-- **Dependências Externas** - pasta `dependencies/` com JARs AWS SDK
-- **Recursos Policy Studio** - `src/main/resources/fed/` e `src/main/resources/yaml/`
-- **Gradle Wrapper** - `gradlew`, `gradlew.bat` e pasta `gradle/`
-- **Configuração Gradle** - `build.gradle` com tarefas de instalação
-- **Script Linux** - `install-linux.sh` para instalação automática
+#### **Files Available in Each Release:**
+- **Main JAR** - `aws-lambda-apim-sdk-*.jar` (built for multiple Axway versions)
+- **External Dependencies** - `dependencies/` folder with AWS SDK JARs
+- **Policy Studio Resources** - `src/main/resources/fed/` and `src/main/resources/yaml/`
+- **Gradle Wrapper** - `gradlew`, `gradlew.bat` and `gradle/` folder
+- **Gradle Configuration** - `build.gradle` with installation tasks
+- **Linux Script** - `install-linux.sh` for automated installation
 
-#### **Instalação a partir do Release:**
+#### **Installation from Release:**
 
-**Windows (Recomendado):**
+**Windows (Recommended):**
 ```bash
-# Extraia o ZIP do release
-# Navegue até a pasta extraída
-# Execute a tarefa Gradle:
+# Extract the release ZIP
+# Navigate to the extracted folder
+# Run the Gradle task:
 .\gradlew "-Dproject.path=C:\Users\jbarros\apiprojects\DIGIO-POC-AKS-NEW" installWindowsToProject
 ```
 
 **Linux:**
 ```bash
-# Extraia o ZIP do release
-# Execute o script de instalação:
+# Extract the release ZIP
+# Run the installation script:
 ./install-linux.sh
 ```
 
-### **Versões Suportadas:**
+### **Supported Versions:**
 
-As versões suportadas estão definidas no arquivo **[📋 axway-versions.json](axway-versions.json)**:
+Supported versions are defined in **[📋 axway-versions.json](axway-versions.json)**:
 
-| Versão | Descrição |
-|--------|-----------|
-| **7.7.0.20240830** | Versão estável de agosto 2024 - AWS SDK detectado automaticamente |
-| **7.7.0.20250530** | Versão estável de maio 2025 - AWS SDK detectado automaticamente |
+| Version | Description |
+|---------|-------------|
+| **7.7.0.20240830** | Stable August 2024 version - AWS SDK detected automatically |
+| **7.7.0.20250530** | Stable May 2025 version - AWS SDK detected automatically |
 
-**Versão padrão:** `7.7.0.20240830`
+**Default version:** `7.7.0.20240830`
 
 ---
 
-## Build e Instalação
+## Build and Installation
 
-### 🔧 Configuração Dinâmica
+### 🔧 Dynamic Configuration
 
-O projeto suporta **configuração dinâmica** do caminho do Axway API Gateway:
+The project supports **dynamic configuration** of the Axway API Gateway path:
 
 ```bash
-# Configuração padrão
+# Default configuration
 ./gradlew clean build installLinux
 
-# Configuração customizada
+# Custom configuration
 ./gradlew -Daxway.base=/opt/axway/Axway-7.7.0.20210830 clean build installLinux
 
-# Verificar configuração atual
+# Check current configuration
 ./gradlew setAxwayPath
 ```
 
 ### Linux
 ```bash
-# Build do JAR (apenas Linux)
+# Build the JAR (Linux only)
 ./gradlew buildJarLinux
 
-# Build e instalação automática
+# Automated build and installation
 ./gradlew clean build installLinux
 
-# Com caminho customizado
-./gradlew -Daxway.base=/caminho/para/axway clean build installLinux
+# With custom path
+./gradlew -Daxway.base=/path/to/axway clean build installLinux
 ```
 
 ### Windows
 ```bash
-# Instalação apenas dos arquivos YAML em projeto Policy Studio
+# Install only YAML files in Policy Studio project
 ./gradlew installWindows
 
-# Instalação em projeto específico (com caminho)
+# Install in specific project (with path)
 ./gradlew "-Dproject.path=C:\Users\jbarros\apiprojects\DIGIO-POC-AKS" installWindowsToProject
 
-# Instalação interativa (se não especificar caminho)
+# Interactive installation (if path not specified)
 ./gradlew installWindowsToProject
 ```
 
-> 📖 **Guia Completo Windows**: Veja **[📋 Guia de Instalação Windows](docs/INSTALACAO_WINDOWS.md)** para instruções detalhadas.
+> 📖 **Complete Windows Guide**: See **[📋 Windows Installation Guide](docs/INSTALACAO_WINDOWS.md)** for detailed instructions.
 
 ### 🐳 **Docker**
 
-#### **Build com Docker**
+#### **Build with Docker**
 
-Este projeto usa imagens Docker para build automatizado, configuradas no arquivo **[📋 axway-versions.json](axway-versions.json)**.
+This project uses Docker images for automated build, configured in **[📋 axway-versions.json](axway-versions.json)**.
 
-**Conteúdo das imagens:**
-- Axway API Gateway (versão específica)
+**Image contents:**
+- Axway API Gateway (specific version)
 - Java 11 OpenJDK
 - AWS SDK for Java 1.12.314
-- Gradle para build
-- Todas as dependências necessárias
+- Gradle for build
+- All required dependencies
 
-#### **Build usando Docker**
+#### **Build using Docker**
 
 ```bash
-# Build do JAR usando a imagem publicada (versão padrão)
+# Build the JAR using the published image (default version)
 ./scripts/build-with-docker-image.sh
 
-# Ou manualmente:
+# Or manually:
 docker run --rm \
   -v "$(pwd):/workspace" \
   -v "$(pwd)/build:/workspace/build" \
   -w /workspace \
-  <imagem-docker> \
+  <docker-image> \
   bash -c "
     export JAVA_HOME=/opt/java/openjdk-11
     export PATH=\$JAVA_HOME/bin:\$PATH
@@ -173,25 +173,24 @@ docker run --rm \
 ```
 ```
 
-> 💡 **Dica**: O GitHub Actions usa a imagem publicada `axwayjbarros/aws-lambda-apim-sdk:1.0.0`.
+> 💡 **Tip**: GitHub Actions uses the published image `axwayjbarros/aws-lambda-apim-sdk:1.0.0`.
 
-#### **Testar Imagem Publicada**
+#### **Test Published Image**
 
 ```bash
-# Testar a imagem publicada
+# Test the published image
 
-
-# Ou manualmente:
+# Or manually:
 docker pull axwayjbarros/aws-lambda-apim-sdk:1.0.0
 docker run --rm axwayjbarros/aws-lambda-apim-sdk:1.0.0 java -version
 docker run --rm axwayjbarros/aws-lambda-apim-sdk:1.0.0 ls -la /opt/Axway/
 ```
 
-> ⚠️ **Nota**: Esta imagem é **apenas para build**, não para execução de aplicação.
+> ⚠️ **Note**: This image is **for build only**, not for application runtime.
 
-#### **Estrutura de JARs na Imagem**
+#### **JAR Structure in the Image**
 
-A imagem inclui os seguintes JARs organizados:
+The image includes the following JARs organized:
 
 ```
 /opt/Axway/apigateway/lib/
@@ -200,12 +199,12 @@ A imagem inclui os seguintes JARs organizados:
 └── jackson-*.jar                      # Jackson JSON library
 ```
 
-#### **Uso da Imagem para Build**
+#### **Using the Image for Build**
 
-A imagem `axwayjbarros/aws-lambda-apim-sdk:1.0.0` é usada **apenas para build**, não para execução. Ela contém todas as bibliotecas do Axway API Gateway necessárias para compilar o projeto:
+The image `axwayjbarros/aws-lambda-apim-sdk:1.0.0` is **for build only**, not for runtime. It contains all Axway API Gateway libraries needed to compile the project:
 
 ```bash
-# Build usando a imagem (apenas bibliotecas)
+# Build using the image (libraries only)
 docker run --rm \
   -v "$(pwd):/workspace" \
   -v "$(pwd)/build:/workspace/build" \
@@ -218,166 +217,166 @@ docker run --rm \
   "
 ```
 
-#### **Especificações da Imagem:**
+#### **Image Specifications:**
 - **Base**: Axway API Gateway 7.7.0.20240830-4-BN0145-ubi9
 - **Java**: OpenJDK 11.0.27
-- **Bibliotecas**: Todas as libs do Axway API Gateway disponíveis
-- **Uso**: Apenas para build do projeto, não para execução
+- **Libraries**: All Axway API Gateway libs available
+- **Usage**: Build only, not for application runtime
 
 #### **GitHub Actions**
 
-O projeto usa a imagem para build automatizado:
+The project uses the image for automated build:
 
-- **Build Contínuo**: `.github/workflows/build-jar.yml`
+- **Continuous Build**: `.github/workflows/build-jar.yml`
 - **Release**: `.github/workflows/release.yml`
-- **Imagem**: `axwayjbarros/aws-lambda-apim-sdk:1.0.0`
+- **Image**: `axwayjbarros/aws-lambda-apim-sdk:1.0.0`
 
-> 📖 **Docker**: A documentação Docker está integrada nesta seção do README.
+> 📖 **Docker**: Docker documentation is integrated in this README section.
 
-### ⚠️ **Importante: Build do JAR**
+### ⚠️ **Important: JAR Build**
 
-O **build do JAR deve ser feito no Linux** devido às dependências do Axway API Gateway. Para Windows:
+**The JAR build must be done on Linux** due to Axway API Gateway dependencies. For Windows:
 
-1. **Build no Linux:**
+1. **Build on Linux:**
    ```bash
    ./gradlew buildJarLinux
    ```
 
-2. **Copiar JAR para Windows:**
+2. **Copy JAR to Windows:**
    ```bash
-   # Copie o arquivo: build/libs/aws-lambda-apim-sdk-1.0.1.jar
-   # Para o ambiente Windows
+   # Copy the file: build/libs/aws-lambda-apim-sdk-1.0.1.jar
+   # To the Windows environment
    ```
 
-3. **Instalar YAML no Windows:**
+3. **Install YAML on Windows:**
    ```bash
    ./gradlew installWindows
    ```
 
-### 🔄 **Processo Linux vs Windows**
+### 🔄 **Linux vs Windows Process**
 
 | Linux | Windows |
 |-------|---------|
-| ✅ Build do JAR | ❌ Build do JAR |
-| ✅ Instalação completa | ✅ Instalação YAML |
-| ✅ Dependências nativas | ⚠️ JARs externos |
-| ✅ Configuração automática | ⚠️ Configuração manual |
+| ✅ JAR build | ❌ JAR build |
+| ✅ Full installation | ✅ YAML installation |
+| ✅ Native dependencies | ⚠️ External JARs |
+| ✅ Automatic configuration | ⚠️ Manual configuration |
 
-**Linux**: Processo completo (JAR + YAML + instalação)  
-**Windows**: Apenas YAML (JAR deve ser buildado no Linux)
+**Linux**: Full process (JAR + YAML + installation)  
+**Windows**: YAML only (JAR must be built on Linux)
 
-### Comandos Úteis
+### Useful Commands
 ```bash
-# Ver todas as tasks disponíveis
+# List all available tasks
 ./gradlew showTasks
 
-# Mostrar links dos JARs AWS SDK
+# Show AWS SDK JAR links
 ./gradlew showAwsJars
 
-# Verificar configuração do Axway
+# Check Axway configuration
 ./gradlew setAxwayPath
 
-# Apenas build
+# Build only
 ./gradlew clean build
 ```
 
-## 📚 Documentação
+## 📚 Documentation
 
-Este projeto possui documentação completa organizada por tópicos:
+This project has complete documentation organized by topic:
 
-### 🚀 **Guias de Instalação**
-- **[📋 Guia de Instalação Windows](docs/INSTALACAO_WINDOWS.md)** - Instruções detalhadas para Windows
-- **[🔧 Configuração Dinâmica](docs/CONFIGURACAO_DINAMICA.md)** - Como configurar caminhos do Axway dinamicamente
+### 🚀 **Installation Guides**
+- **[📋 Windows Installation Guide](docs/INSTALACAO_WINDOWS.md)** - Detailed instructions for Windows
+- **[🔧 Dynamic Configuration](docs/CONFIGURACAO_DINAMICA.md)** - How to configure Axway paths dynamically
 
-### 🔧 **Desenvolvimento e Build**
-- **[🏷️ Guia de Releases](docs/RELEASE_GUIDE.md)** - Como criar releases e versionamento
-- **[📊 Versionamento Semântico](docs/SEMANTIC_VERSIONING.md)** - Sistema automático de versionamento
-- **[🤖 Sistema de Release Automático](docs/AUTOMATIC_RELEASE_SYSTEM.md)** - Análise inteligente e criação automática de releases
-- **[🔧 Referência dos Scripts](docs/SCRIPTS_REFERENCE.md)** - Documentação dos scripts essenciais
+### 🔧 **Development and Build**
+- **[🗳️ Release Guide](docs/RELEASE_GUIDE.md)** - How to create releases and versioning
+- **[📊 Semantic Versioning](docs/SEMANTIC_VERSIONING.md)** - Automatic versioning system
+- **[🤖 Automatic Release System](docs/AUTOMATIC_RELEASE_SYSTEM.md)** - Intelligent analysis and automatic release creation
+- **[🔧 Scripts Reference](docs/SCRIPTS_REFERENCE.md)** - Documentation of essential scripts
 
-### 📝 **Documentação Técnica**
-- **[🔍 Atualizações de Campos](docs/ATUALIZACOES_CAMPOS_FILTRO.md)** - Histórico de mudanças nos campos do filtro
-- **[🔐 Melhorias de Autenticação AWS](docs/MELHORIAS_AUTENTICACAO_AWS.md)** - Configurações avançadas de autenticação
-- **[📖 Documentação Groovy](docs/AWS_LAMBDA_GROOVY_DOCUMENTATION.md)** - Guia completo para scripts Groovy
+### 📝 **Technical Documentation**
+- **[🔍 Field Updates](docs/ATUALIZACOES_CAMPOS_FILTRO.md)** - History of filter field changes
+- **[🔐 AWS Authentication Improvements](docs/MELHORIAS_AUTENTICACAO_AWS.md)** - Advanced authentication settings
+- **[📖 Groovy Documentation](docs/AWS_LAMBDA_GROOVY_DOCUMENTATION.md)** - Complete guide for Groovy scripts
 
-### 📋 **Estrutura da Documentação**
+### 📋 **Documentation Structure**
 ```
 docs/
-├── 📋 INSTALACAO_WINDOWS.md              # Instalação no Windows
-├── 🔧 CONFIGURACAO_DINAMICA.md           # Configuração dinâmica
-├── 🏷️ RELEASE_GUIDE.md                   # Guia de releases
-├── 📊 SEMANTIC_VERSIONING.md             # Versionamento semântico
-├── 🔍 ATUALIZACOES_CAMPOS_FILTRO.md     # Histórico de campos
-├── 🔐 MELHORIAS_AUTENTICACAO_AWS.md     # Autenticação AWS
-└── 📖 AWS_LAMBDA_GROOVY_DOCUMENTATION.md # Documentação Groovy
+├── 📋 INSTALACAO_WINDOWS.md              # Windows installation
+├── 🔧 CONFIGURACAO_DINAMICA.md           # Dynamic configuration
+├── 🗳️ RELEASE_GUIDE.md                   # Release guide
+├── 📊 SEMANTIC_VERSIONING.md             # Semantic versioning
+├── 🔍 ATUALIZACOES_CAMPOS_FILTRO.md      # Field history
+├── 🔐 MELHORIAS_AUTENTICACAO_AWS.md      # AWS authentication
+└── 📖 AWS_LAMBDA_GROOVY_DOCUMENTATION.md # Groovy documentation
 ```
 
 ---
 
-## Instalação Manual (Alternativa)
+## Manual Installation (Alternative)
 
 ### Linux
 
-1. **Build e instalação automática:**
+1. **Automated build and installation:**
    ```bash
    ./gradlew clean build
    ./scripts/linux/install-filter.sh
    ```
 
-2. **Configurar Policy Studio:**
-   - Abra o Policy Studio
-   - Vá em **Window > Preferences > Runtime Dependencies**
-   - Adicione o JAR: `/opt/axway/Axway-7.7.0.20240830/apigateway/groups/group-2/instance-1/ext/lib/aws-lambda-apim-sdk-1.0.1.jar`
-   - Reinicie o Policy Studio com `-clean`
+2. **Configure Policy Studio:**
+   - Open Policy Studio
+   - Go to **Window > Preferences > Runtime Dependencies**
+   - Add the JAR: `/opt/axway/Axway-7.7.0.20240830/apigateway/groups/group-2/instance-1/ext/lib/aws-lambda-apim-sdk-1.0.1.jar`
+   - Restart Policy Studio with `-clean`
 
 ### Windows
 
-1. **Instalar arquivos YAML (interativo):**
+1. **Install YAML files (interactive):**
    ```bash
    ./gradlew installWindows
    ```
-   O Gradle solicitará o caminho do projeto Policy Studio.
+   Gradle will prompt for the Policy Studio project path.
 
-2. **Instalar arquivos YAML em projeto específico:**
+2. **Install YAML files in a specific project:**
    ```bash
-   ./gradlew -Dproject.path=C:\caminho\do\projeto installWindowsToProject
+   ./gradlew -Dproject.path=C:\path\to\project installWindowsToProject
    ```
 
-3. **Ver links dos JARs AWS SDK:**
+3. **Show AWS SDK JAR links:**
    ```bash
    ./gradlew showAwsJars
    ```
 
-4. **Configurar Policy Studio:**
-   - Abra o Policy Studio
-   - Vá em **Window > Preferences > Runtime Dependencies**
-   - Adicione o JAR: `aws-lambda-apim-sdk-1.0.1.jar`
-   - Reinicie o Policy Studio com `-clean`
+4. **Configure Policy Studio:**
+   - Open Policy Studio
+   - Go to **Window > Preferences > Runtime Dependencies**
+   - Add the JAR: `aws-lambda-apim-sdk-1.0.1.jar`
+   - Restart Policy Studio with `-clean`
 
-## Configuração AWS
+## AWS Configuration
 
-### Credenciais
+### Credentials
 
-#### 1. Arquivo de Credenciais (Recomendado)
+#### 1. Credentials File (Recommended)
 ```ini
 # ~/.aws/credentials
 [default]
-aws_access_key_id = sua_access_key
-aws_secret_access_key = sua_secret_key
-aws_session_token = seu_session_token  # opcional
+aws_access_key_id = your_access_key
+aws_secret_access_key = your_secret_key
+aws_session_token = your_session_token  # optional
 ```
 
-#### 2. Variáveis de Ambiente
+#### 2. Environment Variables
 ```bash
-export AWS_ACCESS_KEY_ID="sua_access_key"
-export AWS_SECRET_ACCESS_KEY="sua_secret_key"
-export AWS_SESSION_TOKEN="seu_session_token"  # opcional
+export AWS_ACCESS_KEY_ID="your_access_key"
+export AWS_SECRET_ACCESS_KEY="your_secret_key"
+export AWS_SESSION_TOKEN="your_session_token"  # optional
 export AWS_DEFAULT_REGION="us-east-1"
 ```
 
-#### 3. IAM Roles (Recomendado para Produção)
+#### 3. IAM Roles (Recommended for Production)
 
-**Para EKS (Kubernetes):**
+**For EKS (Kubernetes):**
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -390,7 +389,7 @@ spec:
       containers:
       - name: axway-gateway
         image: axway/api-gateway:latest
-        # Sem variáveis de ambiente - usa IAM Role automaticamente
+        # No environment variables - uses IAM Role automatically
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -400,135 +399,135 @@ metadata:
     eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT:role/axway-lambda-role
 ```
 
-**Para EC2:**
-- Anexe um IAM Role à instância EC2
-- O filtro Java detectará automaticamente as credenciais
+**For EC2:**
+- Attach an IAM Role to the EC2 instance
+- The Java filter will automatically detect the credentials
 
-**Vantagens:**
-- ✅ Segurança máxima (sem credenciais estáticas)
-- ✅ Rotação automática de credenciais
-- ✅ Auditoria via CloudTrail
-- ✅ Funciona com filtro Java e script Groovy
+**Advantages:**
+- ✅ Maximum security (no static credentials)
+- ✅ Automatic credential rotation
+- ✅ Auditing via CloudTrail
+- ✅ Works with both Java filter and Groovy script
 
-## Uso
+## Usage
 
-### Filtro Java
+### Java Filter
 
-Para informações detalhadas sobre o filtro Java, incluindo campos, instalação, testes e troubleshooting, consulte o arquivo **[📖 Documentação Filtro Java](docs/FILTRO_JAVA_DOCUMENTATION.md)**.
+For detailed information about the Java filter, including fields, installation, testing, and troubleshooting, see **[📖 Java Filter Documentation](docs/FILTRO_JAVA_DOCUMENTATION.md)**.
 
-**Uso básico:**
-1. **Instalar JARs:**
-   - Copie `aws-lambda-apim-sdk-<versao>.jar` para `/opt/Axway/apigateway/groups/group-2/instance-1/ext/lib/`
-   - Copie `dependencies/external-aws-java-sdk-lambda-<versao>.jar` para o mesmo diretório
-   - Reinicie o gateway
+**Basic usage:**
+1. **Install JARs:**
+   - Copy `aws-lambda-apim-sdk-<version>.jar` to `/opt/Axway/apigateway/groups/group-2/instance-1/ext/lib/`
+   - Copy `dependencies/external-aws-java-sdk-lambda-<version>.jar` to the same directory
+   - Restart the gateway
 
-2. **Adicionar ao Policy Studio:**
-   - Vá em **Window > Preferences > Runtime Dependencies**
-   - Adicione os JARs ao classpath
-   - Reinicie o Policy Studio com `-clean`
+2. **Add to Policy Studio:**
+   - Go to **Window > Preferences > Runtime Dependencies**
+   - Add the JARs to the classpath
+   - Restart Policy Studio with `-clean`
 
-3. **Configurar filtro:**
-   - Procure por **"AWS Lambda Filter"** na paleta
-   - Configure os parâmetros necessários
-   - Teste a integração
+3. **Configure filter:**
+   - Search for **"AWS Lambda Filter"** in the palette
+   - Configure the required parameters
+   - Test the integration
 
-### Script Groovy
+### Groovy Script
 
-Para informações detalhadas sobre o script Groovy, incluindo configuração Kubernetes, troubleshooting e parâmetros específicos, consulte o arquivo **[📖 Documentação Groovy](docs/AWS_LAMBDA_GROOVY_DOCUMENTATION.md)**.
+For detailed information about the Groovy script, including Kubernetes configuration, troubleshooting, and specific parameters, see **[📖 Groovy Documentation](docs/AWS_LAMBDA_GROOVY_DOCUMENTATION.md)**.
 
-**Uso básico:**
-1. **Copiar script:**
-   - Use o arquivo `aws-lambda-filter.groovy`
-   - Cole no filtro de script do Policy Studio
+**Basic usage:**
+1. **Copy script:**
+   - Use the file `aws-lambda-filter.groovy`
+   - Paste it into the Policy Studio script filter
 
-2. **Configurar credenciais AWS**
-3. **Testar com requisição HTTP**
+2. **Configure AWS credentials**
+3. **Test with HTTP request**
 
-## Estrutura do Projeto
+## Project Structure
 
 ```
 aws-lambda-apim-sdk/
-├── README.md                                # Documentação principal
-├── docs/                                    # 📚 Documentação organizada
-│   ├── 📋 INSTALACAO_WINDOWS.md            # Instalação Windows
-│   ├── 🔧 CONFIGURACAO_DINAMICA.md         # Configuração dinâmica
-│   ├── 🏷️ RELEASE_GUIDE.md                 # Guia de releases
-│   ├── 📊 SEMANTIC_VERSIONING.md           # Versionamento semântico
-│   ├── 🔍 ATUALIZACOES_CAMPOS_FILTRO.md   # Histórico de campos
-│   ├── 🔐 MELHORIAS_AUTENTICACAO_AWS.md   # Autenticação AWS
-│   └── 📖 AWS_LAMBDA_GROOVY_DOCUMENTATION.md # Documentação Groovy
-├── build.gradle                             # Configuração build + tasks
-├── aws-lambda-filter.groovy                # Script Groovy
+├── README.md                                # Main documentation
+├── docs/                                    # 📚 Organized documentation
+│   ├── 📋 INSTALACAO_WINDOWS.md            # Windows installation
+│   ├── 🔧 CONFIGURACAO_DINAMICA.md         # Dynamic configuration
+│   ├── 🗳️ RELEASE_GUIDE.md                 # Release guide
+│   ├── 📊 SEMANTIC_VERSIONING.md           # Semantic versioning
+│   ├── 🔍 ATUALIZACOES_CAMPOS_FILTRO.md   # Field history
+│   ├── 🔐 MELHORIAS_AUTENTICACAO_AWS.md   # AWS authentication
+│   └── 📖 AWS_LAMBDA_GROOVY_DOCUMENTATION.md # Groovy documentation
+├── build.gradle                             # Build configuration + tasks
+├── aws-lambda-filter.groovy                 # Groovy script
 ├── scripts/
 │   ├── linux/
-│   │   └── install-filter.sh               # Instalação Linux
+│   │   └── install-filter.sh               # Linux installation
 │   └── windows/
 │       ├── install-filter-windows.ps1      # PowerShell
-│       ├── install-filter-windows.cmd       # CMD
-│       ├── configurar-projeto-windows.ps1  # Configuração
-│       └── test-internationalization.ps1   # Teste
-├── src/main/                               # Código fonte
+│       ├── install-filter-windows.cmd      # CMD
+│       ├── configurar-projeto-windows.ps1  # Configuration
+│       └── test-internationalization.ps1   # Test
+├── src/main/                               # Source code
 └── build/
     └── build/libs/aws-lambda-apim-sdk-1.0.1.jar
 ```
 
-## Testes
+## Tests
 
-### Status dos Testes
+### Test Status
 
-| Tipo de Teste | Filtro Java | Script Groovy |
-|---------------|-------------|---------------|
-| **Entity Store (YAML)** | ✅ Testado | ✅ Testado |
-| **Entity Store (XML)** | ❌ **Não testado** | ❌ **Não testado** |
-| **Performance** | ❌ **Não testado** | ❌ **Não testado** |
+| Test Type | Java Filter | Groovy Script |
+|-----------|-------------|---------------|
+| **Entity Store (YAML)** | ✅ Tested | ✅ Tested |
+| **Entity Store (XML)** | ❌ **Not tested** | ❌ **Not tested** |
+| **Performance** | ❌ **Not tested** | ❌ **Not tested** |
 
-### Próximos Testes Necessários
+### Next Required Tests
 
-1. **Teste Entity Store XML** - Validar compatibilidade com formato XML
-2. **Testes de Performance** - Avaliar performance com diferentes cargas
-3. **Testes de Concorrência** - Múltiplas invocações simultâneas
+1. **Test Entity Store XML** - Validate compatibility with XML format
+2. **Performance Tests** - Evaluate performance with different loads
+3. **Concurrency Tests** - Multiple simultaneous invocations
 
 ## Troubleshooting
 
-### Problemas Comuns
+### Common Issues
 
-1. **Filtro não aparece na paleta:**
-   - Verifique se o JAR foi adicionado ao classpath
-   - Reinicie o Policy Studio com `-clean`
+1. **Filter does not appear in the palette:**
+   - Check if the JAR was added to the classpath
+   - Restart Policy Studio with `-clean`
 
-2. **Erro de credenciais AWS:**
-   - Verifique se as credenciais estão configuradas
-   - Teste com `aws sts get-caller-identity`
+2. **AWS credentials error:**
+   - Check if credentials are configured
+   - Test with `aws sts get-caller-identity`
 
-3. **Erro de função não encontrada:**
-   - Verifique o nome da função e a região
-   - Confirme se a função existe na AWS
+3. **Function not found error:**
+   - Check the function name and region
+   - Confirm the function exists in AWS
 
 ### Logs
 
-O filtro gera logs detalhados:
-- **Sucesso**: "Success in the AWS Lambda filter"
-- **Falha**: "Failed in the AWS Lambda filter"
-- **Erro**: "Error in the AWS Lambda Error: ${circuit.exception}"
+The filter generates detailed logs:
+- **Success**: "Success in the AWS Lambda filter"
+- **Failure**: "Failed in the AWS Lambda filter"
+- **Error**: "Error in the AWS Lambda Error: ${circuit.exception}"
 
-## Comparação das Abordagens
+## Approach Comparison
 
-| Aspecto | Filtro Java | Script Groovy |
-|---------|-------------|---------------|
-| **Interface** | Gráfica no Policy Studio | Script de texto |
-| **Configuração** | Parâmetros visuais | Variáveis no script |
-| **Manutenção** | Requer rebuild do JAR | Edição direta do script |
-| **Performance** | Nativo do gateway | Interpretado |
-| **Flexibilidade** | Limitada aos parâmetros definidos | Totalmente customizável |
-| **Debugging** | Logs estruturados | Logs detalhados |
+| Aspect | Java Filter | Groovy Script |
+|--------|-------------|---------------|
+| **Interface** | Graphical in Policy Studio | Text script |
+| **Configuration** | Visual parameters | Script variables |
+| **Maintenance** | Requires JAR rebuild | Direct script editing |
+| **Performance** | Native to gateway | Interpreted |
+| **Flexibility** | Limited to defined parameters | Fully customizable |
+| **Debugging** | Structured logs | Detailed logs |
 
-## Segurança
+## Security
 
-- Use IAM Roles quando possível
-- Rotacione credenciais regularmente
-- Use políticas IAM com privilégios mínimos
-- Monitore logs de acesso e execução
-- Considere usar AWS Secrets Manager para credenciais sensíveis
+- Use IAM Roles whenever possible
+- Rotate credentials regularly
+- Use IAM policies with least privilege
+- Monitor access and execution logs
+- Consider using AWS Secrets Manager for sensitive credentials
 
 ## Contributing
 
@@ -547,87 +546,87 @@ Please read [Contributing.md](https://github.com/Axway-API-Management-Plus/Commo
 
 ### **GitHub Actions**
 
-O projeto inclui workflows automatizados que usam Docker para build:
+The project includes automated workflows that use Docker for build:
 
 #### **CI (Continuous Integration)**
-- **Trigger**: Push para `main`, `develop` ou Pull Requests
-- **Ações**:
-  - ✅ Login no registry Axway (para imagem base)
-  - ✅ Build da imagem Docker de build (com Axway + Gradle)
-  - ✅ Build do JAR dentro do container Docker
-  - ✅ Upload do JAR como artifact
-  - ✅ Testes do JAR
+- **Trigger**: Push to `main`, `develop` or Pull Requests
+- **Actions**:
+  - ✅ Login to Axway registry (for base image)
+  - ✅ Build Docker build image (with Axway + Gradle)
+  - ✅ Build JAR inside Docker container
+  - ✅ Upload JAR as artifact
+  - ✅ JAR tests
 
 #### **Release**
-- **Trigger**: Push de tags (`v*`)
-- **Ações**:
-  - ✅ Login no registry Axway
-  - ✅ Build da imagem Docker de build
-  - ✅ Build do JAR dentro do container
-  - ✅ Geração de changelog
-  - ✅ Criação de GitHub Release
-  - ✅ Upload do JAR para o release
-  - ✅ Testes do JAR
+- **Trigger**: Tag push (`v*`)
+- **Actions**:
+  - ✅ Login to Axway registry
+  - ✅ Build Docker build image
+  - ✅ Build JAR inside container
+  - ✅ Generate changelog
+  - ✅ Create GitHub Release
+  - ✅ Upload JAR to release
+  - ✅ JAR tests
 
-### **Fluxo de Build**
+### **Build Flow**
 
 ```
-1. Login no Axway Registry
+1. Login to Axway Registry
    ↓
-2. Build da imagem Docker (com Axway + Gradle)
+2. Build Docker image (with Axway + Gradle)
    ↓
-3. Execução do build do JAR dentro do container
+3. Run JAR build inside container
    ↓
-4. Geração do JAR final
+4. Generate final JAR
    ↓
-5. Upload para GitHub Release/Artifacts
+5. Upload to GitHub Release/Artifacts
 ```
 
-### **Por que usar Docker?**
+### **Why use Docker?**
 
-- **✅ Ambiente Consistente**: Mesmo ambiente Axway sempre
-- **✅ Dependências Garantidas**: Axway + Gradle + Java 11
-- **✅ Isolamento**: Build isolado em container
-- **✅ Reproduzibilidade**: Mesmo resultado sempre
-- **✅ Não Publica Imagem**: Apenas usa para build
+- ✅ Consistent environment: Always the same Axway environment
+- ✅ Guaranteed dependencies: Axway + Gradle + Java 11
+- ✅ Isolation: Build isolated in container
+- ✅ Reproducibility: Always the same result
+- ✅ Does not publish image: Only used for build
 
-### **Artefatos Gerados**
+### **Generated Artifacts**
 
-#### **JAR Principal**
+#### **Main JAR**
 ```
 aws-lambda-apim-sdk-1.0.1.jar
-├── Filtro Java AWS Lambda
-├── Classes de UI do Policy Studio
-├── Dependências AWS SDK
-└── Configurações YAML
+├── AWS Lambda Java Filter
+├── Policy Studio UI classes
+├── AWS SDK dependencies
+└── YAML configurations
 ```
 
-#### **Localização**
-- **GitHub Releases**: Disponível para download
-- **GitHub Actions Artifacts**: Durante CI/CD
+#### **Location**
+- **GitHub Releases**: Available for download
+- **GitHub Actions Artifacts**: During CI/CD
 - **Local**: `build/libs/aws-lambda-apim-sdk-*.jar`
 
-### **Como Usar**
+### **How to Use**
 
-#### **Download do JAR**
-1. Vá para **Releases** no GitHub
-2. Baixe o JAR da versão desejada
-3. Siga o guia de instalação
+#### **Download the JAR**
+1. Go to **Releases** on GitHub
+2. Download the JAR of the desired version
+3. Follow the installation guide
 
-#### **Build Local**
+#### **Local Build**
 ```bash
-# Build do JAR (requer Axway local)
+# Build the JAR (requires local Axway)
 ./gradlew buildJarLinux
 
-# Ou usando Docker (recomendado)
+# Or using Docker (recommended)
 ./scripts/docker/build-with-docker.sh
 ```
 
-#### **Docker para Desenvolvimento**
+#### **Docker for Development**
 ```bash
-# Build da imagem para desenvolvimento
+# Build the image for development
 ./scripts/docker/build-image.sh
 
-# Testar
+# Test
 docker run --rm aws-lambda-apim-sdk:latest java -version
 ```

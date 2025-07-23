@@ -70,19 +70,21 @@ public class AWSLambdaProcessor extends MessageProcessor {
 			retryDelay = "1000";
 		}
 		
-		Trace.info("=== Configuração Lambda (Java Filter) ===");
-		Trace.info("Função: " + functionName);
-		Trace.info("Região: " + (awsRegion != null ? awsRegion : "inferida"));
-		// tipos possíveis: RequestResponse, Event, DryRun
-		Trace.info("Tipo: " + invocationType);
+		// Basic settings
+		// Default values
+		// Possible types: RequestResponse, Event, DryRun
+		Trace.info("=== Lambda Configuration (Java Filter) ===");
+		Trace.info("Function: " + functionName);
+		Trace.info("Region: " + (awsRegion != null ? awsRegion : "inferred"));
+		Trace.info("Type: " + invocationType);
 		Trace.info("Log Type: " + logType);
 		Trace.info("Max Retries: " + maxRetries);
 		Trace.info("Retry Delay: " + retryDelay + "ms");
 		
-		// Configurar credenciais AWS
+		// Configure AWS credentials
 		AWSCredentialsProvider credentialsProvider = configureCredentials();
 		if (credentialsProvider == null) {
-			Trace.error("Não foi possível configurar credenciais AWS");
+			Trace.error("Could not configure AWS credentials");
 			return;
 		}
 		
@@ -90,7 +92,7 @@ public class AWSLambdaProcessor extends MessageProcessor {
 		AWSLambdaClientBuilder builder = AWSLambdaClientBuilder.standard()
 			.withCredentials(credentialsProvider);
 		
-		// Usar região da configuração ou da variável de ambiente
+		// Use region from configuration or environment variable
 		String regionToUse = awsRegion;
 		if (regionToUse == null || regionToUse.trim().isEmpty()) {
 			regionToUse = System.getenv("AWS_DEFAULT_REGION");
@@ -98,22 +100,22 @@ public class AWSLambdaProcessor extends MessageProcessor {
 		
 		if (regionToUse != null && !regionToUse.trim().isEmpty()) {
 			builder = builder.withRegion(regionToUse);
-			Trace.info("Usando região: " + regionToUse);
+			Trace.info("Using region: " + regionToUse);
 		} else {
-			Trace.error("Região AWS não especificada");
+			Trace.error("AWS region not specified");
 			return;
 		}
 		
 		awsLambda = builder.build();
-		Trace.info("Cliente AWS Lambda configurado com sucesso");
+		Trace.info("AWS Lambda client successfully configured");
 	}
 
 	@Override
 	public boolean invoke(Circuit arg0, Message msg) throws CircuitAbortException {
 		
 		if (awsLambda == null) {
-			Trace.error("Cliente AWS Lambda não foi configurado");
-			msg.put("aws.lambda.error", "Cliente AWS Lambda não foi configurado");
+			Trace.error("AWS Lambda client was not configured");
+			msg.put("aws.lambda.error", "AWS Lambda client was not configured");
 			return false;
 		}
 		
@@ -122,7 +124,7 @@ public class AWSLambdaProcessor extends MessageProcessor {
 			body = "{}";
 		}
 		
-		Trace.info("Invocando função Lambda com retry...");
+		Trace.info("Invoking Lambda function with retry...");
 		
 		int maxRetriesInt = Integer.parseInt(maxRetries);
 		int retryDelayInt = Integer.parseInt(retryDelay);
@@ -130,57 +132,57 @@ public class AWSLambdaProcessor extends MessageProcessor {
 		
 		for (int attempt = 1; attempt <= maxRetriesInt; attempt++) {
 			try {
-				Trace.info("Tentativa " + attempt + " de " + maxRetriesInt);
+				Trace.info("Attempt " + attempt + " of " + maxRetriesInt);
 				
-				// Criar requisição
+				// Create request
 				InvokeRequest invokeRequest = new InvokeRequest()
 					.withFunctionName(functionName)
 					.withPayload(body)
 					.withInvocationType(invocationType)
 					.withLogType(logType);
 				
-				// Adicionar qualifier se especificado
+				// Add qualifier if specified
 				if (qualifier != null && !qualifier.trim().isEmpty()) {
 					invokeRequest.setQualifier(qualifier);
-					Trace.info("Usando qualifier: " + qualifier);
+					Trace.info("Using qualifier: " + qualifier);
 				}
 				
-				// Invocar função Lambda
+				// Invoke Lambda function
 				InvokeResult invokeResult = awsLambda.invoke(invokeRequest);
 				
-				// Processar resposta
+				// Process response
 				return processInvokeResult(invokeResult, msg);
 				
 			} catch (Exception e) {
 				lastException = e;
-				Trace.error("Tentativa " + attempt + " falhou: " + e.getMessage());
+				Trace.error("Attempt " + attempt + " failed: " + e.getMessage());
 				
-				// Se não é a última tentativa, aguardar antes de tentar novamente
+				// If not the last attempt, wait before retrying
 				if (attempt < maxRetriesInt) {
-					Trace.info("Aguardando " + retryDelayInt + "ms antes da próxima tentativa...");
+					Trace.info("Waiting " + retryDelayInt + "ms before next attempt...");
 					try {
 						Thread.sleep(retryDelayInt);
 					} catch (InterruptedException ie) {
 						Thread.currentThread().interrupt();
-						Trace.error("Thread interrompida durante retry");
+						Trace.error("Thread interrupted during retry");
 						return false;
 					}
 				}
 			}
 		}
 		
-		// Se chegou aqui, todas as tentativas falharam
-		Trace.error("Todas as " + maxRetriesInt + " tentativas falharam");
-		msg.put("aws.lambda.error", "Falha após " + maxRetriesInt + " tentativas: " + 
-			(lastException != null ? lastException.getMessage() : "Erro desconhecido"));
+		// If reached here, all attempts failed
+		Trace.error("All " + maxRetriesInt + " attempts failed");
+		msg.put("aws.lambda.error", "Failure after " + maxRetriesInt + " attempts: " + 
+			(lastException != null ? lastException.getMessage() : "Unknown error"));
 		return false;
 	}
 	
 	/**
-	 * Configura credenciais AWS usando múltiplas estratégias
+	 * Configures AWS credentials using multiple strategies
 	 */
 	private AWSCredentialsProvider configureCredentials() {
-		// Verificar variáveis de ambiente
+		// Check environment variables
 		String envAccessKey = System.getenv("AWS_ACCESS_KEY_ID");
 		String envSecretKey = System.getenv("AWS_SECRET_ACCESS_KEY");
 		String envSessionToken = System.getenv("AWS_SESSION_TOKEN");
@@ -190,15 +192,9 @@ public class AWSLambdaProcessor extends MessageProcessor {
 			envProfile = "default";
 		}
 		
-		Trace.info("Verificando configuração AWS...");
-		Trace.info("AWS_ACCESS_KEY_ID presente: " + (envAccessKey != null));
-		Trace.info("AWS_SECRET_ACCESS_KEY presente: " + (envSecretKey != null));
-		Trace.info("AWS_SHARED_CREDENTIALS_FILE: " + (envCredentialsFile != null ? envCredentialsFile : "não definido"));
-		Trace.info("AWS_PROFILE: " + envProfile);
-		
-		// Estratégia 1: Variáveis de ambiente diretas
+		// Strategy 1: Direct environment variables
 		if (envAccessKey != null && envSecretKey != null) {
-			Trace.info("Usando credenciais de variáveis de ambiente");
+			Trace.info("Using environment variable credentials");
 			
 			if (envSessionToken != null && !envSessionToken.trim().isEmpty()) {
 				BasicSessionCredentials credentials = new BasicSessionCredentials(envAccessKey, envSecretKey, envSessionToken);
@@ -208,45 +204,46 @@ public class AWSLambdaProcessor extends MessageProcessor {
 				return new AWSStaticCredentialsProvider(credentials);
 			}
 		}
-		// Estratégia 2: Arquivo de credenciais
+		// Strategy 2: Credentials file
 		else if (envCredentialsFile != null && !envCredentialsFile.trim().isEmpty()) {
-			Trace.info("Usando arquivo de credenciais: " + envCredentialsFile);
+			Trace.info("Using credentials file: " + envCredentialsFile);
 			
 			try {
 				File credentialsFile = new File(envCredentialsFile);
 				if (credentialsFile.exists()) {
-					Trace.info("Arquivo de credenciais encontrado");
+					Trace.info("Credentials file found");
 					return new ProfileCredentialsProvider(envCredentialsFile, envProfile);
 				} else {
-					Trace.error("Arquivo de credenciais não encontrado: " + envCredentialsFile);
+					Trace.error("Credentials file not found: " + envCredentialsFile);
 					return null;
 				}
 			} catch (Exception e) {
-				Trace.error("Erro ao configurar arquivo de credenciais: " + e.getMessage());
+				Trace.error("Error configuring credentials file: " + e.getMessage());
 				return null;
 			}
 		}
-		// Estratégia 3: Fallback para DefaultAWSCredentialsProviderChain
+		// Strategy 3: Fallback to DefaultAWSCredentialsProviderChain
 		else {
-			Trace.info("Usando DefaultAWSCredentialsProviderChain (fallback)");
+			Trace.info("Using DefaultAWSCredentialsProviderChain (fallback)");
 			try {
 				return new DefaultAWSCredentialsProviderChain();
 			} catch (Exception e) {
-				Trace.error("Erro ao configurar DefaultAWSCredentialsProviderChain: " + e.getMessage());
+				Trace.error("Error configuring DefaultAWSCredentialsProviderChain: " + e.getMessage());
 				return null;
 			}
 		}
 	}
 	
 	/**
-	 * Processa o resultado da invocação Lambda
+	 * Processes the result of the Lambda invocation
 	 */
 	private boolean processInvokeResult(InvokeResult invokeResult, Message msg) {
 		try {
 			String response = new String(invokeResult.getPayload().array(), "UTF-8");
 			int statusCode = invokeResult.getStatusCode();
 			
-			Trace.info("=== Resposta Lambda ===");
+			// === Lambda Response ===
+			Trace.info("=== Lambda Response ===");
 			Trace.info("Status Code: " + statusCode);
 			Trace.info("Response: " + response);
 			Trace.info("Executed Version: " + invokeResult.getExecutedVersion());
@@ -255,33 +252,33 @@ public class AWSLambdaProcessor extends MessageProcessor {
 				Trace.info("Log Result: " + invokeResult.getLogResult());
 			}
 			
-			// Armazenar resultados
+			// Store results
 			msg.put("aws.lambda.response", response);
 			msg.put("aws.lambda.http.status.code", statusCode);
 			msg.put("aws.lambda.executed.version", invokeResult.getExecutedVersion());
 			msg.put("aws.lambda.log.result", invokeResult.getLogResult());
 			
-			// Verificar erro da função Lambda
+			// Check Lambda function error
 			if (invokeResult.getFunctionError() != null) {
-				Trace.error("Erro na função Lambda: " + invokeResult.getFunctionError());
+				Trace.error("Lambda function error: " + invokeResult.getFunctionError());
 				msg.put("aws.lambda.error", invokeResult.getFunctionError());
 				msg.put("aws.lambda.function.error", invokeResult.getFunctionError());
 				return false;
 			}
 			
-			// Verificar status code HTTP
+			// Check HTTP status code
 			if (statusCode >= 400) {
-				Trace.error("Erro HTTP na invocação Lambda: " + statusCode);
-				msg.put("aws.lambda.error", "Erro HTTP: " + statusCode);
+				Trace.error("HTTP error in Lambda invocation: " + statusCode);
+				msg.put("aws.lambda.error", "HTTP Error: " + statusCode);
 				return false;
 			}
 			
-			Trace.info("Invocação Lambda realizada com sucesso");
+			Trace.info("Lambda invocation successful");
 			return true;
 			
 		} catch (Exception e) {
-			Trace.error("Erro ao processar resposta Lambda: " + e.getMessage(), e);
-			msg.put("aws.lambda.error", "Erro ao processar resposta: " + e.getMessage());
+			Trace.error("Error processing Lambda response: " + e.getMessage(), e);
+			msg.put("aws.lambda.error", "Error processing response: " + e.getMessage());
 			return false;
 		}
 	}

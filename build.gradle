@@ -6,88 +6,86 @@ group 'com.axway'
 version '1.0.8'
 sourceCompatibility = 1.8
 
-// Comentário para simular release - build.gradle incluído no ZIP da release
-// Nova simulação: pasta gradle incluída para funcionamento completo do Gradle Wrapper
-// Simulação: estrutura src/main/resources mantida no ZIP para compatibilidade
-// Simulação: documentação do filtro Java completa com guia rápido
+// Comment to simulate release - build.gradle included in the release ZIP
+// New simulation: gradle folder included for full Gradle Wrapper functionality
+// Simulation: src/main/resources structure kept in the ZIP for compatibility
+// Simulation: Java filter documentation complete with quick start guide
 
-// Melhoria: Sistema de build otimizado para Docker
-// - Suporte aprimorado para ambiente containerizado
-// - Configuração automática de dependências Axway
-// - Build consistente entre ambientes
-// - Sistema de release automático com permissões corrigidas
-// - Workflow de release otimizado para usar artifacts
-// - Release criado diretamente no workflow build-jar
-// - Sistema de release unificado funcionando corretamente
-// - Workflow YAML corrigido e funcionando
-// - Sistema robusto para lidar com tags existentes
-// - Action de release atualizada para versão moderna
-// - Sistema de detecção automática de versão AWS SDK implementado
-// - Detecção de JAR corrigida e configuração simplificada
-// - Problema de permissão ao renomear JAR corrigido
-// - Versionamento automático implementado
-// - Release única com múltiplos JARs implementada
-// - GH_TOKEN adicionado para autenticação do GitHub CLI
-// - Simulação de release para teste do sistema completo
-// - Teste de ZIPs organizados com dependências
-// - Corrige cópia de JARs externos do cache do Gradle
-// - Inclui JARs do build + dependências do Gradle
-// - Corrige semantic versioning na tag da release
-// - Corrige ordem de definição do semantic version
-// - Corrige duplicação de JARs e cópia de dependências
-// - Restaura versionamento semântico com script correto
-// - Corrige cache do Gradle e versionamento
-// - Sincroniza versão da release com versão do JAR
-// - Captura JARs baixados pelo Gradle durante o build
-// - Implementa tarefas Gradle para copiar dependências
-// - Simula release para testar workflow completo
-// - Corrige leitura de versão após script de versionamento
-// - Usa outputs do GitHub Actions para comunicar versão entre jobs
+// Improvement: Optimized build system for Docker
+// - Enhanced support for containerized environment
+// - Automatic configuration of Axway dependencies
+// - Consistent build across environments
+// - Automatic release system with fixed permissions
+// - Release workflow optimized to use artifacts
+// - Release created directly in build-jar workflow
+// - Unified release system working correctly
+// - YAML workflow fixed and working
+// - Robust system to handle existing tags
+// - Release action updated to modern version
+// - Automatic AWS SDK version detection system implemented
+// - JAR detection fixed and configuration simplified
+// - Permission issue when renaming JAR fixed
+// - Automatic versioning implemented
+// - Single release with multiple JARs implemented
+// - GH_TOKEN added for GitHub CLI authentication
+// - Release simulation for full system test
+// - Test of organized ZIPs with dependencies
+// - Fixes copy of external JARs from Gradle cache
+// - Includes build JARs + Gradle dependencies
+// - Fixes semantic versioning in release tag
+// - Fixes order of semantic version definition
+// - Fixes duplication of JARs and dependency copy
+// - Restores semantic versioning with correct script
+// - Fixes Gradle cache and versioning
+// - Synchronizes release version with JAR version
+// - Captures JARs downloaded by Gradle during build
+// - Implements Gradle tasks to copy dependencies
+// - Simulates release to test full workflow
+// - Fixes version reading after versioning script
+// - Uses GitHub Actions outputs to communicate version between jobs
 
-// Tarefa para copiar dependências externas
 task copyExternalDependencies(type: Copy) {
-    description = 'Copia dependências externas para pasta dependencies'
+    description = 'Copies external dependencies to dependencies folder'
     
-    // Criar pasta de destino
+    // Create destination folder
     def dependenciesDir = file("dependencies")
     dependenciesDir.mkdirs()
     
-    // Configurar destino
+    // Set destination
     into dependenciesDir
     
-    // Estratégia para lidar com duplicatas
+    // Strategy for handling duplicates
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     
-    // Copiar apenas dependências externas (não do Axway)
+    // Copy only external dependencies (not from Axway)
     from configurations.runtimeClasspath
     
-    // Filtrar apenas JARs AWS que não estão no Axway
+    // Filter only AWS JARs not from Axway
     include { fileTreeElement ->
         def fileName = fileTreeElement.name
         if (fileName.contains('aws-java-sdk') && !fileName.contains('axway')) {
-            println "✅ Copiando dependência externa: $fileName"
+            println "✅ Copying external dependency: $fileName"
             return true
         }
         return false
     }
     
-    // Renomear para evitar conflitos
+    // Rename to avoid conflicts
     rename { fileName ->
         "external-${fileName}"
     }
 }
 
-// Tarefa para listar dependências
 task listDependencies {
-    description = 'Lista todas as dependências do projeto'
+    description = 'Lists all project dependencies'
     
     doLast {
-        println "📋 Dependências do projeto:"
+        println "📋 Project dependencies:"
         configurations.runtimeClasspath.each { file ->
             println "  - ${file.name}"
         }
         
-        println "\n📋 Dependências AWS:"
+        println "\n📋 AWS dependencies:"
         configurations.runtimeClasspath.each { file ->
             if (file.name.contains('aws')) {
                 println "  - ${file.name}"
@@ -118,14 +116,14 @@ dependencies {
     
     if (useAxwayAwsSdk) {
         // Usar AWS SDK do Axway (recomendado)
-        println "🔍 Usando AWS SDK do Axway: ${apim_folder}/lib"
+        println "🔍 Using Axway AWS SDK: ${apim_folder}/lib"
         
         // Verificar se AWS SDK está disponível no Axway
         def awsSdkJars = fileTree(dir: "${apim_folder}/lib", include: '*aws*.jar')
         def awsSdkModulesJars = fileTree(dir: "${apim_folder}/lib/modules/aws", include: '*.jar')
         
         if (awsSdkJars.files.size() > 0 || awsSdkModulesJars.files.size() > 0) {
-            println "✅ AWS SDK encontrado no Axway: ${awsSdkJars.files.size() + awsSdkModulesJars.files.size()} JARs"
+            println "✅ AWS SDK found in Axway: ${awsSdkJars.files.size() + awsSdkModulesJars.files.size()} JARs"
             implementation awsSdkJars
             implementation awsSdkModulesJars
             
@@ -135,7 +133,7 @@ dependencies {
                 def matcher = jar.name =~ /aws-java-sdk-.*-(\d+\.\d+\.\d+)\.jar/
                 if (matcher.find() && !detectedVersion) {
                     detectedVersion = matcher.group(1)
-                    println "🔍 Versão detectada do AWS SDK: $detectedVersion"
+                    println "🔍 Detected AWS SDK version: $detectedVersion"
                 }
             }
             
@@ -143,17 +141,17 @@ dependencies {
             def awsLambdaJar = awsSdkModulesJars.files.find { it.name.contains('lambda') }
             if (!awsLambdaJar) {
                 def lambdaVersion = detectedVersion ?: fallbackAwsSdkVersion
-                println "⚠️  AWS SDK Lambda não encontrado no Axway, adicionando externo: $lambdaVersion"
+                println "⚠️  AWS SDK Lambda not found in Axway, adding external: $lambdaVersion"
                 implementation group: 'com.amazonaws', name: 'aws-java-sdk-lambda', version: lambdaVersion
             }
         } else {
-            println "⚠️  AWS SDK não encontrado no Axway, usando fallback: $fallbackAwsSdkVersion"
+            println "⚠️  AWS SDK not found in Axway, using fallback: $fallbackAwsSdkVersion"
             implementation group: 'com.amazonaws', name: 'aws-java-sdk-lambda', version: fallbackAwsSdkVersion
             implementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: fallbackAwsSdkVersion
         }
     } else {
         // Usar AWS SDK externo (fallback)
-        println "🔧 Usando AWS SDK externo: $fallbackAwsSdkVersion"
+        println "🔧 Using external AWS SDK: $fallbackAwsSdkVersion"
         implementation group: 'com.amazonaws', name: 'aws-java-sdk-lambda', version: fallbackAwsSdkVersion
         implementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: fallbackAwsSdkVersion
     }
@@ -172,10 +170,10 @@ dependencies {
     }
     
     if (filterbaseDir) {
-        println "✅ Pasta do filterbase detectada: ${filterbaseDir.name}"
+        println "✅ Filterbase folder detected: ${filterbaseDir.name}"
         implementation files("${ps_folder}/plugins/${filterbaseDir.name}")
     } else {
-        println "⚠️  Pasta do filterbase não encontrada. Tentando usar fileTree..."
+        println "⚠️  Filterbase folder not found. Trying to use fileTree..."
         implementation fileTree(dir: "${ps_folder}/plugins", include: 'com.vordel.rcp.filterbase*/**')
     }
 }
@@ -183,14 +181,14 @@ dependencies {
 // Task para instalação no Linux
 task installLinux(type: Exec) {
     group = 'Installation'
-    description = 'Instala o filtro AWS Lambda no Linux'
+    description = 'Installs the AWS Lambda filter on Linux'
     
     dependsOn build
     
     commandLine 'bash', 'scripts/linux/install-filter.sh'
     
     doFirst {
-        println "🚀 Instalando filtro AWS Lambda no Linux..."
+        println "🚀 Installing AWS Lambda filter on Linux..."
         println "📁 JAR: build/libs/aws-lambda-apim-sdk-1.0.1.jar"
         println "📁 Gateway: ${axway_base}"
     }
@@ -199,25 +197,25 @@ task installLinux(type: Exec) {
 // Task para instalação no Windows (apenas arquivos YAML)
 task installWindows {
     group = 'Installation'
-    description = 'Instala apenas os arquivos YAML no Windows (sem build do JAR)'
+    description = 'Installs only the YAML files on Windows (no JAR build)'
     
     doFirst {
-        println "📋 Nota: O JAR deve ser buildado no Linux e copiado manualmente"
+        println "📋 Note: The JAR must be built on Linux and copied manually"
         println ""
-        println "📂 Exemplos de projetos Policy Studio:"
+        println "📂 Policy Studio project examples:"
         println "   C:\\Users\\jbarros\\apiprojects\\DIGIO-POC-AKS"
         println "   C:\\Users\\jbarros\\apiprojects\\POC-CUSTOM-FILTER"
         println "   C:\\Projects\\API-Gateway\\MyProject"
         println ""
         
-        // Solicitar caminho do projeto Policy Studio
-        def projectPath = System.console()?.readLine("📂 Digite o caminho do projeto Policy Studio: ")
+        // Request Policy Studio project path
+        def projectPath = System.console()?.readLine("📂 Enter the Policy Studio project path: ")
         
         if (!projectPath) {
-            throw new GradleException("❌ Caminho do projeto não informado!")
+            throw new GradleException("❌ Project path not provided!")
         }
         
-        // Usar função auxiliar para instalar arquivos YAML
+        // Use helper function to install YAML files
         installYamlFiles(projectPath, "installWindows")
     }
 }
@@ -225,18 +223,18 @@ task installWindows {
 // Função auxiliar para processar arquivo de internacionalização
 def processInternationalizationFile(def sourceFile, def destFile) {
     if (!sourceFile.exists()) {
-        println "❌ Arquivo não encontrado: ${sourceFile.absolutePath}"
+        println "❌ File not found: ${sourceFile.absolutePath}"
         return false
     }
     
     def sourceContent = sourceFile.text.trim()
     def destContent = destFile.exists() ? destFile.text : ""
     
-    // Verificar se o filtro AWSLambdaFilter já existe no arquivo
+    // Check if AWSLambdaFilter already exists in the file
     if (destContent.contains("type: AWSLambdaFilter")) {
-        println "🔄 Filtro AWSLambdaFilter já existe. Atualizando seção..."
+        println "🔄 AWSLambdaFilter already exists. Updating section..."
         
-        // Estratégia: preservar outros filtros e apenas atualizar AWSLambdaFilter
+        // Strategy: preserve other filters and only update AWSLambdaFilter
         def lines = destContent.split('\n')
         def newLines = []
         def skipSection = false
@@ -248,7 +246,7 @@ def processInternationalizationFile(def sourceFile, def destFile) {
             def line = lines[i]
             def trimmedLine = line.trim()
             
-            // Detectar início de InternationalizationFilter
+            // Detect start of InternationalizationFilter
             if (trimmedLine == "type: InternationalizationFilter") {
                 inInternationalizationFilter = true
                 skipSection = false
@@ -256,14 +254,14 @@ def processInternationalizationFile(def sourceFile, def destFile) {
                 continue
             }
             
-            // Se estamos dentro de InternationalizationFilter, verificar se contém AWSLambdaFilter
+            // If we are inside InternationalizationFilter, check if it contains AWSLambdaFilter
             if (inInternationalizationFilter && trimmedLine == "type: AWSLambdaFilter") {
                 if (foundAWSLambdaFilter) {
-                    // Já encontramos uma seção AWSLambdaFilter, pular esta
+                    // We already found an AWSLambdaFilter section, skip this one
                     skipSection = true
                     continue
                 } else {
-                    // Primeira ocorrência, pular e substituir com novo conteúdo
+                    // First occurrence, skip and replace with new content
                     foundAWSLambdaFilter = true
                     skipSection = true
                     outputNewContent = true
@@ -271,11 +269,11 @@ def processInternationalizationFile(def sourceFile, def destFile) {
                 }
             }
             
-            // Detectar fim da seção InternationalizationFilter
+            // Detect end of InternationalizationFilter section
             if (inInternationalizationFilter && trimmedLine.startsWith("-") && trimmedLine != "type: InternationalizationFilter") {
                 inInternationalizationFilter = false
                 skipSection = false
-                // Adicionar novo conteúdo antes da próxima seção
+                // Add new content before the next section
                 if (outputNewContent) {
                     newLines.add("")
                     newLines.addAll(sourceContent.split('\n'))
@@ -285,7 +283,7 @@ def processInternationalizationFile(def sourceFile, def destFile) {
                 continue
             }
             
-            // Se estamos pulando a seção, continuar até o fim
+            // If we are skipping the section, continue until the end
             if (skipSection) {
                 continue
             }
@@ -293,7 +291,7 @@ def processInternationalizationFile(def sourceFile, def destFile) {
             newLines.add(line)
         }
         
-        // Se ainda não adicionamos o novo conteúdo, adicionar no final
+        // If we still didn't add the new content, add it at the end
         if (outputNewContent) {
             newLines.add("")
             newLines.addAll(sourceContent.split('\n'))
@@ -301,59 +299,59 @@ def processInternationalizationFile(def sourceFile, def destFile) {
         
         destFile.text = newLines.join('\n')
         
-        println "✅ Seção AWSLambdaFilter atualizada: ${destFile.name}"
+        println "✅ AWSLambdaFilter section updated: ${destFile.name}"
         return true
     } else {
-        // Adicionar ao final se não existir
+        // Add at the end if it does not exist
         if (destContent.endsWith('\n')) {
             destFile.text = destContent + sourceContent
         } else {
             destFile.text = destContent + '\n' + sourceContent
         }
-        println "✅ Conteúdo adicionado ao final: ${destFile.name}"
+        println "✅ Content added to the end: ${destFile.name}"
         return true
     }
 }
 
 // Função auxiliar para instalar arquivos YAML no Windows
 def installYamlFiles(def projectPath, def taskName) {
-    println "🚀 Instalando arquivos YAML do filtro AWS Lambda no Windows..."
+    println "🚀 Installing AWS Lambda filter YAML files on Windows..."
     println "📋 Task: ${taskName}"
-    println "📁 Projeto: ${projectPath}"
+    println "📁 Project: ${projectPath}"
     println ""
     
-    // Validar se o caminho existe
+    // Validate if the path exists
     def projectDir = new File(projectPath)
     if (!projectDir.exists()) {
-        println "⚠️  Aviso: O diretório não existe. Criando..."
+        println "⚠️  Warning: Directory does not exist. Creating..."
         projectDir.mkdirs()
     }
     
-    // Criar estrutura de diretórios
+    // Create project structure
     def (metaInfDir, systemDir) = createProjectStructure(projectPath)
     
-    // Copiar arquivos YAML
+    // Copy YAML files
     def sourceYamlDir = new File("src/main/resources/yaml")
     
-    // Copiar arquivos YAML
+    // Copy YAML files
     copyYamlFiles(sourceYamlDir, metaInfDir, systemDir)
     
     println ""
-    println "🎉 Instalação dos arquivos YAML concluída!"
-    println "📁 Projeto Policy Studio: ${projectPath}"
+    println "🎉 YAML files installation completed!"
+    println "📁 Policy Studio project: ${projectPath}"
     println ""
     showNextSteps()
 }
 
 // Função auxiliar para mostrar próximos passos
 def showNextSteps() {
-    println "📋 Próximos passos:"
-    println "1. Copie o JAR buildado no Linux para o Windows"
-    println "2. Abra o Policy Studio"
-    println "3. Vá em Window > Preferences > Runtime Dependencies"
-    println "4. Adicione o JAR: aws-lambda-apim-sdk-1.0.1.jar"
-    println "5. Reinicie o Policy Studio com -clean"
-    println "6. Procure por 'AWS Lambda Filter' na paleta"
+    println "📋 Next steps:"
+    println "1. Copy the JAR built on Linux to Windows"
+    println "2. Open Policy Studio"
+    println "3. Go to Window > Preferences > Runtime Dependencies"
+    println "4. Add the JAR: aws-lambda-apim-sdk-1.0.1.jar"
+    println "5. Restart Policy Studio with -clean"
+    println "6. Search for 'AWS Lambda Filter' in the palette"
 }
 
 // Função auxiliar para criar estrutura de diretórios do projeto
@@ -369,18 +367,18 @@ def createProjectStructure(def projectPath) {
 
 // Função auxiliar para copiar arquivos YAML
 def copyYamlFiles(def sourceYamlDir, def metaInfDir, def systemDir) {
-    // Copiar AWSLambdaFilter.yaml
+    // Copy AWSLambdaFilter.yaml
     def sourceFilterYaml = new File(sourceYamlDir, "META-INF/types/Entity/Filter/AWSFilter/AWSLambdaFilter.yaml")
     def destFilterYaml = new File(metaInfDir, "AWSLambdaFilter.yaml")
     
     if (sourceFilterYaml.exists()) {
         destFilterYaml.text = sourceFilterYaml.text
-        println "✅ Copiado: AWSLambdaFilter.yaml"
+        println "✅ Copied: AWSLambdaFilter.yaml"
     } else {
-        println "❌ Arquivo não encontrado: ${sourceFilterYaml.absolutePath}"
+        println "❌ File not found: ${sourceFilterYaml.absolutePath}"
     }
     
-    // Processar arquivo de internacionalização
+    // Process internationalization file
     def sourceIntlYaml = new File(sourceYamlDir, "System/Internationalization Default.yaml")
     def destIntlYaml = new File(systemDir, "Internationalization Default.yaml")
     
@@ -390,24 +388,24 @@ def copyYamlFiles(def sourceYamlDir, def metaInfDir, def systemDir) {
 // Task para instalação Windows com caminho específico
 task installWindowsToProject {
     group = 'Installation'
-    description = 'Instala YAML em projeto Policy Studio específico'
+    description = 'Installs YAML in a specific Policy Studio project'
     
     doFirst {
-        // Obter caminho do projeto via propriedade do sistema
+        // Get project path via system property
         def projectPath = System.getProperty('project.path')
         
         if (!projectPath) {
-            // Se não foi especificado, solicitar interativamente
-            projectPath = System.console()?.readLine("📂 Digite o caminho do projeto Policy Studio (ex: C:\\Users\\jbarros\\apiprojects\\DIGIO-POC-AKS): ")
+            // If not specified, request interactively
+            projectPath = System.console()?.readLine("📂 Enter the Policy Studio project path (ex: C:\\Users\\jbarros\\apiprojects\\DIGIO-POC-AKS): ")
             
             if (!projectPath) {
-                throw new GradleException("❌ Caminho do projeto não informado! Use: -Dproject.path=C:\\caminho\\do\\projeto")
+                throw new GradleException("❌ Project path not provided! Use: -Dproject.path=C:\\path\\to\\project")
             }
         }
         
-        println "📁 Projeto: ${projectPath}"
+        println "📁 Project: ${projectPath}"
         
-        // Usar função auxiliar para instalar arquivos YAML
+        // Use helper function to install YAML files
         installYamlFiles(projectPath, "installWindowsToProject")
     }
 }
@@ -415,23 +413,23 @@ task installWindowsToProject {
 // Task para build do JAR (apenas Linux)
 task buildJarLinux {
     group = 'Build'
-    description = 'Build do JAR no Linux (não funciona no Windows)'
+    description = 'Builds the JAR on Linux (does not work on Windows)'
     
     dependsOn build
     
     doFirst {
-        println "🔨 Build do JAR AWS Lambda Filter..."
+        println "🔨 Building AWS Lambda Filter JAR..."
         println "📁 JAR: build/libs/aws-lambda-apim-sdk-1.0.1.jar"
-        println "⚠️  Nota: Esta task deve ser executada apenas no Linux"
+        println "⚠️  Note: This task should be run only on Linux"
     }
     
     doLast {
         def jarFile = new File("build/libs/aws-lambda-apim-sdk-1.0.1.jar")
         if (jarFile.exists()) {
-            println "✅ JAR criado com sucesso: ${jarFile.absolutePath}"
-            println "📋 Para Windows: Copie este JAR para o ambiente Windows"
+            println "✅ JAR created successfully: ${jarFile.absolutePath}"
+            println "📋 For Windows: Copy this JAR to the Windows environment"
         } else {
-            println "❌ Erro: JAR não foi criado"
+            println "❌ Error: JAR was not created"
         }
     }
 }
@@ -439,10 +437,10 @@ task buildJarLinux {
 // Task para mostrar informações de download dos JARs AWS
 task showAwsJars {
     group = 'Installation'
-    description = 'Mostra links para download dos JARs AWS SDK'
+    description = 'Shows download links for AWS SDK JARs'
     
     doLast {
-        println "📦 JARs AWS SDK necessários para Windows:"
+        println "📦 AWS SDK JARs required for Windows:"
         println ""
         println "🔗 aws-java-sdk-lambda-1.12.314.jar:"
         println "   https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-lambda/1.12.314/aws-java-sdk-lambda-1.12.314.jar"
@@ -450,29 +448,29 @@ task showAwsJars {
         println "🔗 aws-java-sdk-core-1.12.314.jar:"
         println "   https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-core/1.12.314/aws-java-sdk-core-1.12.314.jar"
         println ""
-        println "📋 Após download:"
-        println "1. Adicione os JARs ao classpath do Policy Studio"
-        println "2. Reinicie o Policy Studio com -clean"
+        println "📋 After download:"
+        println "1. Add the JARs to the Policy Studio classpath"
+        println "2. Restart Policy Studio with -clean"
     }
 }
 
 // Task para configurar caminho do Axway
 task setAxwayPath {
     group = 'Configuration'
-    description = 'Configura o caminho do Axway API Gateway'
+    description = 'Sets the Axway API Gateway path'
     
     doLast {
-        println "🔧 Configuração do Axway API Gateway"
+        println "🔧 Axway API Gateway configuration"
         println ""
-        println "📁 Caminho atual: ${axway_base}"
+        println "📁 Current path: ${axway_base}"
         println "📁 APIM: ${apim_folder}"
         println "📁 Policy Studio: ${ps_folder}"
         println ""
-        println "💡 Para alterar o caminho, use:"
-        println "   ./gradlew -Daxway.base=/caminho/para/axway build"
+        println "💡 To change the path, use:"
+        println "   ./gradlew -Daxway.base=/path/to/axway build"
         println "   ./gradlew -Daxway.base=/opt/axway/Axway-7.7.0.20240830 installLinux"
         println ""
-        println "📋 Exemplos:"
+        println "📋 Examples:"
         println "   ./gradlew -Daxway.base=/opt/axway/Axway-7.7.0.20210830 build"
         println "   ./gradlew -Daxway.base=/home/user/axway/Axway-7.7.0.20240830 installLinux"
     }
@@ -481,65 +479,65 @@ task setAxwayPath {
 // Task para mostrar informações do projeto
 task showProjectInfo {
     group = 'Help'
-    description = 'Mostra informações detalhadas do projeto'
+    description = 'Shows detailed project information'
     
     doLast {
-        println "📋 Informações do Projeto AWS Lambda APIM SDK"
+        println "📋 AWS Lambda APIM SDK Project Information"
         println "=============================================="
         println ""
-        println "🏷️  Versão atual: ${version}"
-        println "📦 Grupo: ${group}"
+        println "🏷️  Current version: ${version}"
+        println "📦 Group: ${group}"
         println "🔧 Java: ${sourceCompatibility}"
         println ""
-        println "📁 Estrutura do Projeto:"
-        println "  - src/main/java/     # Código fonte Java"
-        println "  - src/main/resources/ # Recursos (YAML, etc.)"
-        println "  - scripts/           # Scripts de instalação"
-        println "  - docs/              # Documentação"
+        println "📁 Project structure:"
+        println "  - src/main/java/     # Java source code"
+        println "  - src/main/resources/ # Resources (YAML, etc.)"
+        println "  - scripts/           # Installation scripts"
+        println "  - docs/              # Documentation"
         println ""
-        println "🔗 Dependências Principais:"
+        println "🔗 Main dependencies:"
         println "  - AWS SDK Lambda: 1.12.314"
         println "  - AWS SDK Core: 1.12.314"
         println "  - Axway API Gateway: 7.7.0.20240830"
         println ""
-        println "🚀 Funcionalidades:"
-        println "  - Filtro AWS Lambda para Axway API Gateway"
-        println "  - Suporte a múltiplas versões do Axway"
-        println "  - Instalação automatizada (Linux/Windows)"
-        println "  - Versionamento semântico automático"
-        println "  - Sistema de release automático"
+        println "🚀 Features:"
+        println "  - AWS Lambda filter for Axway API Gateway"
+        println "  - Support for multiple Axway versions"
+        println "  - Automated installation (Linux/Windows)"
+        println "  - Automatic semantic versioning"
+        println "  - Automatic release system"
     }
 }
 
 // Task para mostrar todas as tasks disponíveis
 task showTasks {
     group = 'Help'
-    description = 'Mostra todas as tasks disponíveis'
+    description = 'Shows all available tasks'
     
     doLast {
-        println "🚀 Tasks disponíveis:"
+        println "🚀 Available tasks:"
         println ""
         println "📦 Build:"
-        println "  ./gradlew build                    # Build do projeto (Linux)"
-        println "  ./gradlew buildJarLinux           # Build do JAR (apenas Linux)"
+        println "  ./gradlew build                    # Project build (Linux)"
+        println "  ./gradlew buildJarLinux           # JAR build (Linux only)"
         println "  ./gradlew clean build             # Clean + Build"
         println ""
-        println "🔧 Configuração:"
-        println "  ./gradlew setAxwayPath            # Mostra configuração do Axway"
-        println "  ./gradlew showProjectInfo         # Mostra informações do projeto"
+        println "🔧 Configuration:"
+        println "  ./gradlew setAxwayPath            # Shows Axway configuration"
+        println "  ./gradlew showProjectInfo         # Shows project information"
         println ""
-        println "🔧 Instalação Linux:"
-        println "  ./gradlew installLinux            # Instala no Linux (JAR + YAML)"
-        println "  ./gradlew -Daxway.base=/path installLinux  # Com caminho customizado"
+        println "🔧 Linux Installation:"
+        println "  ./gradlew installLinux            # Installs on Linux (JAR + YAML)"
+        println "  ./gradlew -Daxway.base=/path installLinux  # With custom path"
         println ""
-        println "🔧 Instalação Windows:"
-        println "  ./gradlew installWindows          # Instala YAML no Windows (interativo)"
-        println "  ./gradlew -Dproject.path=/path installWindowsToProject  # Instala YAML em projeto específico"
-        println "  ./gradlew showAwsJars             # Mostra links dos JARs AWS"
+        println "🔧 Windows Installation:"
+        println "  ./gradlew installWindows          # Installs YAML on Windows (interactive)"
+        println "  ./gradlew -Dproject.path=/path installWindowsToProject  # Installs YAML in specific project"
+        println "  ./gradlew showAwsJars             # Shows AWS JAR links"
         println ""
-        println "❓ Ajuda:"
-        println "  ./gradlew showTasks               # Mostra esta lista"
-        println "  ./gradlew tasks                   # Lista todas as tasks"
+        println "❓ Help:"
+        println "  ./gradlew showTasks               # Shows this list"
+        println "  ./gradlew tasks                   # Lists all tasks"
     }
 }
 
