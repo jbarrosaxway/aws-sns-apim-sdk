@@ -165,7 +165,19 @@ dependencies {
     
     // Policy Studio libs
     implementation fileTree(dir: "${ps_folder}/plugins", include: '*.jar')
-    implementation files("${ps_folder}/plugins/com.vordel.rcp.filterbase_7.7.0.v20241023-0911")
+    
+    // Detectar automaticamente a pasta do filterbase
+    def filterbaseDir = file("${ps_folder}/plugins").listFiles().find { 
+        it.isDirectory() && it.name.startsWith("com.vordel.rcp.filterbase") 
+    }
+    
+    if (filterbaseDir) {
+        println "✅ Pasta do filterbase detectada: ${filterbaseDir.name}"
+        implementation files("${ps_folder}/plugins/${filterbaseDir.name}")
+    } else {
+        println "⚠️  Pasta do filterbase não encontrada. Tentando usar fileTree..."
+        implementation fileTree(dir: "${ps_folder}/plugins", include: 'com.vordel.rcp.filterbase*/**')
+    }
 }
 
 // Task para instalação no Linux
