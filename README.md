@@ -499,7 +499,6 @@ aws-lambda-apim-sdk/
 |-----------|-------------|---------------|
 | **Entity Store (YAML)** | ✅ Tested | ✅ Tested |
 | **Entity Store (XML)** | ❌ **Not tested** | ❌ **Not tested** |
-| **Performance** | ❌ **Not tested** | ❌ **Not tested** |
 
 ### Next Required Tests
 
@@ -548,19 +547,6 @@ The filter generates detailed logs:
 - Use IAM policies with least privilege
 - Monitor access and execution logs
 - Consider using AWS Secrets Manager for sensitive credentials
-
-## Contributing
-
-Please read [Contributing.md](https://github.com/Axway-API-Management-Plus/Common/blob/master/Contributing.md) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Team
-
-![alt text][Axwaylogo] Axway Team
-
-[Axwaylogo]: https://github.com/Axway-API-Management/Common/blob/master/img/AxwayLogoSmall.png  "Axway logo"
-
-## License
-[Apache License 2.0](LICENSE)
 
 ## 🚀 **CI/CD Pipeline**
 
@@ -626,27 +612,35 @@ aws-lambda-apim-sdk-1.0.1.jar
 - **GitHub Actions Artifacts**: During CI/CD
 - **Local**: `build/libs/aws-lambda-apim-sdk-*.jar`
 
-### **How to Use**
+### How to Use
 
-#### **Download the JAR**
+#### Download the JAR
 1. Go to **Releases** on GitHub
 2. Download the JAR of the desired version
 3. Follow the installation guide
 
-#### **Local Build**
+#### Local Build
 ```bash
 # Build the JAR (requires local Axway)
 ./gradlew buildJarLinux
 
-# Or using Docker (recommended)
-./scripts/docker/build-with-docker.sh
+# Ou usando o build automatizado via Docker (recomendado)
+./scripts/build-with-docker-image.sh
 ```
 
-#### **Docker for Development**
-```bash
-# Build the image for development
-./scripts/docker/build-image.sh
+#### Docker for Development
 
-# Test
-docker run --rm aws-lambda-apim-sdk:latest java -version
-```
+> ⚠️ Os scripts `./scripts/docker/build-with-docker.sh` e `./scripts/docker/build-image.sh` foram removidos. Use o script `build-with-docker-image.sh` para builds locais com Docker, conforme instruções acima.
+
+## Contributing
+
+Please read [Contributing.md](https://github.com/Axway-API-Management-Plus/Common/blob/master/Contributing.md) for details on our code of conduct, and the process for submitting pull requests to us.
+
+## Team
+
+![alt text][Axwaylogo] Axway Team
+
+[Axwaylogo]: https://github.com/Axway-API-Management/Common/blob/master/img/AxwayLogoSmall.png  "Axway logo"
+
+## License
+[Apache License 2.0](LICENSE)
