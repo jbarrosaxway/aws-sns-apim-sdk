@@ -285,8 +285,8 @@ The project uses the image for automated build:
 This project has complete documentation organized by topic:
 
 ### 🚀 **Installation Guides**
-- **[📋 Windows Installation Guide](docs/INSTALACAO_WINDOWS.md)** - Detailed instructions for Windows
-- **[🔧 Dynamic Configuration](docs/CONFIGURACAO_DINAMICA.md)** - How to configure Axway paths dynamically
+- **[📋 Windows Installation Guide](docs/WINDOWS_INSTALLATION.md)** - Detailed instructions for Windows
+- **[🔧 Dynamic Configuration](docs/DYNAMIC_CONFIGURATION.md)** - How to configure Axway paths dynamically
 
 ### 🔧 **Development and Build**
 - **[🗳️ Release Guide](docs/RELEASE_GUIDE.md)** - How to create releases and versioning
@@ -295,8 +295,8 @@ This project has complete documentation organized by topic:
 - **[🔧 Scripts Reference](docs/SCRIPTS_REFERENCE.md)** - Documentation of essential scripts
 
 ### 📝 **Technical Documentation**
-- **[🔍 Field Updates](docs/ATUALIZACOES_CAMPOS_FILTRO.md)** - History of filter field changes
-- **[🔐 AWS Authentication Improvements](docs/MELHORIAS_AUTENTICACAO_AWS.md)** - Advanced authentication settings
+- **[🔍 Field Updates](docs/FILTER_FIELD_UPDATES.md)** - History of filter field changes
+- **[🔐 AWS Authentication Improvements](docs/AWS_AUTHENTICATION_IMPROVEMENTS.md)** - Advanced authentication settings
 - **[📖 Groovy Documentation](docs/AWS_LAMBDA_GROOVY_DOCUMENTATION.md)** - Complete guide for Groovy scripts
 
 ### 📋 **Documentation Structure**
@@ -413,7 +413,7 @@ metadata:
 
 ### Java Filter
 
-For detailed information about the Java filter, including fields, installation, testing, and troubleshooting, see **[📖 Java Filter Documentation](docs/FILTRO_JAVA_DOCUMENTATION.md)**.
+For detailed information about the Java filter, including fields, installation, testing, and troubleshooting, see **[📖 Java Filter Documentation](docs/JAVA_FILTER_DOCUMENTATION.md)**.
 
 **Basic usage:**
 1. **Install JARs:**
