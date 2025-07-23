@@ -1,39 +1,45 @@
 <ui>
-	<panel columns="2">
+	<panel columns="2" fill="false">
 		<NameAttribute />
-
-		<!-- AWS Lambda Configuration -->
-		<group label="AWS_LAMBDA_SETTINGS_LABEL" columns="2" span="2" fill="false">
-			
-			<!-- Function Configuration -->
-			<TextAttribute field="functionName" label="AWS_LAMBDA_FUNCTION_LABEL"
-				displayName="AWS_LAMBDA_FUNCTION_NAME" description="AWS_LAMBDA_FUNCTION_DESCRIPTION" />
-			
-			<TextAttribute field="awsRegion" label="AWS_LAMBDA_REGION_LABEL"
-				displayName="AWS_LAMBDA_REGION_NAME" description="AWS_LAMBDA_REGION_DESCRIPTION" />
-			
-			<!-- Invocation Configuration -->
-			<ComboAttribute field="invocationType" label="AWS_LAMBDA_INVOCATION_TYPE_LABEL"
-				displayName="AWS_LAMBDA_INVOCATION_TYPE_NAME" description="AWS_LAMBDA_INVOCATION_TYPE_DESCRIPTION"
-				contentSource="com.axway.aws.lambda.AWSInvocationType.invocationType"
-				includeBlank="false" required="true" stretch="true" />
-			
-			<ComboAttribute field="logType" label="AWS_LAMBDA_LOG_TYPE_LABEL"
-				displayName="AWS_LAMBDA_LOG_TYPE_NAME" description="AWS_LAMBDA_LOG_TYPE_DESCRIPTION"
-				contentSource="com.axway.aws.lambda.AWSLogType.logType"
-				includeBlank="false" required="true" stretch="true" />
-			
-			<!-- Advanced Configuration -->
-			<TextAttribute field="qualifier" label="AWS_LAMBDA_QUALIFIER_LABEL"
-				displayName="AWS_LAMBDA_QUALIFIER_NAME" description="AWS_LAMBDA_QUALIFIER_DESCRIPTION" />
-			
-			<TextAttribute field="maxRetries" label="AWS_LAMBDA_MAX_RETRIES_LABEL"
-				displayName="AWS_LAMBDA_MAX_RETRIES_NAME" description="AWS_LAMBDA_MAX_RETRIES_DESCRIPTION" />
-			
-			<TextAttribute field="retryDelay" label="AWS_LAMBDA_RETRY_DELAY_LABEL"
-				displayName="AWS_LAMBDA_RETRY_DELAY_NAME" description="AWS_LAMBDA_RETRY_DELAY_DESCRIPTION" />
-			
-		</group>
-
 	</panel>
+	
+	<!-- AWS Lambda Configuration -->
+	<group label="AWS_LAMBDA_SETTINGS_LABEL" columns="2" span="2" fill="false">
+		
+		<!-- Basic Configuration -->
+		<TextAttribute field="functionName" label="AWS_LAMBDA_FUNCTION_LABEL"
+			displayName="AWS_LAMBDA_FUNCTION_NAME" description="AWS_LAMBDA_FUNCTION_DESCRIPTION" 
+			required="true" />
+		
+		<TextAttribute field="awsRegion" label="AWS_LAMBDA_REGION_LABEL"
+			displayName="AWS_LAMBDA_REGION_NAME" description="AWS_LAMBDA_REGION_DESCRIPTION" 
+			required="true" />
+		
+		<!-- Invocation Configuration -->
+		<ComboAttribute field="invocationType" label="AWS_LAMBDA_INVOCATION_TYPE_LABEL"
+			displayName="AWS_LAMBDA_INVOCATION_TYPE_NAME" description="AWS_LAMBDA_INVOCATION_TYPE_DESCRIPTION"
+			contentSource="com.axway.aws.lambda.AWSInvocationType.invocationType"
+			includeBlank="false" required="true" stretch="true" />
+		
+		<ComboAttribute field="logType" label="AWS_LAMBDA_LOG_TYPE_LABEL"
+			displayName="AWS_LAMBDA_LOG_TYPE_NAME" description="AWS_LAMBDA_LOG_TYPE_DESCRIPTION"
+			contentSource="com.axway.aws.lambda.AWSLogType.logType"
+			includeBlank="false" required="true" stretch="true" />
+		
+		<TextAttribute field="qualifier" label="AWS_LAMBDA_QUALIFIER_LABEL"
+			displayName="AWS_LAMBDA_QUALIFIER_NAME" description="AWS_LAMBDA_QUALIFIER_DESCRIPTION" />
+		
+	</group>
+	
+	<!-- Advanced Configuration -->
+	<group label="AWS_LAMBDA_ADVANCED_SETTINGS_LABEL" columns="2" span="2" fill="false">
+		
+		<TextAttribute field="maxRetries" label="AWS_LAMBDA_MAX_RETRIES_LABEL"
+			displayName="AWS_LAMBDA_MAX_RETRIES_NAME" description="AWS_LAMBDA_MAX_RETRIES_DESCRIPTION" />
+		
+		<TextAttribute field="retryDelay" label="AWS_LAMBDA_RETRY_DELAY_LABEL"
+			displayName="AWS_LAMBDA_RETRY_DELAY_NAME" description="AWS_LAMBDA_RETRY_DELAY_DESCRIPTION" />
+		
+	</group>
+
 </ui>
