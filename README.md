@@ -624,13 +624,13 @@ aws-lambda-apim-sdk-1.0.1.jar
 # Build the JAR (requires local Axway)
 ./gradlew buildJarLinux
 
-# Ou usando o build automatizado via Docker (recomendado)
+# Or using the automated Docker build (recommended)
 ./scripts/build-with-docker-image.sh
 ```
 
 #### Docker for Development
 
-> ⚠️ Os scripts `./scripts/docker/build-with-docker.sh` e `./scripts/docker/build-image.sh` foram removidos. Use o script `build-with-docker-image.sh` para builds locais com Docker, conforme instruções acima.
+# (nenhum aviso sobre scripts removidos)
 
 ## Contributing
 
