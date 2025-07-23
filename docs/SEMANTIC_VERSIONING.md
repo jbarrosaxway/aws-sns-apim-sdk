@@ -1,146 +1,146 @@
-# Versionamento Semântico Automático
+# Automatic Semantic Versioning
 
-Este projeto implementa versionamento semântico automático que analisa as mudanças e incrementa a versão apropriadamente.
+This project implements automatic semantic versioning that analyzes changes and increments the version appropriately.
 
-## Como Funciona
+## How It Works
 
-### Análise de Mudanças
+### Change Analysis
 
-O sistema analisa automaticamente:
+The system automatically analyzes:
 
-1. **Arquivos modificados** - através do `git diff`
-2. **Conteúdo das mudanças** - procurando por padrões específicos
-3. **Tipo de commit** - baseado em convenções de commit
+1. **Modified files** - via `git diff`
+2. **Change content** - looking for specific patterns
+3. **Commit type** - based on commit conventions
 
-### Tipos de Versão
+### Version Types
 
 #### 🔴 MAJOR (X.0.0)
-- **Quando:** Mudanças que quebram compatibilidade
-- **Detectado por:**
-  - Palavras-chave: `BREAKING CHANGE`, `breaking change`, `!:`, `feat!`, `fix!`
-  - Arquivos modificados: `build.gradle`, `.java`, `.groovy`
+- **When:** Breaking changes
+- **Detected by:**
+  - Keywords: `BREAKING CHANGE`, `breaking change`, `!:`, `feat!`, `fix!`
+  - Modified files: `build.gradle`, `.java`, `.groovy`
 
 #### 🟡 MINOR (0.X.0)
-- **Quando:** Novas funcionalidades (compatível com versões anteriores)
-- **Detectado por:**
-  - Palavras-chave: `feat:`, `feature:`, `new:`, `add:`
-  - Arquivos modificados: `.java`, `.groovy`, `.yaml`
+- **When:** New features (backward compatible)
+- **Detected by:**
+  - Keywords: `feat:`, `feature:`, `new:`, `add:`
+  - Modified files: `.java`, `.groovy`, `.yaml`
 
 #### 🟢 PATCH (0.0.X)
-- **Quando:** Correções de bugs e melhorias
-- **Detectado por:**
-  - Palavras-chave: `fix:`, `bugfix:`, `patch:`, `docs:`, `style:`, `refactor:`, `perf:`, `test:`, `chore:`
-  - Arquivos modificados: `.java`, `.groovy`, `.yaml`, `.md`, `.txt`
+- **When:** Bug fixes and improvements
+- **Detected by:**
+  - Keywords: `fix:`, `bugfix:`, `patch:`, `docs:`, `style:`, `refactor:`, `perf:`, `test:`, `chore:`
+  - Modified files: `.java`, `.groovy`, `.yaml`, `.md`, `.txt`
 
-## Convenções de Commit
+## Commit Conventions
 
-### Para MAJOR (Breaking Changes)
+### For MAJOR (Breaking Changes)
 ```bash
-git commit -m "feat!: nova funcionalidade que quebra compatibilidade"
-git commit -m "fix!: correção que quebra compatibilidade"
-git commit -m "feat: nova funcionalidade
+git commit -m "feat!: new feature that breaks compatibility"
+git commit -m "fix!: breaking fix"
+git commit -m "feat: new feature
 
-BREAKING CHANGE: esta mudança quebra compatibilidade"
+BREAKING CHANGE: this change breaks compatibility"
 ```
 
-### Para MINOR (Novas Funcionalidades)
+### For MINOR (New Features)
 ```bash
-git commit -m "feat: adiciona nova funcionalidade"
-git commit -m "feature: implementa novo filtro"
-git commit -m "add: suporte para AWS Lambda"
+git commit -m "feat: add new feature"
+git commit -m "feature: implement new filter"
+git commit -m "add: support for AWS Lambda"
 ```
 
-### Para PATCH (Correções)
+### For PATCH (Fixes)
 ```bash
-git commit -m "fix: corrige bug na autenticação"
-git commit -m "docs: atualiza documentação"
-git commit -m "style: formata código"
-git commit -m "refactor: melhora performance"
-git commit -m "test: adiciona testes"
-git commit -m "chore: atualiza dependências"
+git commit -m "fix: fix authentication bug"
+git commit -m "docs: update documentation"
+git commit -m "style: format code"
+git commit -m "refactor: improve performance"
+git commit -m "test: add tests"
+git commit -m "chore: update dependencies"
 ```
 
-## Workflow do GitHub Actions
+## GitHub Actions Workflow
 
 ### Pull Requests
-- ✅ Analisa mudanças
-- ✅ Calcula nova versão
-- ✅ Mostra informações no comentário do PR
-- ❌ **NÃO** faz commit automático
+- ✅ Analyzes changes
+- ✅ Calculates new version
+- ✅ Shows information in PR comment
+- ❌ **Does NOT commit automatically**
 
-### Push Direto para Master
-- ✅ Analisa mudanças
-- ✅ Calcula nova versão
-- ✅ Atualiza `build.gradle`
-- ✅ Faz commit da nova versão
-- ✅ Push para o repositório
+### Direct Push to Master
+- ✅ Analyzes changes
+- ✅ Calculates new version
+- ✅ Updates `build.gradle`
+- ✅ Commits new version
+- ✅ Pushes to repository
 
-## Arquivos do Sistema
+## System Files
 
-### Script Principal
-- **`scripts/version-bump.sh`** - Script que analisa mudanças e atualiza versão
+### Main Script
+- **`scripts/version-bump.sh`** - Script that analyzes changes and updates version
 
 ### Workflow
-- **`.github/workflows/build-jar.yml`** - Workflow que executa o versionamento
+- **`.github/workflows/build-jar.yml`** - Workflow that runs versioning
 
-### Arquivo Temporário
-- **`.version_info`** - Criado durante o build com informações da versão
+### Temporary File
+- **`.version_info`** - Created during build with version information
 
-## Exemplo de Output
+## Example Output
 
 ```
-[VERSION] Analisando mudanças em push direto...
-[VERSION] Obtendo arquivos modificados...
-[VERSION] Arquivos modificados:
+[VERSION] Analyzing changes in direct push...
+[VERSION] Getting modified files...
+[VERSION] Modified files:
 src/main/java/com/axway/aws/lambda/AWSLambdaProcessor.java
-[VERSION] 🟡 Mudanças MINOR detectadas (novas funcionalidades)
-[VERSION] Versão atual: 1.0.1
-[VERSION] Nova versão calculada: 1.1.0 (MINOR)
-[VERSION] Atualizando build.gradle...
-[VERSION] ✅ Versão atualizada com sucesso: 1.0.1 → 1.1.0
-[VERSION] 📋 Resumo das mudanças:
-   Tipo de versão: MINOR
-   Versão anterior: 1.0.1
-   Nova versão: 1.1.0
-   Arquivos modificados: 1
-[VERSION] 🚀 Push direto detectado - preparando commit da nova versão
-[VERSION] ✅ Versionamento semântico concluído!
+[VERSION] 🟡 MINOR changes detected (new features)
+[VERSION] Current version: 1.0.1
+[VERSION] New version calculated: 1.1.0 (MINOR)
+[VERSION] Updating build.gradle...
+[VERSION] ✅ Version updated successfully: 1.0.1 → 1.1.0
+[VERSION] 📋 Change summary:
+   Version type: MINOR
+   Previous version: 1.0.1
+   New version: 1.1.0
+   Modified files: 1
+[VERSION] 🚀 Direct push detected - preparing commit for new version
+[VERSION] ✅ Semantic versioning completed!
 ```
 
-## Configuração
+## Configuration
 
-### Variáveis de Ambiente
-O sistema usa as seguintes variáveis do GitHub Actions:
-- `GITHUB_EVENT_NAME` - Tipo do evento (push, pull_request)
-- `GITHUB_BASE_REF` - Branch base (em PRs)
-- `GITHUB_HEAD_REF` - Branch head (em PRs)
+### Environment Variables
+The system uses the following GitHub Actions variables:
+- `GITHUB_EVENT_NAME` - Event type (push, pull_request)
+- `GITHUB_BASE_REF` - Base branch (in PRs)
+- `GITHUB_HEAD_REF` - Head branch (in PRs)
 
-### Permissões
-O workflow precisa de permissões para:
-- `contents: write` - Para fazer commits
-- `pull-requests: write` - Para comentar em PRs
+### Permissions
+The workflow needs permissions for:
+- `contents: write` - To commit
+- `pull-requests: write` - To comment on PRs
 
 ## Troubleshooting
 
-### Problema: "Não foi possível obter a versão atual"
-**Solução:** Verifique se o `build.gradle` tem a linha `version 'X.Y.Z'` no formato correto.
+### Problem: "Could not get current version"
+**Solution:** Check if `build.gradle` has the line `version 'X.Y.Z'` in the correct format.
 
-### Problema: "Falha ao atualizar versão"
-**Solução:** Verifique se o `build.gradle` tem permissões de escrita e está no formato esperado.
+### Problem: "Failed to update version"
+**Solution:** Check if `build.gradle` has write permissions and is in the expected format.
 
-### Problema: "Nenhum arquivo modificado encontrado"
-**Solução:** Isso é normal em alguns casos. O sistema assume PATCH por padrão.
+### Problem: "No modified files found"
+**Solution:** This is normal in some cases. The system assumes PATCH by default.
 
-## Contribuição
+## Contribution
 
-Para contribuir com melhorias no sistema de versionamento:
+To contribute improvements to the versioning system:
 
-1. Modifique o script `scripts/version-bump.sh`
-2. Teste localmente: `./scripts/version-bump.sh`
-3. Faça commit seguindo as convenções
-4. Abra um PR
+1. Modify the script `scripts/version-bump.sh`
+2. Test locally: `./scripts/version-bump.sh`
+3. Commit following conventions
+4. Open a PR
 
-## Histórico de Versões
+## Version History
 
-- **1.0.1** - Implementação inicial do versionamento semântico
-- **1.1.0** - Melhorias na análise de mudanças e documentação 
+- **1.0.1** - Initial implementation of semantic versioning
+- **1.1.0** - Improvements in change analysis and documentation 

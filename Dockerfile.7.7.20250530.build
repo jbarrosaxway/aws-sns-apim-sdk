@@ -1,12 +1,12 @@
-# Dockerfile para BUILD - usa imagem da Axway existente
-FROM docker.repository.axway.com/apigateway-docker-prod/7.7/gateway:7.7.0.20250530-1-BN0241-ubi9 
+# Dockerfile for BUILD - uses existing Axway image
+FROM docker.repository.axway.com/apigateway-docker-prod/7.7/gateway:7.7.0.20250530-1-BN0241-ubi9
 
-# Definir variáveis de ambiente
+# Set environment variables
 ENV AXWAY_HOME=/opt/Axway
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.25.0.9-7.el9.x86_64
 ENV PATH=$JAVA_HOME/bin:$PATH
 
-# Instalar dependências necessárias para build
+# Install required dependencies for build
 USER root
 RUN dnf update -y && \
     dnf install -y \
@@ -19,20 +19,20 @@ RUN dnf update -y && \
     git \
     && dnf clean all
 
-# Configurar Java 11 como padrão
+# Set Java 11 as default
 RUN alternatives --set java java-11-openjdk.x86_64 && \
     alternatives --set javac java-11-openjdk.x86_64
 
-# Instalar Gradle
+# Install Gradle
 RUN curl -O https://downloads.gradle.org/distributions/gradle-7.6-bin.zip && \
     unzip gradle-7.6-bin.zip -d /opt && \
     ln -s /opt/gradle-7.6/bin/gradle /usr/local/bin/gradle && \
     rm gradle-7.6-bin.zip
 
-# Copiar o instalador da Axway
+# Copy Axway installer
 COPY APIGateway_7.7.20250530_Install_linux-x86-64_BN01.run /tmp/
 
-# Instalar Axway Gateway com Policy Studio
+# Install Axway Gateway with Policy Studio
 RUN /tmp/APIGateway_7.7.20250530_Install_linux-x86-64_BN01.run \
     --enable-components policystudio,configurationstudio \
     --disable-components nodemanager,cassandra,apigateway,qstart,agentsConfiguration,apimgmt,analytics,packagedeploytools \
@@ -43,13 +43,13 @@ RUN /tmp/APIGateway_7.7.20250530_Install_linux-x86-64_BN01.run \
     --mode unattended \
     --acceptGeneralConditions yes
 
-# Criar diretório de trabalho
+# Create working directory
 WORKDIR /workspace
 
-# Copiar código fonte
+# Copy source code
 COPY . .
 
 RUN rm /tmp/APIGateway_7.7.20250530_Install_linux-x86-64_BN01.run
 
-# Comando para build
+# Build command
 CMD ["gradle", "buildJarLinux"] 

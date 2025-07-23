@@ -1,172 +1,172 @@
 # AWS Lambda Integration for Axway API Gateway
 
-Este documento descreve como integrar AWS Lambda com o Axway API Gateway usando scripts Groovy, incluindo configuração para ambientes Kubernetes.
+This document describes how to integrate AWS Lambda with Axway API Gateway using Groovy scripts, including configuration for Kubernetes environments.
 
-## Visão Geral
+## Overview
 
-A integração permite invocar funções AWS Lambda diretamente do Axway API Gateway através de filtros de script Groovy, oferecendo flexibilidade para autenticação e configuração de credenciais.
+The integration allows invoking AWS Lambda functions directly from Axway API Gateway through Groovy script filters, offering flexibility for authentication and credential configuration.
 
-## Versão Testada
+## Tested Version
 
-✅ **Testado e validado no Axway API Gateway versão 7.7.0.20240830**
+✅ **Tested and validated on Axway API Gateway version 7.7.0.20240830**
 
-## Pré-requisitos
+## Prerequisites
 
-- Axway API Gateway 7.7.0.20240830 (testado)
+- Axway API Gateway 7.7.0.20240830 (tested)
 - AWS SDK for Java 1.12.314 (aws-java-sdk-lambda, aws-java-sdk-core)
-- Jackson (incluído no gateway)
-- Acesso a funções AWS Lambda
-- Credenciais AWS configuradas
+- Jackson (included in the gateway)
+- Access to AWS Lambda functions
+- Configured AWS credentials
 
-## Configuração
+## Configuration
 
-### 1. Dependências
+### 1. Dependencies
 
-O script utiliza as seguintes dependências que devem estar disponíveis no classpath:
+The script uses the following dependencies that must be available in the classpath:
 
-#### JARs Necessários (Versões Testadas):
+#### Required JARs (Tested Versions):
 - `aws-java-sdk-lambda-1.12.314.jar`
 - `aws-java-sdk-core-1.12.314.jar`
-- Jackson (incluído no gateway - não requer JARs adicionais)
+- Jackson (included in the gateway - no additional JARs required)
 
-#### Localização dos JARs:
-Os JARs devem estar no diretório `ext/lib` do gateway. Exemplo de estrutura:
+#### JAR Location:
+The JARs must be in the gateway's `ext/lib` directory. Example structure:
 ```
 <VORDEL_HOME>/groups/group-<X>/instance-<Y>/ext/lib/
 ```
 
-**Exemplo**: `/opt/axway/Axway-7.7.0.20240830/apigateway/groups/group-2/instance-1/ext/lib/`
+**Example**: `/opt/axway/Axway-7.7.0.20240830/apigateway/groups/group-2/instance-1/ext/lib/`
 
-**Nota**: O caminho pode variar dependendo da sua instalação. Ajuste conforme necessário.
+**Note**: The path may vary depending on your installation. Adjust as needed.
 
-### 2. Configuração do Policy Studio
+### 2. Policy Studio Configuration
 
-**IMPORTANTE**: Os JARs no diretório `ext/lib` não são automaticamente incluídos no classpath do Policy Studio. É necessário adicioná-los manualmente:
+**IMPORTANT**: JARs in the `ext/lib` directory are not automatically included in the Policy Studio classpath. You must add them manually:
 
-1. Abra o Policy Studio
-2. Vá em **Window > Preferences > Runtime Dependencies**
-3. Clique em **Add** e navegue até o diretório `ext/lib`
-4. Selecione os JARs necessários:
+1. Open Policy Studio
+2. Go to **Window > Preferences > Runtime Dependencies**
+3. Click **Add** and navigate to the `ext/lib` directory
+4. Select the required JARs:
    - `aws-java-sdk-lambda-1.12.314.jar`
    - `aws-java-sdk-core-1.12.314.jar`
-5. Clique em **Apply** para salvar
-6. Reinicie o Policy Studio com a opção `-clean`
+5. Click **Apply** to save
+6. Restart Policy Studio with the `-clean` option
 
-### 3. Instalação
+### 3. Installation
 
-1. Copie o conteúdo do arquivo `aws-lambda-filter.groovy` para o filtro de script do Policy Studio
-2. Configure os parâmetros necessários
-3. Configure as credenciais AWS
-4. Teste a integração
+1. Copy the contents of the `aws-lambda-filter.groovy` file to the Policy Studio script filter
+2. Configure the required parameters
+3. Configure AWS credentials
+4. Test the integration
 
-## Script Groovy para AWS Lambda
+## Groovy Script for AWS Lambda
 
-### Script Principal
+### Main Script
 
-O script principal está disponível no arquivo `aws-lambda-filter.groovy`. Este script implementa:
+The main script is available in the `aws-lambda-filter.groovy` file. This script implements:
 
-- Autenticação flexível com AWS (variáveis de ambiente, arquivo de credenciais, IAM Roles)
-- Configuração dinâmica via atributos da mensagem
-- Sistema de retry automático
-- Processamento de requisições HTTP
-- Invocação de funções Lambda
-- Tratamento de respostas JSON e não-JSON
-- Logging detalhado para troubleshooting
-- Gerenciamento adequado de recursos
+- Flexible AWS authentication (environment variables, credentials file, IAM Roles)
+- Dynamic configuration via message attributes
+- Automatic retry system
+- HTTP request processing
+- Lambda function invocation
+- JSON and non-JSON response handling
+- Detailed logging for troubleshooting
+- Proper resource management
 
-Para usar o script:
+To use the script:
 
-1. Abra o arquivo `aws-lambda-filter.groovy` em um editor de texto
-2. Copie todo o conteúdo do arquivo
-3. No Policy Studio, crie um filtro de script e cole o conteúdo
-4. Configure os parâmetros necessários
-5. Teste a integração
+1. Open the `aws-lambda-filter.groovy` file in a text editor
+2. Copy all the contents of the file
+3. In Policy Studio, create a script filter and paste the contents
+4. Configure the required parameters
+5. Test the integration
 
-### Parâmetros de Configuração
+### Configuration Parameters
 
-O script aceita os seguintes parâmetros via atributos da mensagem:
+The script accepts the following parameters via message attributes:
 
-#### Parâmetros Obrigatórios:
+#### Required Parameters:
 
-| Parâmetro | Tipo | Descrição |
-|-----------|------|-----------|
-| `aws.lambda.function.name` | String | Nome da função Lambda |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `aws.lambda.function.name` | String | Lambda function name |
 
-#### Parâmetros Opcionais:
+#### Optional Parameters:
 
-| Parâmetro | Tipo | Padrão | Descrição |
-|-----------|------|--------|-----------|
-| `aws.lambda.region` | String | `AWS_DEFAULT_REGION` | Região AWS |
-| `aws.lambda.payload` | String | `content.body` ou `"{}"` | Payload para a função |
-| `aws.lambda.invocation.type` | String | `"RequestResponse"` | Tipo de invocação |
-| `aws.lambda.log.type` | String | `"None"` | Tipo de log |
-| `aws.lambda.qualifier` | String | - | Versão ou alias da função |
-| `aws.lambda.client.context` | String | - | Contexto do cliente (JSON string) |
-| `aws.lambda.custom.headers` | String | - | Headers customizados (JSON string) |
-| `aws.lambda.max.retries` | String | `"3"` | Número máximo de tentativas |
-| `aws.lambda.retry.delay.ms` | String | `"1000"` | Delay entre tentativas em ms |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `aws.lambda.region` | String | `AWS_DEFAULT_REGION` | AWS region |
+| `aws.lambda.payload` | String | `content.body` or `{}` | Payload for the function |
+| `aws.lambda.invocation.type` | String | `RequestResponse` | Invocation type |
+| `aws.lambda.log.type` | String | `None` | Log type |
+| `aws.lambda.qualifier` | String | - | Function version or alias |
+| `aws.lambda.client.context` | String | - | Client context (JSON string) |
+| `aws.lambda.custom.headers` | String | - | Custom headers (JSON string) |
+| `aws.lambda.max.retries` | String | `3` | Maximum number of retries |
+| `aws.lambda.retry.delay.ms` | String | `1000` | Delay between retries in ms |
 
-### Atributos de Saída
+### Output Attributes
 
-O script define os seguintes atributos na mensagem:
+The script sets the following attributes in the message:
 
-| Atributo | Tipo | Descrição |
-|----------|------|-----------|
-| `aws.lambda.response` | String | Resposta da função Lambda |
-| `aws.lambda.http.status.code` | Integer | Código de status HTTP |
-| `aws.lambda.executed.version` | String | Versão executada da função |
-| `aws.lambda.log.result` | String | Resultado dos logs |
-| `aws.lambda.error` | String | Erro (se houver) |
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `aws.lambda.response` | String | Lambda function response |
+| `aws.lambda.http.status.code` | Integer | HTTP status code |
+| `aws.lambda.executed.version` | String | Executed function version |
+| `aws.lambda.log.result` | String | Log results |
+| `aws.lambda.error` | String | Error (if any) |
 
-## Configuração de Credenciais AWS
+## AWS Credentials Configuration
 
-### 1. Arquivo de Credenciais (Recomendado - Mais Seguro)
+### 1. Credentials File (Recommended - Most Secure)
 
-**⚠️ Recomendação de Segurança**: Use arquivo de credenciais em vez de variáveis de ambiente, especialmente em Kubernetes, pois variáveis de ambiente podem ser facilmente interceptadas ou lidas pela aplicação.
+**⚠️ Security Recommendation**: Use a credentials file instead of environment variables, especially in Kubernetes, as environment variables can be easily intercepted or read by the application.
 
-Configure o arquivo `~/.aws/credentials`:
+Configure the `~/.aws/credentials` file:
 
 ```ini
 [default]
-aws_access_key_id = sua_access_key
-aws_secret_access_key = sua_secret_key
-aws_session_token = seu_session_token  # opcional
+aws_access_key_id = your_access_key
+aws_secret_access_key = your_secret_key
+aws_session_token = your_session_token  # optional
 ```
 
-### 2. Variáveis de Ambiente (Menos Seguro)
+### 2. Environment Variables (Less Secure)
 
-**⚠️ Aviso**: Variáveis de ambiente em Kubernetes podem ser facilmente interceptadas ou lidas pela aplicação. Use apenas para desenvolvimento/teste.
+**⚠️ Warning**: Environment variables in Kubernetes can be easily intercepted or read by the application. Use only for development/testing.
 
 ```bash
-export AWS_ACCESS_KEY_ID="sua_access_key"
-export AWS_SECRET_ACCESS_KEY="sua_secret_key"
-export AWS_SESSION_TOKEN="seu_session_token"  # opcional
+export AWS_ACCESS_KEY_ID="your_access_key"
+export AWS_SECRET_ACCESS_KEY="your_secret_key"
+export AWS_SESSION_TOKEN="your_session_token"  # optional
 export AWS_DEFAULT_REGION="us-east-1"
 ```
 
-### 3. IAM Roles (Mais Seguro - para EKS/EC2)
+### 3. IAM Roles (Most Secure - for EKS/EC2)
 
-Configure IAM Roles para instâncias EC2 ou pods EKS. Esta é a opção mais segura para ambientes de produção.
+Configure IAM Roles for EC2 instances or EKS pods. This is the most secure option for production environments.
 
-## Configuração para Kubernetes
+## Kubernetes Configuration
 
-### 1. Secret para Credenciais AWS
+### 1. Secret for AWS Credentials
 
-#### Opção 1: Secret com Arquivo de Credenciais (Recomendado - Mais Seguro)
+#### Option 1: Secret with Credentials File (Recommended - Most Secure)
 
 ```bash
 kubectl create secret generic aws-credentials \
-  --from-file=credentials=/home/USUARIO/.aws/credentials \
+  --from-file=credentials=/home/USER/.aws/credentials \
   --namespace=axway
 ```
 
-**Nota**: Substitua `/home/USUARIO` pelo caminho completo do seu diretório home. O `~` não funciona no kubectl.
+**Note**: Replace `/home/USER` with the full path to your home directory. `~` does not work with kubectl.
 
-Esta opção monta o arquivo de credenciais AWS completo no container, permitindo o uso de múltiplos perfis e é mais segura que variáveis de ambiente.
+This option mounts the full AWS credentials file in the container, allowing the use of multiple profiles and is more secure than environment variables.
 
-#### Opção 2: Secret com Variáveis de Ambiente (Menos Seguro)
+#### Option 2: Secret with Environment Variables (Less Secure)
 
-**⚠️ Aviso**: Variáveis de ambiente podem ser facilmente interceptadas. Use apenas para desenvolvimento/teste.
+**⚠️ Warning**: Environment variables can be easily intercepted. Use only for development/testing.
 
 ```yaml
 apiVersion: v1
@@ -178,27 +178,27 @@ type: Opaque
 data:
   AWS_ACCESS_KEY_ID: <base64-encoded-access-key>
   AWS_SECRET_ACCESS_KEY: <base64-encoded-secret-key>
-  AWS_SESSION_TOKEN: <base64-encoded-session-token>  # opcional
+  AWS_SESSION_TOKEN: <base64-encoded-session-token>  # optional
 ```
 
-### 2. Configuração no values.yaml (Testado)
+### 2. Configuration in values.yaml (Tested)
 
-Para ambientes Kubernetes com Helm, configure o `values.yaml` do APIM com as seguintes seções:
+For Kubernetes environments with Helm, configure the APIM `values.yaml` with the following sections:
 
-#### Para apimgr e apitraffic:
+#### For apimgr and apitraffic:
 
 ```yaml
 apimgr:
-  # ... outras configurações ...
+  # ... other settings ...
   extraVolumeMounts:
-    # ... outros volumes ...
-    # Configuração AWS - Diretório .aws padrão
+    # ... other volumes ...
+    # AWS configuration - default .aws directory
     - name: aws-config-volume
       mountPath: /opt/axway/apigateway/system/conf/.aws
       readOnly: true
   extraVolumes:
-    # ... outros volumes ...
-    # Volume para credenciais AWS
+    # ... other volumes ...
+    # Volume for AWS credentials
     - name: aws-config-volume
       secret:
         secretName: aws-credentials
@@ -206,27 +206,27 @@ apimgr:
           - key: credentials
             path: credentials
   extraEnvVars:
-    # ... outras variáveis ...
-    # Configurações AWS
+    # ... other variables ...
+    # AWS settings
     - name: AWS_SHARED_CREDENTIALS_FILE
       value: "/opt/axway/apigateway/system/conf/.aws/credentials"
     - name: AWS_DEFAULT_REGION
       value: "us-east-1"
-    # Opcional: Configurar perfil específico se necessário
+    # Optional: Set specific profile if needed
     # - name: AWS_PROFILE
     #   value: "default"
 
 apitraffic:
-  # ... outras configurações ...
+  # ... other settings ...
   extraVolumeMounts:
-    # ... outros volumes ...
-    # Configuração AWS - Diretório .aws padrão
+    # ... other volumes ...
+    # AWS configuration - default .aws directory
     - name: aws-config-volume
       mountPath: /opt/axway/apigateway/system/conf/.aws
       readOnly: true
   extraVolumes:
-    # ... outros volumes ...
-    # Volume para credenciais AWS
+    # ... other volumes ...
+    # Volume for AWS credentials
     - name: aws-config-volume
       secret:
         secretName: aws-credentials
@@ -234,18 +234,18 @@ apitraffic:
           - key: credentials
             path: credentials
   extraEnvVars:
-    # ... outras variáveis ...
-    # Configurações AWS
+    # ... other variables ...
+    # AWS settings
     - name: AWS_SHARED_CREDENTIALS_FILE
       value: "/opt/axway/apigateway/system/conf/.aws/credentials"
     - name: AWS_DEFAULT_REGION
       value: "us-east-1"
-    # Opcional: Configurar perfil específico se necessário
+    # Optional: Set specific profile if needed
     # - name: AWS_PROFILE
     #   value: "default"
 ```
 
-#### Configuração Alternativa: Deployment Simples
+#### Alternative Configuration: Simple Deployment
 
 ```yaml
 apiVersion: apps/v1
@@ -285,30 +285,30 @@ spec:
         - name: AWS_DEFAULT_REGION
           value: "us-east-1"
 
-### 3. Criação do Secret
+### 3. Creating the Secret
 
-#### Para Secret com Arquivo de Credenciais (Recomendado - Mais Seguro):
-
-```bash
-kubectl create secret generic aws-credentials \
-  --from-file=credentials=/home/USUARIO/.aws/credentials \
-  --namespace=axway
-```
-
-**Nota**: Substitua `/home/USUARIO` pelo caminho completo do seu diretório home. O `~` não funciona no kubectl.
-
-#### Para Secret com Variáveis de Ambiente (Menos Seguro):
+#### For Secret with Credentials File (Recommended - Most Secure):
 
 ```bash
 kubectl create secret generic aws-credentials \
-  --from-literal=AWS_ACCESS_KEY_ID="sua_access_key" \
-  --from-literal=AWS_SECRET_ACCESS_KEY="sua_secret_key" \
+  --from-file=credentials=/home/USER/.aws/credentials \
   --namespace=axway
 ```
 
-## Configuração Alternativa com IAM Roles
+**Note**: Replace `/home/USER` with the full path to your home directory. `~` does not work with kubectl.
 
-Para ambientes EKS, você pode usar IAM Roles em vez de credenciais:
+#### For Secret with Environment Variables (Less Secure):
+
+```bash
+kubectl create secret generic aws-credentials \
+  --from-literal=AWS_ACCESS_KEY_ID="your_access_key" \
+  --from-literal=AWS_SECRET_ACCESS_KEY="your_secret_key" \
+  --namespace=axway
+```
+
+## Alternative Configuration with IAM Roles
+
+For EKS environments, you can use IAM Roles instead of credentials:
 
 ```yaml
 apiVersion: apps/v1
@@ -322,7 +322,7 @@ spec:
       containers:
       - name: axway-gateway
         image: axway/api-gateway:latest
-        # Sem variáveis de ambiente - usa IAM Role
+        # No environment variables - uses IAM Role
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -332,47 +332,47 @@ metadata:
     eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT:role/axway-lambda-role
 ```
 
-## Monitoramento e Troubleshooting
+## Monitoring and Troubleshooting
 
 ### Logs
 
-O script gera logs detalhados que podem ser monitorados:
+The script generates detailed logs that can be monitored:
 
-- `Trace.info()`: Informações de sucesso e configuração
-- `Trace.warning()`: Avisos sobre configuração
-- `Trace.error()`: Erros de execução
+- `Trace.info()`: Success and configuration information
+- `Trace.warning()`: Configuration warnings
+- `Trace.error()`: Execution errors
 
-### Variáveis de Ambiente Suportadas
+### Supported Environment Variables
 
-- `AWS_ACCESS_KEY_ID`: Chave de acesso AWS
-- `AWS_SECRET_ACCESS_KEY`: Chave secreta AWS
-- `AWS_SESSION_TOKEN`: Token de sessão (opcional)
-- `AWS_DEFAULT_REGION`: Região padrão
-- `AWS_PROFILE`: Perfil AWS
-- `AWS_SHARED_CREDENTIALS_FILE`: Caminho para arquivo de credenciais
+- `AWS_ACCESS_KEY_ID`: AWS access key
+- `AWS_SECRET_ACCESS_KEY`: AWS secret key
+- `AWS_SESSION_TOKEN`: Session token (optional)
+- `AWS_DEFAULT_REGION`: Default region
+- `AWS_PROFILE`: AWS profile
+- `AWS_SHARED_CREDENTIALS_FILE`: Path to credentials file
 
-### Solução de Problemas Comuns
+### Common Troubleshooting
 
-1. **Erro de credenciais**: Verifique se as variáveis de ambiente estão definidas ou se o arquivo de credenciais existe
-2. **Erro de região**: Verifique se a região está correta e a função existe
-3. **Erro de timeout**: Aumente o valor do parâmetro `aws.lambda.retry.delay.ms`
-4. **Erro de função não encontrada**: Verifique o nome da função e a região
-5. **Erro de classpath**: Verifique se os JARs foram adicionados ao Policy Studio em **Window > Preferences > Runtime Dependencies**
+1. **Credentials error**: Check if environment variables are set or if the credentials file exists
+2. **Region error**: Check if the region is correct and the function exists
+3. **Timeout error**: Increase the value of the `aws.lambda.retry.delay.ms` parameter
+4. **Function not found error**: Check the function name and region
+5. **Classpath error**: Check if the JARs were added to Policy Studio in **Window > Preferences > Runtime Dependencies**
 
-## Segurança
+## Security
 
-- Use IAM Roles quando possível em vez de credenciais estáticas
-- Rotacione credenciais regularmente
-- Use políticas IAM com privilégios mínimos
-- Monitore logs de acesso e execução
-- Considere usar AWS Secrets Manager para credenciais sensíveis
+- Use IAM Roles whenever possible instead of static credentials
+- Rotate credentials regularly
+- Use IAM policies with least privilege
+- Monitor access and execution logs
+- Consider using AWS Secrets Manager for sensitive credentials
 
-## Exemplo de Uso
+## Usage Example
 
-1. Configure o filtro no Policy Studio com os parâmetros necessários
-2. Configure credenciais AWS (variáveis de ambiente, arquivo ou IAM Role)
-3. Defina os atributos da mensagem com os parâmetros desejados
-4. Teste a integração com uma requisição HTTP
-5. Monitore logs para verificar funcionamento
+1. Configure the filter in Policy Studio with the required parameters
+2. Configure AWS credentials (environment variables, file, or IAM Role)
+3. Set message attributes with the desired parameters
+4. Test the integration with an HTTP request
+5. Monitor logs to verify operation
 
-A integração está pronta para uso em ambientes de produção com configurações de segurança apropriadas. 
+The integration is ready for use in production environments with appropriate security configurations. 

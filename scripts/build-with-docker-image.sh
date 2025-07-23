@@ -1,49 +1,49 @@
 #!/bin/bash
 
-# Script para fazer build do JAR usando a imagem publicada
+# Script to build the JAR using the published image
 # axwayjbarros/aws-lambda-apim-sdk:1.0.0
 # 
-# Esta imagem contém todas as bibliotecas do Axway API Gateway
-# para compilar o projeto, não para execução.
+# This image contains all Axway API Gateway libraries
+# for building the project, not for runtime.
 
 set -e
 
-echo "🚀 Build do JAR usando imagem Docker: axwayjbarros/aws-lambda-apim-sdk:1.0.0"
-echo "📋 Nota: Esta imagem contém apenas as bibliotecas para build, não para execução"
+echo "🚀 Building JAR using Docker image: axwayjbarros/aws-lambda-apim-sdk:1.0.0"
+echo "📋 Note: This image contains only the libraries for build, not for runtime"
 echo ""
 
-# Verificar se Docker está rodando
+# Check if Docker is running
 if ! docker info > /dev/null 2>&1; then
-    echo "❌ Docker não está rodando. Inicie o Docker e tente novamente."
+    echo "❌ Docker is not running. Start Docker and try again."
     exit 1
 fi
 
-# Verificar se estamos no diretório correto
+# Check if we are in the correct directory
 if [ ! -f "build.gradle" ]; then
-    echo "❌ Arquivo build.gradle não encontrado. Execute este script no diretório raiz do projeto."
+    echo "❌ build.gradle file not found. Run this script in the project root directory."
     exit 1
 fi
 
-# Pull da imagem se necessário
-echo "📥 Verificando imagem Docker..."
+# Pull the image if needed
+echo "📥 Checking Docker image..."
 docker pull axwayjbarros/aws-lambda-apim-sdk:1.0.0
 
-# Limpar build anterior
+# Clean previous build
 echo ""
-echo "🧹 Limpando build anterior..."
+echo "🧹 Cleaning previous build..."
 rm -rf build/
 rm -rf .gradle/
 
-# Criar diretório para o build
+# Create build directory
 mkdir -p build/libs
 
-# Fazer build usando a imagem Docker
+# Build using Docker image
 echo ""
-echo "🔨 Iniciando build do JAR..."
-echo "📁 Diretório atual: $(pwd)"
-echo "📁 Build será salvo em: $(pwd)/build/libs/"
+echo "🔨 Starting JAR build..."
+echo "📁 Current directory: $(pwd)"
+echo "📁 Build will be saved in: $(pwd)/build/libs/"
 
-# Executar build dentro do container
+# Run build inside the container
 docker run --rm \
   -v "$(pwd):/workspace" \
   -v "$(pwd)/build:/workspace/build" \
@@ -51,63 +51,63 @@ docker run --rm \
   -w /workspace \
   axwayjbarros/aws-lambda-apim-sdk:1.0.0 \
   bash -c "
-    echo '🔧 Configurando ambiente...'
+    echo '🔧 Setting up environment...'
     export JAVA_HOME=/opt/java/openjdk-11
     export PATH=\$JAVA_HOME/bin:\$PATH
     
-    echo '📦 Verificando Java...'
+    echo '📦 Checking Java...'
     java -version
     
-    echo '📦 Verificando Gradle...'
-    gradle --version || echo 'Gradle não encontrado, instalando...'
+    echo '📦 Checking Gradle...'
+    gradle --version || echo 'Gradle not found, installing...'
     
-    echo '🔨 Executando build...'
-    gradle clean build || echo 'Build falhou, tentando sem clean...'
-    gradle build || echo 'Build falhou novamente'
+    echo '🔨 Running build...'
+    gradle clean build || echo 'Build failed, trying without clean...'
+    gradle build || echo 'Build failed again'
     
-    echo '📋 Verificando resultado...'
-    ls -la build/libs/ || echo 'Diretório build/libs não encontrado'
+    echo '📋 Checking result...'
+    ls -la build/libs/ || echo 'build/libs directory not found'
   "
 
-# Verificar se o JAR foi criado
+# Check if the JAR was created
 echo ""
-echo "🔍 Verificando resultado do build..."
+echo "🔍 Checking build result..."
 
 if [ -f "build/libs/aws-lambda-apim-sdk-1.0.1.jar" ]; then
-    echo "✅ JAR criado com sucesso!"
-    echo "📁 Arquivo: build/libs/aws-lambda-apim-sdk-1.0.1.jar"
-    echo "📏 Tamanho: $(du -h build/libs/aws-lambda-apim-sdk-1.0.1.jar | cut -f1)"
+    echo "✅ JAR created successfully!"
+    echo "📁 File: build/libs/aws-lambda-apim-sdk-1.0.1.jar"
+    echo "📏 Size: $(du -h build/libs/aws-lambda-apim-sdk-1.0.1.jar | cut -f1)"
     
     echo ""
-    echo "📋 Conteúdo do JAR:"
+    echo "📋 JAR contents:"
     jar -tf build/libs/aws-lambda-apim-sdk-1.0.1.jar | head -20
     
     echo ""
-    echo "🎉 Build concluído com sucesso!"
+    echo "🎉 Build completed successfully!"
     echo ""
-    echo "📋 Próximos passos:"
-    echo "1. Para Linux: ./gradlew installLinux"
-    echo "2. Para Windows: Copie o JAR e execute ./gradlew installWindows"
-    echo "3. Para Docker: docker-compose up -d"
+    echo "📋 Next steps:"
+    echo "1. For Linux: ./gradlew installLinux"
+    echo "2. For Windows: Copy the JAR and run ./gradlew installWindows"
+    echo "3. For Docker: docker-compose up -d"
     
 else
-    echo "❌ JAR não foi criado!"
+    echo "❌ JAR was not created!"
     echo ""
-    echo "🔍 Verificando diretório build:"
-    ls -la build/ || echo "Diretório build não existe"
+    echo "🔍 Checking build directory:"
+    ls -la build/ || echo "build directory does not exist"
     
     echo ""
-    echo "🔍 Verificando logs do Gradle:"
+    echo "🔍 Checking Gradle logs:"
     if [ -f ".gradle/build.log" ]; then
         tail -20 .gradle/build.log
     else
-        echo "Log do Gradle não encontrado"
+        echo "Gradle log not found"
     fi
     
     echo ""
-    echo "💡 Tentativas de solução:"
-    echo "1. Verifique se o Docker está rodando"
-    echo "2. Verifique se a imagem existe: docker images axwayjbarros/aws-lambda-apim-sdk:1.0.0"
-    echo "3. Tente fazer pull da imagem: docker pull axwayjbarros/aws-lambda-apim-sdk:1.0.0"
-    echo "4. Verifique se há espaço em disco"
+    echo "💡 Troubleshooting suggestions:"
+    echo "1. Check if Docker is running"
+    echo "2. Check if the image exists: docker images axwayjbarros/aws-lambda-apim-sdk:1.0.0"
+    echo "3. Try pulling the image: docker pull axwayjbarros/aws-lambda-apim-sdk:1.0.0"
+    echo "4. Check for disk space"
 fi 

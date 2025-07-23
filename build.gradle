@@ -6,43 +6,6 @@ group 'com.axway'
 version '1.0.9'
 sourceCompatibility = 1.8
 
-// Comment to simulate release - build.gradle included in the release ZIP
-// New simulation: gradle folder included for full Gradle Wrapper functionality
-// Simulation: src/main/resources structure kept in the ZIP for compatibility
-// Simulation: Java filter documentation complete with quick start guide
-
-// Improvement: Optimized build system for Docker
-// - Enhanced support for containerized environment
-// - Automatic configuration of Axway dependencies
-// - Consistent build across environments
-// - Automatic release system with fixed permissions
-// - Release workflow optimized to use artifacts
-// - Release created directly in build-jar workflow
-// - Unified release system working correctly
-// - YAML workflow fixed and working
-// - Robust system to handle existing tags
-// - Release action updated to modern version
-// - Automatic AWS SDK version detection system implemented
-// - JAR detection fixed and configuration simplified
-// - Permission issue when renaming JAR fixed
-// - Automatic versioning implemented
-// - Single release with multiple JARs implemented
-// - GH_TOKEN added for GitHub CLI authentication
-// - Release simulation for full system test
-// - Test of organized ZIPs with dependencies
-// - Fixes copy of external JARs from Gradle cache
-// - Includes build JARs + Gradle dependencies
-// - Fixes semantic versioning in release tag
-// - Fixes order of semantic version definition
-// - Fixes duplication of JARs and dependency copy
-// - Restores semantic versioning with correct script
-// - Fixes Gradle cache and versioning
-// - Synchronizes release version with JAR version
-// - Captures JARs downloaded by Gradle during build
-// - Implements Gradle tasks to copy dependencies
-// - Simulates release to test full workflow
-// - Fixes version reading after versioning script
-// - Uses GitHub Actions outputs to communicate version between jobs
 
 task copyExternalDependencies(type: Copy) {
     description = 'Copies external dependencies to dependencies folder'
@@ -98,27 +61,27 @@ repositories {
     mavenCentral()
 }
 
-// Configuração dinâmica do Axway API Gateway
-// Melhoria: Suporte aprimorado para múltiplas versões do Axway
+// Dynamic configuration of Axway API Gateway
+// Improvement: Enhanced support for multiple Axway versions
 def axway_base = System.getProperty('axway.base', '/opt/axway/Axway-7.7.0.20240830')
 def apim_folder = "${axway_base}/apigateway/system"
 def ps_folder = "${axway_base}/policystudio"
 
-// Configurações alternativas (descomente se necessário)
+// Alternative configurations (uncomment if needed)
 //def axway_base_alt = '/opt/axway/Axway-7.7.0.20210830'
 //def apim_folder_alt = "${axway_base_alt}/apigateway/system"
 //def ps_folder_alt = "${axway_base_alt}/policystudio"
 
 dependencies {
-    // Configuração dinâmica de dependências baseada no Axway
+    // Dynamic dependency configuration based on Axway
     def useAxwayAwsSdk = System.getProperty('use.axway.aws.sdk', 'true').toBoolean()
     def fallbackAwsSdkVersion = System.getProperty('fallback.aws.sdk.version', '1.12.314')
     
     if (useAxwayAwsSdk) {
-        // Usar AWS SDK do Axway (recomendado)
+        // Use AWS SDK from Axway (recommended)
         println "🔍 Using Axway AWS SDK: ${apim_folder}/lib"
         
-        // Verificar se AWS SDK está disponível no Axway
+        // Check if AWS SDK is available in Axway
         def awsSdkJars = fileTree(dir: "${apim_folder}/lib", include: '*aws*.jar')
         def awsSdkModulesJars = fileTree(dir: "${apim_folder}/lib/modules/aws", include: '*.jar')
         
@@ -127,7 +90,7 @@ dependencies {
             implementation awsSdkJars
             implementation awsSdkModulesJars
             
-            // Detectar versão do AWS SDK do Axway
+            // Detect AWS SDK version from Axway
             def detectedVersion = null
             awsSdkModulesJars.files.each { jar ->
                 def matcher = jar.name =~ /aws-java-sdk-.*-(\d+\.\d+\.\d+)\.jar/
@@ -137,7 +100,7 @@ dependencies {
                 }
             }
             
-            // Verificar se AWS SDK Lambda está disponível
+            // Check if AWS SDK Lambda is available
             def awsLambdaJar = awsSdkModulesJars.files.find { it.name.contains('lambda') }
             if (!awsLambdaJar) {
                 def lambdaVersion = detectedVersion ?: fallbackAwsSdkVersion
@@ -150,7 +113,7 @@ dependencies {
             implementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: fallbackAwsSdkVersion
         }
     } else {
-        // Usar AWS SDK externo (fallback)
+        // Use external AWS SDK (fallback)
         println "🔧 Using external AWS SDK: $fallbackAwsSdkVersion"
         implementation group: 'com.amazonaws', name: 'aws-java-sdk-lambda', version: fallbackAwsSdkVersion
         implementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: fallbackAwsSdkVersion
@@ -164,7 +127,7 @@ dependencies {
     // Policy Studio libs
     implementation fileTree(dir: "${ps_folder}/plugins", include: '*.jar')
     
-    // Detectar automaticamente a pasta do filterbase
+    // Automatically detect filterbase folder
     def filterbaseDir = file("${ps_folder}/plugins").listFiles().find { 
         it.isDirectory() && it.name.startsWith("com.vordel.rcp.filterbase") 
     }
@@ -220,7 +183,7 @@ task installWindows {
     }
 }
 
-// Função auxiliar para processar arquivo de internacionalização
+// Helper function to process internationalization file
 def processInternationalizationFile(def sourceFile, def destFile) {
     if (!sourceFile.exists()) {
         println "❌ File not found: ${sourceFile.absolutePath}"
@@ -313,7 +276,7 @@ def processInternationalizationFile(def sourceFile, def destFile) {
     }
 }
 
-// Função auxiliar para instalar arquivos YAML no Windows
+// Helper function to install YAML files on Windows
 def installYamlFiles(def projectPath, def taskName) {
     println "🚀 Installing AWS Lambda filter YAML files on Windows..."
     println "📋 Task: ${taskName}"
@@ -343,7 +306,7 @@ def installYamlFiles(def projectPath, def taskName) {
     showNextSteps()
 }
 
-// Função auxiliar para mostrar próximos passos
+// Helper function to show next steps
 def showNextSteps() {
     println "📋 Next steps:"
     println "1. Copy the JAR built on Linux to Windows"
@@ -354,7 +317,7 @@ def showNextSteps() {
     println "6. Search for 'AWS Lambda Filter' in the palette"
 }
 
-// Função auxiliar para criar estrutura de diretórios do projeto
+// Helper function to create project directory structure
 def createProjectStructure(def projectPath) {
     def metaInfDir = new File(projectPath, "META-INF/types/Entity/Filter/AWSFilter")
     def systemDir = new File(projectPath, "System")
@@ -365,7 +328,7 @@ def createProjectStructure(def projectPath) {
     return [metaInfDir, systemDir]
 }
 
-// Função auxiliar para copiar arquivos YAML
+// Helper function to copy YAML files
 def copyYamlFiles(def sourceYamlDir, def metaInfDir, def systemDir) {
     // Copy AWSLambdaFilter.yaml
     def sourceFilterYaml = new File(sourceYamlDir, "META-INF/types/Entity/Filter/AWSFilter/AWSLambdaFilter.yaml")
@@ -476,7 +439,7 @@ task setAxwayPath {
     }
 }
 
-// Task para mostrar informações do projeto
+// Task to show project information
 task showProjectInfo {
     group = 'Help'
     description = 'Shows detailed project information'
@@ -509,7 +472,7 @@ task showProjectInfo {
     }
 }
 
-// Task para mostrar todas as tasks disponíveis
+// Task to show all available tasks
 task showTasks {
     group = 'Help'
     description = 'Shows all available tasks'

@@ -1,53 +1,53 @@
-# Script para configurar o caminho do projeto Policy Studio
-# Autor: Assistente
-# Data: $(Get-Date)
+# Script to configure the Policy Studio project path
+# Author: Assistant
+# Date: $(Get-Date)
 
-Write-Host "=== Configuração do Projeto Policy Studio ===" -ForegroundColor Green
+Write-Host "=== Policy Studio Project Configuration ===" -ForegroundColor Green
 Write-Host ""
 
-# Solicitar caminho do projeto
+# Request project path
 $defaultPath = "C:\Users\jbarros\apiprojects\POC-CUSTOM-FILTER"
-Write-Host "Caminho padrão: $defaultPath" -ForegroundColor Yellow
+Write-Host "Default path: $defaultPath" -ForegroundColor Yellow
 Write-Host ""
 
-$projectPath = Read-Host "Digite o caminho do seu projeto Policy Studio (ou pressione Enter para usar o padrão)"
+$projectPath = Read-Host "Enter your Policy Studio project path (or press Enter to use the default)"
 
 if ([string]::IsNullOrWhiteSpace($projectPath)) {
     $projectPath = $defaultPath
 }
 
 Write-Host ""
-Write-Host "Caminho selecionado: $projectPath" -ForegroundColor Cyan
+Write-Host "Selected path: $projectPath" -ForegroundColor Cyan
 
-# Verificar se o diretório existe
+# Check if the directory exists
 if (Test-Path $projectPath) {
-    Write-Host "✅ Diretório encontrado!" -ForegroundColor Green
+    Write-Host "✅ Directory found!" -ForegroundColor Green
 } else {
-    Write-Host "❌ Diretório não encontrado!" -ForegroundColor Red
-    Write-Host "Deseja criar o diretório? (S/N)" -ForegroundColor Yellow
+    Write-Host "❌ Directory not found!" -ForegroundColor Red
+    Write-Host "Do you want to create the directory? (Y/N)" -ForegroundColor Yellow
     $createDir = Read-Host
     
-    if ($createDir -eq "S" -or $createDir -eq "s") {
+    if ($createDir -eq "Y" -or $createDir -eq "y") {
         try {
             New-Item -ItemType Directory -Path $projectPath -Force | Out-Null
-            Write-Host "✅ Diretório criado com sucesso!" -ForegroundColor Green
+            Write-Host "✅ Directory created successfully!" -ForegroundColor Green
         }
         catch {
-            Write-Host "❌ Erro ao criar diretório: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "❌ Error creating directory: $($_.Exception.Message)" -ForegroundColor Red
             exit 1
         }
     } else {
-        Write-Host "Operação cancelada." -ForegroundColor Yellow
+        Write-Host "Operation cancelled." -ForegroundColor Yellow
         exit 1
     }
 }
 
-# Atualizar scripts com o novo caminho
+# Update scripts with the new path
 $scripts = @("install-filter-windows.ps1", "install-filter-windows.cmd")
 
 foreach ($script in $scripts) {
     if (Test-Path $script) {
-        Write-Host "Atualizando $script..." -ForegroundColor Cyan
+        Write-Host "Updating $script..." -ForegroundColor Cyan
         
         if ($script -eq "install-filter-windows.ps1") {
             $content = Get-Content $script -Raw
@@ -59,20 +59,20 @@ foreach ($script in $scripts) {
             Set-Content $script $content -Encoding UTF8
         }
         
-        Write-Host "✅ $script atualizado!" -ForegroundColor Green
+        Write-Host "✅ $script updated!" -ForegroundColor Green
     } else {
-        Write-Host "⚠️ $script não encontrado" -ForegroundColor Yellow
+        Write-Host "⚠️ $script not found" -ForegroundColor Yellow
     }
 }
 
 Write-Host ""
-Write-Host "=== Configuração Concluída ===" -ForegroundColor Green
+Write-Host "=== Configuration Completed ===" -ForegroundColor Green
 Write-Host ""
-Write-Host "📝 Próximos passos:" -ForegroundColor Yellow
-Write-Host "1. Execute o script de instalação:" -ForegroundColor White
+Write-Host "📝 Next steps:" -ForegroundColor Yellow
+Write-Host "1. Run the installation script:" -ForegroundColor White
 Write-Host "   PowerShell: .\install-filter-windows.ps1" -ForegroundColor Gray
 Write-Host "   CMD: install-filter-windows.cmd" -ForegroundColor Gray
-Write-Host "2. Abra o projeto no Policy Studio" -ForegroundColor White
-Write-Host "3. Configure os JARs AWS SDK se necessário" -ForegroundColor White
+Write-Host "2. Open the project in Policy Studio" -ForegroundColor White
+Write-Host "3. Configure AWS SDK JARs if needed" -ForegroundColor White
 Write-Host ""
-Write-Host "💡 Dica: Os scripts agora estão configurados para o projeto: $projectPath" -ForegroundColor Cyan 
+Write-Host "💡 Tip: The scripts are now configured for the project: $projectPath" -ForegroundColor Cyan 

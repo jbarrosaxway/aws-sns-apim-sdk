@@ -448,27 +448,47 @@ For detailed information about the Groovy script, including Kubernetes configura
 ```
 aws-lambda-apim-sdk/
 ├── README.md                                # Main documentation
-├── docs/                                    # 📚 Organized documentation
-│   ├── 📋 INSTALACAO_WINDOWS.md            # Windows installation
-│   ├── 🔧 CONFIGURACAO_DINAMICA.md         # Dynamic configuration
-│   ├── 🗳️ RELEASE_GUIDE.md                 # Release guide
-│   ├── 📊 SEMANTIC_VERSIONING.md           # Semantic versioning
-│   ├── 🔍 ATUALIZACOES_CAMPOS_FILTRO.md   # Field history
-│   ├── 🔐 MELHORIAS_AUTENTICACAO_AWS.md   # AWS authentication
-│   └── 📖 AWS_LAMBDA_GROOVY_DOCUMENTATION.md # Groovy documentation
-├── build.gradle                             # Build configuration + tasks
-├── aws-lambda-filter.groovy                 # Groovy script
-├── scripts/
+├── docs/                                    # 📚 Project documentation
+│   ├── AUTOMATIC_RELEASE_SYSTEM.md          # Automatic release system
+│   ├── RELEASE_GUIDE.md                     # Release guide
+│   ├── SEMANTIC_VERSIONING.md               # Semantic versioning
+│   ├── SCRIPTS_REFERENCE.md                 # Scripts reference
+│   └── AWS_LAMBDA_GROOVY_DOCUMENTATION.md   # Groovy documentation
+├── build.gradle                             # Gradle build configuration
+├── aws-lambda-filter.groovy                 # Groovy script for Policy Studio
+├── axway-versions.json                      # Supported Axway versions
+├── scripts/                                 # Utility and build scripts
+│   ├── build-with-docker-image.sh           # Build JAR with Docker
+│   ├── check-release-needed.sh              # Release analysis (CI/CD)
+│   ├── version-bump.sh                      # Semantic versioning (CI/CD)
+│   ├── install-linux.sh                     # Linux install script
 │   ├── linux/
-│   │   └── install-filter.sh               # Linux installation
+│   │   └── install-filter.sh                # Linux filter install (usado pelo Gradle)
 │   └── windows/
-│       ├── install-filter-windows.ps1      # PowerShell
-│       ├── install-filter-windows.cmd      # CMD
-│       ├── configurar-projeto-windows.ps1  # Configuration
-│       └── test-internationalization.ps1   # Test
-├── src/main/                               # Source code
-└── build/
-    └── build/libs/aws-lambda-apim-sdk-1.0.1.jar
+│       ├── install-filter-windows.ps1       # Windows PowerShell install
+│       ├── install-filter-windows.cmd       # Windows CMD install
+│       ├── configurar-projeto-windows.ps1   # Windows project config
+│       └── test-internationalization.ps1    # Internationalization test
+├── src/
+│   └── main/
+│       ├── java/                            # Java source code
+│       └── resources/
+│           ├── fed/
+│           │   ├── AWSLambdaDesc.xml
+│           │   └── AWSLambdaTypeSet.xml
+│           └── yaml/
+│               ├── System/
+│               │   ├── Internationalization Default.yaml
+│               │   └── ... (backups)
+│               └── META-INF/
+│                   └── types/
+│                       └── Entity/
+│                           └── Filter/
+│                               └── AWSFilter/
+│                                   └── AWSLambdaFilter.yaml
+└── build/                                   # Build output (generated)
+    └── libs/
+        └── aws-lambda-apim-sdk-<version>.jar
 ```
 
 ## Tests

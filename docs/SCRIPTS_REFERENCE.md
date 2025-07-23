@@ -1,169 +1,169 @@
-# Referência dos Scripts
+# Scripts Reference
 
-Este documento lista todos os scripts essenciais mantidos no projeto e suas funções.
+This document lists all essential scripts maintained in the project and their functions.
 
-## Scripts Principais
+## Main Scripts
 
-### 🔧 **Build e Release**
+### 🔧 **Build and Release**
 
 #### `scripts/check-release-needed.sh`
-- **Função:** Analisa mudanças e determina se um release é necessário
-- **Uso:** Automático (workflow GitHub Actions)
-- **Entrada:** Lista de arquivos modificados
-- **Saída:** Arquivo `.release_check` com informações
+- **Function:** Analyzes changes and determines if a release is needed
+- **Usage:** Automatic (GitHub Actions workflow)
+- **Input:** List of modified files
+- **Output:** `.release_check` file with information
 
 #### `scripts/version-bump.sh`
-- **Função:** Executa versionamento semântico automático
-- **Uso:** Automático (workflow GitHub Actions)
-- **Entrada:** Mudanças detectadas
-- **Saída:** Nova versão calculada e arquivo `.version_info`
+- **Function:** Performs automatic semantic versioning
+- **Usage:** Automatic (GitHub Actions workflow)
+- **Input:** Detected changes
+- **Output:** New calculated version and `.version_info` file
 
 #### `scripts/build-with-docker-image.sh`
-- **Função:** Build do JAR usando imagem Docker publicada
-- **Uso:** Manual (desenvolvimento)
-- **Comando:** `./scripts/build-with-docker-image.sh`
-- **Saída:** JAR em `build/libs/aws-lambda-apim-sdk-*.jar`
+- **Function:** Build the JAR using the published Docker image
+- **Usage:** Manual (development)
+- **Command:** `./scripts/build-with-docker-image.sh`
+- **Output:** JAR in `build/libs/aws-lambda-apim-sdk-*.jar`
 
 
 
-### 📁 **Scripts por Plataforma**
+### 📁 **Platform Scripts**
 
 #### **Linux** (`scripts/linux/`)
 
 ##### `scripts/linux/install-filter.sh`
-- **Função:** Instala o filtro AWS Lambda no Linux
-- **Uso:** Automático (task Gradle `installLinux`)
-- **Comando:** `./gradlew installLinux`
-- **Saída:** Filtro instalado no Axway API Gateway
+- **Function:** Installs the AWS Lambda filter on Linux
+- **Usage:** Automatic (Gradle task `installLinux`)
+- **Command:** `./gradlew installLinux`
+- **Output:** Filter installed in Axway API Gateway
 
-#### **Windows** (Tasks Gradle)
+#### **Windows** (Gradle Tasks)
 
 ##### `./gradlew installWindows`
-- **Função:** Instalação interativa para Windows
-- **Uso:** Manual (Windows)
-- **Comando:** `./gradlew installWindows`
-- **Saída:** Arquivos YAML instalados no projeto Policy Studio
+- **Function:** Interactive installation for Windows
+- **Usage:** Manual (Windows)
+- **Command:** `./gradlew installWindows`
+- **Output:** YAML files installed in the Policy Studio project
 
 ##### `./gradlew installWindowsToProject`
-- **Função:** Instalação em projeto específico
-- **Uso:** Manual (Windows)
-- **Comando:** `./gradlew -Dproject.path=C:\caminho\do\projeto installWindowsToProject`
-- **Saída:** Arquivos YAML instalados no projeto específico
+- **Function:** Installation in a specific project
+- **Usage:** Manual (Windows)
+- **Command:** `./gradlew -Dproject.path=C:\path\to\project installWindowsToProject`
+- **Output:** YAML files installed in the specific project
 
 ##### `./gradlew showAwsJars`
-- **Função:** Mostra links dos JARs AWS SDK
-- **Uso:** Manual (Windows)
-- **Comando:** `./gradlew showAwsJars`
-- **Saída:** Links para download dos JARs necessários
+- **Function:** Shows AWS SDK JAR links
+- **Usage:** Manual (Windows)
+- **Command:** `./gradlew showAwsJars`
+- **Output:** Links to download required JARs
 
 
 
-## Estrutura Final
+## Final Structure
 
 ```
 scripts/
-├── 🔧 Scripts Principais
-│   ├── check-release-needed.sh          # Análise de release
-│   ├── version-bump.sh                  # Versionamento semântico
-│   └── build-with-docker-image.sh       # Build com Docker
+├── 🔧 Main Scripts
+│   ├── check-release-needed.sh          # Release analysis
+│   ├── version-bump.sh                  # Semantic versioning
+│   └── build-with-docker-image.sh       # Docker build
 └── 📁 linux/
-    └── install-filter.sh                # Instalação Linux
+    └── install-filter.sh                # Linux installation
 
-📋 **Tasks Gradle para Windows:**
-├── ./gradlew installWindows             # Instalação interativa
-├── ./gradlew installWindowsToProject    # Instalação em projeto específico
-└── ./gradlew showAwsJars               # Links dos JARs AWS
+📋 **Gradle Tasks for Windows:**
+├── ./gradlew installWindows             # Interactive installation
+├── ./gradlew installWindowsToProject    # Installation in specific project
+└── ./gradlew showAwsJars               # AWS JAR links
 ```
 
-## Scripts Removidos
+## Removed Scripts
 
-Os seguintes scripts foram removidos por não serem essenciais:
+The following scripts were removed as they were not essential:
 
-### 🧪 **Scripts de Teste/Validação (Removidos):**
-- `verify-aws-lambda-values.sh` - Verificação de valores AWS
-- `verify-filter-structure.sh` - Verificação de estrutura do filtro
-- `test-preserve-other-filters.sh` - Teste de preservação de filtros
-- `clean-and-reinstall.sh` - Limpeza e reinstalação
+### 🧪 **Test/Validation Scripts (Removed):**
+- `verify-aws-lambda-values.sh` - AWS values verification
+- `verify-filter-structure.sh` - Filter structure verification
+- `test-preserve-other-filters.sh` - Filter preservation test
+- `clean-and-reinstall.sh` - Clean and reinstall
 
-### 🔧 **Scripts de Fix (Removidos):**
-- `fix-internationalization-simple.sh` - Correção simples de internacionalização
-- `fix-internationalization-correct.sh` - Correção correta de internacionalização
-- `fix-internationalization-duplication.sh` - Correção de duplicação
-- `test-internationalization-fix.sh` - Teste de correção
+### 🔧 **Fix Scripts (Removed):**
+- `fix-internationalization-simple.sh` - Simple internationalization fix
+- `fix-internationalization-correct.sh` - Correct internationalization fix
+- `fix-internationalization-duplication.sh` - Duplication fix
+- `test-internationalization-fix.sh` - Fix test
 
-### 🪟 **Scripts Windows (Substituídos por Tasks Gradle):**
-- `install-filter-windows.ps1` - Substituído por `./gradlew installWindows`
-- `install-filter-windows.cmd` - Substituído por `./gradlew installWindowsToProject`
-- `configurar-projeto-windows.ps1` - Funcionalidade integrada nas tasks
-- `test-internationalization.ps1` - Funcionalidade integrada nas tasks
+### 🪟 **Windows Scripts (Replaced by Gradle Tasks):**
+- `install-filter-windows.ps1` - Replaced by `./gradlew installWindows`
+- `install-filter-windows.cmd` - Replaced by `./gradlew installWindowsToProject`
+- `configurar-projeto-windows.ps1` - Functionality integrated into tasks
+- `test-internationalization.ps1` - Functionality integrated into tasks
 
-### 🐳 **Scripts Docker (Removidos):**
-- `check-axway-jars.sh` - Verificação de JARs Axway
-- `debug-image.sh` - Debug da imagem
-- `docker-helper.sh` - Helper Docker
-- `start-gateway.sh` - Iniciar gateway
+### 🐳 **Docker Scripts (Removed):**
+- `check-axway-jars.sh` - Axway JARs verification
+- `debug-image.sh` - Image debug
+- `docker-helper.sh` - Docker helper
+- `start-gateway.sh` - Start gateway
 
-## Uso Recomendado
+## Recommended Usage
 
-### 🔄 **Desenvolvimento Diário:**
+### 🔄 **Daily Development:**
 ```bash
-# Build local
+# Local build
 ./scripts/build-with-docker-image.sh
 
-# Testar imagem
+# Test image
 ./scripts/test-published-image.sh
 
-# Instalar no Linux
+# Install on Linux
 ./gradlew installLinux
 ```
 
 ### 🏷️ **Releases:**
 ```bash
-# Automático via GitHub Actions
-# (não precisa de comandos manuais)
+# Automatic via GitHub Actions
+# (no manual commands needed)
 ```
 
 ### 🐳 **Docker:**
 ```bash
-# Build da imagem
+# Build the image
 ./scripts/docker/build-image.sh
 
-# Build com Docker
+# Build with Docker
 ./scripts/docker/build-with-docker.sh
 ```
 
 ### 🪟 **Windows:**
 ```powershell
-# Configurar projeto
+# Configure project
 .\scripts\windows\configurar-projeto-windows.ps1
 
-# Instalar filtro
+# Install filter
 .\scripts\windows\install-filter-windows.ps1
 
-# Testar internacionalização
+# Test internationalization
 .\scripts\windows\test-internationalization.ps1
 ```
 
-## Benefícios da Limpeza
+## Cleanup Benefits
 
-### ✅ **Organização:**
-- Scripts essenciais mantidos
-- Documentação clara
-- Estrutura lógica
+### ✅ **Organization:**
+- Essential scripts maintained
+- Clear documentation
+- Logical structure
 
-### ✅ **Manutenção:**
-- Menos scripts para manter
-- Foco nos essenciais
-- Redução de complexidade
+### ✅ **Maintenance:**
+- Fewer scripts to maintain
+- Focus on essentials
+- Reduced complexity
 
 ### ✅ **Performance:**
-- Menos arquivos no repositório
-- Builds mais rápidos
-- Menos overhead
+- Fewer files in the repository
+- Faster builds
+- Less overhead
 
-## Próximos Passos
+## Next Steps
 
-1. **Testar** os scripts mantidos
-2. **Documentar** experiências de uso
-3. **Melhorar** scripts conforme necessário
-4. **Adicionar** novos scripts apenas se essenciais 
+1. **Test** the maintained scripts
+2. **Document** usage experiences
+3. **Improve** scripts as needed
+4. **Add** new scripts only if essential 
