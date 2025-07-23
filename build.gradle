@@ -9,6 +9,7 @@ sourceCompatibility = 1.8
 // Comentário para simular release - build.gradle incluído no ZIP da release
 // Nova simulação: pasta gradle incluída para funcionamento completo do Gradle Wrapper
 // Simulação: estrutura src/main/resources mantida no ZIP para compatibilidade
+// Simulação: documentação do filtro Java completa com guia rápido
 
 // Melhoria: Sistema de build otimizado para Docker
 // - Suporte aprimorado para ambiente containerizado
