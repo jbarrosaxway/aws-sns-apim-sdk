@@ -370,13 +370,33 @@ jobs:
           rm -rf "$ZIP_DIR"
         done
         
-        # Create release with ZIPs
+        # Generate intelligent release notes
+        echo "📝 Generating intelligent release notes..."
+        chmod +x scripts/generate-release-notes.sh
+        
+        # Get previous tag
+        PREVIOUS_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
+        echo "📋 Previous tag: $PREVIOUS_TAG"
+        
+        # Generate release notes
+        ./scripts/generate-release-notes.sh "$PREVIOUS_TAG" "$TAG_NAME" "$RELEASE_VERSION"
+        
+        # Read generated release notes
+        if [ -f .release_notes ]; then
+          RELEASE_NOTES=$(cat .release_notes)
+          echo "✅ Release notes generated successfully"
+        else
+          echo "⚠️  Failed to generate release notes, using fallback"
+          RELEASE_NOTES="Build for multiple Axway API Gateway versions - Version: $RELEASE_VERSION - Date: $RELEASE_DATE"
+        fi
+        
+        # Create release with ZIPs and intelligent release notes
         ZIP_FILES=$(ls aws-lambda-apim-sdk-*.zip 2>/dev/null)
         if [ -n "$ZIP_FILES" ]; then
           echo "🚀 Creating release with ZIPs: $ZIP_FILES"
           gh release create "$TAG_NAME" \
             --title "Release v${RELEASE_VERSION} - Multi-Version" \
-            --notes "Build for multiple Axway API Gateway versions - Version: $RELEASE_VERSION - Date: $RELEASE_DATE - ZIPs: $ZIP_FILES - Versions: $VERSIONS" \
+            --notes "$RELEASE_NOTES" \
             --repo "${{ github.repository }}" \
             $ZIP_FILES
           echo "✅ Release created successfully!"

@@ -24,6 +24,18 @@ This document lists all essential scripts maintained in the project and their fu
 - **Command:** `./scripts/build-with-docker-image.sh`
 - **Output:** JAR in `build/libs/aws-lambda-apim-sdk-*.jar`
 
+#### `scripts/generate-release-notes.sh`
+- **Function:** Generates intelligent release notes based on commit history
+- **Usage:** Automatic (GitHub Actions workflow)
+- **Input:** Previous tag, new tag, release version
+- **Output:** Comprehensive release notes with categorized changes
+
+#### `scripts/analyze-changes.sh`
+- **Function:** Analyzes specific code changes and detects detailed change types
+- **Usage:** Called by release notes generator
+- **Input:** Commit range
+- **Output:** Detailed change analysis with impact assessment
+
 
 
 ### 📁 **Platform Scripts**

@@ -10,6 +10,8 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.auth.EC2ContainerCredentialsProviderWrapper;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.lambda.AWSLambda;
 import com.amazonaws.services.lambda.AWSLambdaClientBuilder;
@@ -19,104 +21,235 @@ import com.vordel.circuit.CircuitAbortException;
 import com.vordel.circuit.Message;
 import com.vordel.circuit.MessageProcessor;
 import com.vordel.circuit.aws.AWSFactory;
+import com.vordel.common.Dictionary;
 import com.vordel.config.Circuit;
 import com.vordel.config.ConfigContext;
 import com.vordel.el.Selector;
 import com.vordel.es.Entity;
 import com.vordel.es.EntityStoreException;
+import com.vordel.es.ESPK;
+import com.vordel.security.util.SecureString;
 import com.vordel.trace.Trace;
 import java.io.File;
+import java.nio.ByteBuffer;
 
 public class AWSLambdaProcessor extends MessageProcessor {
 	
-	private String functionName;
-	private AWSLambda awsLambda;
-	private String awsRegion;
-	private String invocationType;
-	private String logType;
-	private String qualifier;
-	private String maxRetries;
-	private String retryDelay;
+	// Selectors for dynamic field resolution (following S3 pattern)
+	protected Selector<String> functionName;
+	protected Selector<String> awsRegion;
+	protected Selector<String> invocationType;
+	protected Selector<String> logType;
+	protected Selector<String> qualifier;
+	protected Selector<Integer> retryDelay;
+	protected Selector<Integer> memorySize;
+	protected Selector<Boolean> useIAMRole;
 	
+	// AWS Lambda client builder (following S3 pattern)
+	protected AWSLambdaClientBuilder lambdaClientBuilder;
+	
+	// Content body selector
 	private Selector<String> contentBody = new Selector<>("${content.body}", String.class);
 
 	public AWSLambdaProcessor() {
 	}
 
 	@Override
-	public void filterAttached(ConfigContext ctx, com.vordel.es.Entity entity) throws EntityStoreException {
+	public void filterAttached(ConfigContext ctx, Entity entity) throws EntityStoreException {
 		super.filterAttached(ctx, entity);
 		
-		// Configurações básicas
-		functionName = new Selector<>(entity.getStringValue("functionName"), String.class).getLiteral();
-		awsRegion = new Selector<>(entity.getStringValue("awsRegion"), String.class).getLiteral();
-		invocationType = new Selector<>(entity.getStringValue("invocationType"), String.class).getLiteral();
-		logType = new Selector<>(entity.getStringValue("logType"), String.class).getLiteral();
-		qualifier = new Selector<>(entity.getStringValue("qualifier"), String.class).getLiteral();
-		maxRetries = new Selector<>(entity.getStringValue("maxRetries"), String.class).getLiteral();
-		retryDelay = new Selector<>(entity.getStringValue("retryDelay"), String.class).getLiteral();
+		// Initialize selectors for all fields (following S3 pattern)
+		this.functionName = new Selector(entity.getStringValue("functionName"), String.class);
+		this.awsRegion = new Selector(entity.getStringValue("awsRegion"), String.class);
+		this.invocationType = new Selector(entity.getStringValue("invocationType"), String.class);
+		this.logType = new Selector(entity.getStringValue("logType"), String.class);
+		this.qualifier = new Selector(entity.getStringValue("qualifier"), String.class);
+		this.retryDelay = new Selector(entity.getStringValue("retryDelay"), Integer.class);
+		this.memorySize = new Selector(entity.getStringValue("memorySize"), Integer.class);
+		this.useIAMRole = new Selector(entity.getStringValue("useIAMRole"), Boolean.class);
 		
-		// Valores padrão
-		if (invocationType == null || invocationType.trim().isEmpty()) {
-			invocationType = "RequestResponse";
-		}
-		if (logType == null || logType.trim().isEmpty()) {
-			logType = "None";
-		}
-		if (maxRetries == null || maxRetries.trim().isEmpty()) {
-			maxRetries = "3";
-		}
-		if (retryDelay == null || retryDelay.trim().isEmpty()) {
-			retryDelay = "1000";
-		}
+		// Get client configuration (following S3 pattern exactly)
+		Entity clientConfig = ctx.getEntity(entity.getReferenceValue("clientConfiguration"));
 		
-		// Basic settings
-		// Default values
-		// Possible types: RequestResponse, Event, DryRun
-		Trace.info("=== Lambda Configuration (Java Filter) ===");
-		Trace.info("Function: " + functionName);
-		Trace.info("Region: " + (awsRegion != null ? awsRegion : "inferred"));
-		Trace.info("Type: " + invocationType);
-		Trace.info("Log Type: " + logType);
-		Trace.info("Max Retries: " + maxRetries);
-		Trace.info("Retry Delay: " + retryDelay + "ms");
+		// Configure Lambda client builder (following S3 pattern)
+		this.lambdaClientBuilder = getLambdaClientBuilder(ctx, entity, clientConfig);
 		
-		// Configure AWS credentials
-		AWSCredentialsProvider credentialsProvider = configureCredentials();
-		if (credentialsProvider == null) {
-			Trace.error("Could not configure AWS credentials");
-			return;
-		}
+		Trace.info("=== Lambda Configuration (Following S3 Pattern) ===");
+		Trace.info("Function: " + (functionName != null ? functionName.getLiteral() : "dynamic"));
+		Trace.info("Region: " + (awsRegion != null ? awsRegion.getLiteral() : "dynamic"));
+		Trace.info("Use IAM Role: " + (useIAMRole != null ? useIAMRole.getLiteral() : "false"));
+		Trace.info("Client Configuration: " + (clientConfig != null ? "configured" : "default"));
+	}
+
+	/**
+	 * Creates Lambda client builder following S3 pattern exactly
+	 */
+	private AWSLambdaClientBuilder getLambdaClientBuilder(ConfigContext ctx, Entity entity, Entity clientConfig) 
+			throws EntityStoreException {
 		
-		// Criar cliente AWS Lambda
+		// Get credentials provider based on configuration
+		AWSCredentialsProvider credentialsProvider = getCredentialsProvider(ctx, entity);
+		
+		// Create client builder with credentials and client configuration (following S3 pattern)
 		AWSLambdaClientBuilder builder = AWSLambdaClientBuilder.standard()
 			.withCredentials(credentialsProvider);
 		
-		// Use region from configuration or environment variable
-		String regionToUse = awsRegion;
-		if (regionToUse == null || regionToUse.trim().isEmpty()) {
-			regionToUse = System.getenv("AWS_DEFAULT_REGION");
-		}
-		
-		if (regionToUse != null && !regionToUse.trim().isEmpty()) {
-			builder = builder.withRegion(regionToUse);
-			Trace.info("Using region: " + regionToUse);
+		// Apply client configuration if available (following S3 pattern exactly)
+		if (clientConfig != null) {
+			ClientConfiguration clientConfiguration = createClientConfiguration(ctx, clientConfig);
+			builder.withClientConfiguration(clientConfiguration);
+			Trace.info("Applied custom client configuration");
 		} else {
-			Trace.error("AWS region not specified");
-			return;
+			Trace.debug("Using default client configuration");
 		}
 		
-		awsLambda = builder.build();
-		Trace.info("AWS Lambda client successfully configured");
+		return builder;
+	}
+	
+	/**
+	 * Gets the appropriate credentials provider based on configuration
+	 */
+	private AWSCredentialsProvider getCredentialsProvider(ConfigContext ctx, Entity entity) throws EntityStoreException {
+		Boolean useIAMRoleValue = Boolean.valueOf(useIAMRole.getLiteral());
+		
+		if (useIAMRoleValue != null && useIAMRoleValue) {
+			// Use IAM Role (EC2 Instance Profile or ECS Task Role)
+			Trace.info("Using IAM Role credentials (Instance Profile/Task Role)");
+			return new EC2ContainerCredentialsProviderWrapper();
+		} else {
+			// Use explicit credentials via AWSFactory (following S3 pattern)
+			try {
+				AWSCredentials awsCredentials = AWSFactory.getCredentials(ctx, entity);
+				Trace.info("Using explicit AWS credentials");
+				return getAWSCredentialsProvider(awsCredentials);
+			} catch (Exception e) {
+				Trace.error("Error getting explicit credentials: " + e.getMessage());
+				Trace.info("Falling back to DefaultAWSCredentialsProviderChain");
+				return new DefaultAWSCredentialsProviderChain();
+			}
+		}
+	}
+	
+	/**
+	 * Creates ClientConfiguration from entity (following S3 pattern exactly)
+	 */
+	private ClientConfiguration createClientConfiguration(ConfigContext ctx, Entity entity) throws EntityStoreException {
+		ClientConfiguration clientConfig = new ClientConfiguration();
+		
+		if (entity == null) {
+			Trace.debug("using empty default ClientConfiguration");
+			return clientConfig;
+		}
+		
+		// Apply configuration settings (following S3 pattern exactly)
+		if (containsKey(entity, "connectionTimeout")) {
+			clientConfig.setConnectionTimeout(entity.getIntegerValue("connectionTimeout"));
+		}
+		if (containsKey(entity, "maxConnections")) {
+			clientConfig.setMaxConnections(entity.getIntegerValue("maxConnections"));
+		}
+		if (containsKey(entity, "maxErrorRetry")) {
+			clientConfig.setMaxErrorRetry(entity.getIntegerValue("maxErrorRetry"));
+		}
+		if (containsKey(entity, "protocol")) {
+			clientConfig.setProtocol(Protocol.valueOf(entity.getStringValue("protocol")));
+		}
+		if (containsKey(entity, "socketTimeout")) {
+			clientConfig.setSocketTimeout(entity.getIntegerValue("socketTimeout"));
+		}
+		if (containsKey(entity, "userAgent")) {
+			clientConfig.setUserAgent(entity.getStringValue("userAgent"));
+		}
+		if (containsKey(entity, "proxyHost")) {
+			clientConfig.setProxyHost(entity.getStringValue("proxyHost"));
+		}
+		if (containsKey(entity, "proxyPort")) {
+			clientConfig.setProxyPort(entity.getIntegerValue("proxyPort"));
+		}
+		if (containsKey(entity, "proxyUsername")) {
+			clientConfig.setProxyUsername(entity.getStringValue("proxyUsername"));
+		}
+		if (containsKey(entity, "proxyPassword")) {
+			try {
+				byte[] proxyPasswordBytes = ctx.getCipher().decrypt(entity.getEncryptedValue("proxyPassword"));
+				clientConfig.setProxyPassword(new String(proxyPasswordBytes));
+			} catch (GeneralSecurityException e) {
+				Trace.error("Error decrypting proxy password: " + e.getMessage());
+			}
+		}
+		if (containsKey(entity, "proxyDomain")) {
+			clientConfig.setProxyDomain(entity.getStringValue("proxyDomain"));
+		}
+		if (containsKey(entity, "proxyWorkstation")) {
+			clientConfig.setProxyWorkstation(entity.getStringValue("proxyWorkstation"));
+		}
+		if (containsKey(entity, "socketSendBufferSizeHint") && containsKey(entity, "socketReceiveBufferSizeHint")) {
+			clientConfig.setSocketBufferSizeHints(
+				entity.getIntegerValue("socketSendBufferSizeHint"),
+				entity.getIntegerValue("socketReceiveBufferSizeHint")
+			);
+		}
+		
+		return clientConfig;
+	}
+	
+	/**
+	 * Checks if entity contains a non-empty key (following S3 pattern exactly)
+	 */
+	private boolean containsKey(Entity entity, String fieldName) {
+		if (!entity.containsKey(fieldName)) {
+			return false;
+		}
+		String value = entity.getStringValue(fieldName);
+		return value != null && !value.trim().isEmpty();
+	}
+	
+	/**
+	 * Creates AWSCredentialsProvider (following S3 pattern)
+	 */
+	private AWSCredentialsProvider getAWSCredentialsProvider(final AWSCredentials awsCredentials) {
+		return new AWSCredentialsProvider() {
+			public AWSCredentials getCredentials() {
+				return awsCredentials;
+			}
+			public void refresh() {}
+		};
 	}
 
 	@Override
 	public boolean invoke(Circuit arg0, Message msg) throws CircuitAbortException {
 		
-		if (awsLambda == null) {
-			Trace.error("AWS Lambda client was not configured");
-			msg.put("aws.lambda.error", "AWS Lambda client was not configured");
+		if (lambdaClientBuilder == null) {
+			Trace.error("AWS Lambda client builder was not configured");
+			msg.put("aws.lambda.error", "AWS Lambda client builder was not configured");
 			return false;
+		}
+		
+		// Get dynamic values using selectors (following S3 pattern)
+		String functionNameValue = functionName.substitute(msg);
+		String regionValue = awsRegion.substitute(msg);
+		String invocationTypeValue = invocationType.substitute(msg);
+		String logTypeValue = logType.substitute(msg);
+		String qualifierValue = qualifier.substitute(msg);
+		Integer retryDelayValue = retryDelay.substitute(msg);
+		Integer memorySizeValue = memorySize.substitute(msg);
+		Boolean useIAMRoleValue = useIAMRole.substitute(msg);
+		
+		// Set default values
+		if (invocationTypeValue == null || invocationTypeValue.trim().isEmpty()) {
+			invocationTypeValue = "RequestResponse";
+		}
+		if (logTypeValue == null || logTypeValue.trim().isEmpty()) {
+			logTypeValue = "None";
+		}
+		if (retryDelayValue == null) {
+			retryDelayValue = 1000;
+		}
+		if (useIAMRoleValue == null) {
+			useIAMRoleValue = false;
+		}
+		if (memorySizeValue == null) {
+			memorySizeValue = 128; // Default 128 MB
 		}
 		
 		String body = contentBody.substitute(msg);
@@ -125,43 +258,49 @@ public class AWSLambdaProcessor extends MessageProcessor {
 		}
 		
 		Trace.info("Invoking Lambda function with retry...");
+		Trace.info("Using IAM Role: " + useIAMRoleValue);
+		Trace.info("Memory Size: " + memorySizeValue + " MB");
 		
-		int maxRetriesInt = Integer.parseInt(maxRetries);
-		int retryDelayInt = Integer.parseInt(retryDelay);
 		Exception lastException = null;
 		
-		for (int attempt = 1; attempt <= maxRetriesInt; attempt++) {
+		// Get maxRetries from clientConfiguration (default 3)
+		int maxRetriesValue = 3; // Default value
+		
+		for (int attempt = 1; attempt <= maxRetriesValue; attempt++) {
 			try {
-				Trace.info("Attempt " + attempt + " of " + maxRetriesInt);
+				Trace.info("Attempt " + attempt + " of " + maxRetriesValue);
+				
+				// Create Lambda client with region (following S3 pattern)
+				AWSLambda lambdaClient = lambdaClientBuilder.withRegion(regionValue).build();
 				
 				// Create request
 				InvokeRequest invokeRequest = new InvokeRequest()
-					.withFunctionName(functionName)
-					.withPayload(body)
-					.withInvocationType(invocationType)
-					.withLogType(logType);
+					.withFunctionName(functionNameValue)
+					.withPayload(ByteBuffer.wrap(body.getBytes()))
+					.withInvocationType(invocationTypeValue)
+					.withLogType(logTypeValue);
 				
 				// Add qualifier if specified
-				if (qualifier != null && !qualifier.trim().isEmpty()) {
-					invokeRequest.setQualifier(qualifier);
-					Trace.info("Using qualifier: " + qualifier);
+				if (qualifierValue != null && !qualifierValue.trim().isEmpty()) {
+					invokeRequest.setQualifier(qualifierValue);
+					Trace.info("Using qualifier: " + qualifierValue);
 				}
 				
 				// Invoke Lambda function
-				InvokeResult invokeResult = awsLambda.invoke(invokeRequest);
+				InvokeResult invokeResult = lambdaClient.invoke(invokeRequest);
 				
 				// Process response
-				return processInvokeResult(invokeResult, msg);
+				return processInvokeResult(invokeResult, msg, memorySizeValue);
 				
 			} catch (Exception e) {
 				lastException = e;
 				Trace.error("Attempt " + attempt + " failed: " + e.getMessage());
 				
 				// If not the last attempt, wait before retrying
-				if (attempt < maxRetriesInt) {
-					Trace.info("Waiting " + retryDelayInt + "ms before next attempt...");
+				if (attempt < maxRetriesValue) {
+					Trace.info("Waiting " + retryDelayValue + "ms before next attempt...");
 					try {
-						Thread.sleep(retryDelayInt);
+						Thread.sleep(retryDelayValue);
 					} catch (InterruptedException ie) {
 						Thread.currentThread().interrupt();
 						Trace.error("Thread interrupted during retry");
@@ -172,72 +311,16 @@ public class AWSLambdaProcessor extends MessageProcessor {
 		}
 		
 		// If reached here, all attempts failed
-		Trace.error("All " + maxRetriesInt + " attempts failed");
-		msg.put("aws.lambda.error", "Failure after " + maxRetriesInt + " attempts: " + 
+		Trace.error("All " + maxRetriesValue + " attempts failed");
+		msg.put("aws.lambda.error", "Failure after " + maxRetriesValue + " attempts: " + 
 			(lastException != null ? lastException.getMessage() : "Unknown error"));
 		return false;
 	}
 	
 	/**
-	 * Configures AWS credentials using multiple strategies
-	 */
-	private AWSCredentialsProvider configureCredentials() {
-		// Check environment variables
-		String envAccessKey = System.getenv("AWS_ACCESS_KEY_ID");
-		String envSecretKey = System.getenv("AWS_SECRET_ACCESS_KEY");
-		String envSessionToken = System.getenv("AWS_SESSION_TOKEN");
-		String envCredentialsFile = System.getenv("AWS_SHARED_CREDENTIALS_FILE");
-		String envProfile = System.getenv("AWS_PROFILE");
-		if (envProfile == null || envProfile.trim().isEmpty()) {
-			envProfile = "default";
-		}
-		
-		// Strategy 1: Direct environment variables
-		if (envAccessKey != null && envSecretKey != null) {
-			Trace.info("Using environment variable credentials");
-			
-			if (envSessionToken != null && !envSessionToken.trim().isEmpty()) {
-				BasicSessionCredentials credentials = new BasicSessionCredentials(envAccessKey, envSecretKey, envSessionToken);
-				return new AWSStaticCredentialsProvider(credentials);
-			} else {
-				BasicAWSCredentials credentials = new BasicAWSCredentials(envAccessKey, envSecretKey);
-				return new AWSStaticCredentialsProvider(credentials);
-			}
-		}
-		// Strategy 2: Credentials file
-		else if (envCredentialsFile != null && !envCredentialsFile.trim().isEmpty()) {
-			Trace.info("Using credentials file: " + envCredentialsFile);
-			
-			try {
-				File credentialsFile = new File(envCredentialsFile);
-				if (credentialsFile.exists()) {
-					Trace.info("Credentials file found");
-					return new ProfileCredentialsProvider(envCredentialsFile, envProfile);
-				} else {
-					Trace.error("Credentials file not found: " + envCredentialsFile);
-					return null;
-				}
-			} catch (Exception e) {
-				Trace.error("Error configuring credentials file: " + e.getMessage());
-				return null;
-			}
-		}
-		// Strategy 3: Fallback to DefaultAWSCredentialsProviderChain
-		else {
-			Trace.info("Using DefaultAWSCredentialsProviderChain (fallback)");
-			try {
-				return new DefaultAWSCredentialsProviderChain();
-			} catch (Exception e) {
-				Trace.error("Error configuring DefaultAWSCredentialsProviderChain: " + e.getMessage());
-				return null;
-			}
-		}
-	}
-	
-	/**
 	 * Processes the result of the Lambda invocation
 	 */
-	private boolean processInvokeResult(InvokeResult invokeResult, Message msg) {
+	private boolean processInvokeResult(InvokeResult invokeResult, Message msg, Integer memorySizeValue) {
 		try {
 			String response = new String(invokeResult.getPayload().array(), "UTF-8");
 			int statusCode = invokeResult.getStatusCode();
@@ -257,6 +340,7 @@ public class AWSLambdaProcessor extends MessageProcessor {
 			msg.put("aws.lambda.http.status.code", statusCode);
 			msg.put("aws.lambda.executed.version", invokeResult.getExecutedVersion());
 			msg.put("aws.lambda.log.result", invokeResult.getLogResult());
+			msg.put("aws.lambda.memory.size", memorySizeValue);
 			
 			// Check Lambda function error
 			if (invokeResult.getFunctionError() != null) {

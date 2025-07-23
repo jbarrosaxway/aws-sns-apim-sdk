@@ -38,3 +38,23 @@ fields:
     defaultValues:
     - data: "1000"
     cardinality: 1
+  memorySize:
+    type: string
+    defaultValues:
+    - data: "128"
+    cardinality: 1
+  useIAMRole:
+    type: string
+    defaultValues:
+    - data: "false"
+    cardinality: 1
+  awsCredential:
+    type: string
+    defaultValues:
+    - data: ""
+    cardinality: 1
+  clientConfiguration:
+    type: string
+    defaultValues:
+    - data: ""
+    cardinality: 1
