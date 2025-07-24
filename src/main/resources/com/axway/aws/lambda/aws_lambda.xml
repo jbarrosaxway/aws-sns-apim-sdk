@@ -10,25 +10,13 @@
 			displayName="AWS_LAMBDA_CREDENTIAL_TYPE_NAME" description="AWS_LAMBDA_CREDENTIAL_TYPE_DESCRIPTION"
 			removeEnvWhenFieldDisabled="true">
 			<choice value="local" label="AWS_LAMBDA_CREDENTIAL_TYPE_LOCAL_LABEL" />
-			<panel margin="0,0,0,7" columns="2" span="2">
-				<ReferenceSelector field="awsCredential" 
-					selectableTypes="ApiKeyProfile" label="CHOOSE_AWS_CREDENTTIAL_LABEL"
-					title="CHOOSE_AWS_CREDENTTIAL_DIALOG_TITLE" searches="AuthProfilesGroup,ApiKeyGroup,ApiKeyProviderProfile" />
-			</panel>
+			<ReferenceSelector field="awsCredential" 
+				selectableTypes="ApiKeyProfile" label="CHOOSE_AWS_CREDENTTIAL_LABEL"
+				title="CHOOSE_AWS_CREDENTTIAL_DIALOG_TITLE" searches="AuthProfilesGroup,ApiKeyGroup,ApiKeyProviderProfile" />
 			<choice value="iam" label="AWS_LAMBDA_CREDENTIAL_TYPE_IAM_LABEL" />
 		</RadioGroupAttribute>
 		
-	</group>
-	
-	<!-- AWS Region -->
-	<group label="AWS_LAMBDA_REGION_GROUP_LABEL" columns="2" span="2" fill="false">
-		
-		<ComboAttribute field="awsRegion" label="AWS_LAMBDA_REGION_LABEL"
-			displayName="AWS_LAMBDA_REGION_NAME" description="AWS_LAMBDA_REGION_DESCRIPTION" 
-			contentSource="com.vordel.circuit.aws.RegionUtils.regions"
-			required="true" stretch="true" />
-		
-	</group>
+
 	
 	<!-- AWS Lambda Configuration -->
 	<group label="AWS_LAMBDA_SETTINGS_LABEL" columns="2" span="2" fill="false">
@@ -37,6 +25,11 @@
 		<TextAttribute field="functionName" label="AWS_LAMBDA_FUNCTION_LABEL"
 			displayName="AWS_LAMBDA_FUNCTION_NAME" description="AWS_LAMBDA_FUNCTION_DESCRIPTION" 
 			required="true" />
+		
+		<ComboAttribute field="awsRegion" label="AWS_LAMBDA_REGION_LABEL"
+			displayName="AWS_LAMBDA_REGION_NAME" description="AWS_LAMBDA_REGION_DESCRIPTION" 
+			contentSource="com.vordel.circuit.aws.RegionUtils.regions"
+			required="true" stretch="true" />
 		
 		<ComboAttribute field="invocationType" label="AWS_LAMBDA_INVOCATION_TYPE_LABEL"
 			displayName="AWS_LAMBDA_INVOCATION_TYPE_NAME" description="AWS_LAMBDA_INVOCATION_TYPE_DESCRIPTION"
