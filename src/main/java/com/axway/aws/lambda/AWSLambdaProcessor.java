@@ -72,8 +72,10 @@ public class AWSLambdaProcessor extends MessageProcessor {
 		this.memorySize = new Selector(entity.getStringValue("memorySize"), Integer.class);
 		this.credentialType = new Selector(entity.getStringValue("credentialType"), String.class);
 		this.useIAMRole = new Selector(entity.getStringValue("useIAMRole"), Boolean.class);
-		this.awsCredential = new Selector(entity.getStringValue("awsCredential"), String.class);
-		this.clientConfiguration = new Selector(entity.getStringValue("clientConfiguration"), String.class);
+		// For reference fields, we don't need to create a selector - they are accessed directly
+		// this.awsCredential = new Selector(entity.getStringValue("awsCredential"), String.class);
+		// For reference fields, we don't need to create a selector - they are accessed directly
+		// this.clientConfiguration = new Selector(entity.getStringValue("clientConfiguration"), String.class);
 		this.credentialsFilePath = new Selector(entity.getStringValue("credentialsFilePath"), String.class);
 		
 		// Get client configuration (following S3 pattern exactly)
