@@ -6,8 +6,10 @@
 	<!-- AWS Credentials and Configuration -->
 	<group label="AWS_LAMBDA_CREDENTIALS_LABEL" columns="2" span="2" fill="false">
 		
-		<CheckboxAttribute field="useIAMRole" label="AWS_LAMBDA_USE_IAM_ROLE_LABEL"
-			displayName="AWS_LAMBDA_USE_IAM_ROLE_NAME" description="AWS_LAMBDA_USE_IAM_ROLE_DESCRIPTION" />
+			<ComboAttribute field="useIAMRole" label="AWS_LAMBDA_USE_IAM_ROLE_LABEL"
+		displayName="AWS_LAMBDA_USE_IAM_ROLE_NAME" description="AWS_LAMBDA_USE_IAM_ROLE_DESCRIPTION"
+		contentSource="com.axway.aws.lambda.AWSBooleanOptions.booleanOptions"
+		includeBlank="false" required="true" />
 		
 		<ReferenceSelector field="awsCredential" 
 			selectableTypes="ApiKeyProfile" label="CHOOSE_AWS_CREDENTTIAL_LABEL"
