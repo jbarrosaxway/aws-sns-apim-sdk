@@ -45,6 +45,7 @@ public class AWSLambdaProcessor extends MessageProcessor {
 	protected Selector<Integer> memorySize;
 	protected Selector<String> credentialType;
 	protected Selector<Boolean> useIAMRole;
+	protected Selector<String> credentialsFilePath;
 	
 	// AWS Lambda client builder (following S3 pattern)
 	protected AWSLambdaClientBuilder lambdaClientBuilder;
@@ -69,6 +70,7 @@ public class AWSLambdaProcessor extends MessageProcessor {
 		this.memorySize = new Selector(entity.getStringValue("memorySize"), Integer.class);
 		this.credentialType = new Selector(entity.getStringValue("credentialType"), String.class);
 		this.useIAMRole = new Selector(entity.getStringValue("useIAMRole"), Boolean.class);
+		this.credentialsFilePath = new Selector(entity.getStringValue("credentialsFilePath"), String.class);
 		
 		// Get client configuration (following S3 pattern exactly)
 		Entity clientConfig = ctx.getEntity(entity.getReferenceValue("clientConfiguration"));
@@ -112,12 +114,28 @@ public class AWSLambdaProcessor extends MessageProcessor {
 	 * Gets the appropriate credentials provider based on configuration
 	 */
 	private AWSCredentialsProvider getCredentialsProvider(ConfigContext ctx, Entity entity) throws EntityStoreException {
-		Boolean useIAMRoleValue = Boolean.valueOf(useIAMRole.getLiteral());
+		String credentialTypeValue = credentialType.getLiteral();
 		
-		if (useIAMRoleValue != null && useIAMRoleValue) {
+		if ("iam".equals(credentialTypeValue)) {
 			// Use IAM Role (EC2 Instance Profile or ECS Task Role)
 			Trace.info("Using IAM Role credentials (Instance Profile/Task Role)");
 			return new EC2ContainerCredentialsProviderWrapper();
+		} else if ("file".equals(credentialTypeValue)) {
+			// Use credentials file
+			String filePath = credentialsFilePath.getLiteral();
+			if (filePath != null && !filePath.trim().isEmpty()) {
+				try {
+					Trace.info("Using AWS credentials file: " + filePath);
+					return new ProfileCredentialsProvider(filePath);
+				} catch (Exception e) {
+					Trace.error("Error loading credentials file: " + e.getMessage());
+					Trace.info("Falling back to DefaultAWSCredentialsProviderChain");
+					return new DefaultAWSCredentialsProviderChain();
+				}
+			} else {
+				Trace.info("Credentials file path not specified, using DefaultAWSCredentialsProviderChain");
+				return new DefaultAWSCredentialsProviderChain();
+			}
 		} else {
 			// Use explicit credentials via AWSFactory (following S3 pattern)
 			try {

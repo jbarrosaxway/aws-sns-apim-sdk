@@ -24,7 +24,7 @@ public class AWSLambdaFilterPage extends VordelPage {
 	}
 
 	public void createControl(Composite parent) {
-		Composite panel = render(parent, getClass().getResourceAsStream("/com/axway/aws/lambda/aws_lambda.xml"));
+		Composite panel = render(parent, getClass().getResourceAsStream("aws_lambda.xml"));
 		setControl(panel);
 		setPageComplete(true);
 	}

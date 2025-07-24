@@ -63,3 +63,8 @@ fields:
     defaultValues:
     - data: ""
     cardinality: 1
+  credentialsFilePath:
+    type: string
+    defaultValues:
+    - data: ""
+    cardinality: 1
