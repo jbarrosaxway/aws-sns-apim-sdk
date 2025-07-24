@@ -74,7 +74,7 @@ public class AWSLambdaProcessor extends MessageProcessor {
 		this.useIAMRole = new Selector(entity.getStringValue("useIAMRole"), Boolean.class);
 		this.awsCredential = new Selector(entity.getStringValue("awsCredential"), String.class);
 		this.clientConfiguration = new Selector(entity.getStringValue("clientConfiguration"), String.class);
-		this.credentialsFilePath = new Selector(entity.getStringValue("credentialsFilePath"), String.class);
+		this.credentialsFilePath = new Selector(entity.getStringValue("credentialsFilePath") != null ? entity.getStringValue("credentialsFilePath") : "", String.class);
 		
 		// Get client configuration (following S3 pattern exactly)
 		Entity clientConfig = ctx.getEntity(entity.getReferenceValue("clientConfiguration"));
@@ -85,8 +85,17 @@ public class AWSLambdaProcessor extends MessageProcessor {
 		Trace.info("=== Lambda Configuration (Following S3 Pattern) ===");
 		Trace.info("Function: " + (functionName != null ? functionName.getLiteral() : "dynamic"));
 		Trace.info("Region: " + (awsRegion != null ? awsRegion.getLiteral() : "dynamic"));
+		Trace.info("Invocation Type: " + (invocationType != null ? invocationType.getLiteral() : "dynamic"));
+		Trace.info("Log Type: " + (logType != null ? logType.getLiteral() : "dynamic"));
+		Trace.info("Qualifier: " + (qualifier != null ? qualifier.getLiteral() : "dynamic"));
+		Trace.info("Retry Delay: " + (retryDelay != null ? retryDelay.getLiteral() : "dynamic"));
+		Trace.info("Memory Size: " + (memorySize != null ? memorySize.getLiteral() : "dynamic"));
+		Trace.info("Credential Type: " + (credentialType != null ? credentialType.getLiteral() : "dynamic"));
 		Trace.info("Use IAM Role: " + (useIAMRole != null ? useIAMRole.getLiteral() : "false"));
-		Trace.info("Client Configuration: " + (clientConfig != null ? "configured" : "default"));
+		Trace.info("AWS Credential: " + (awsCredential != null ? awsCredential.getLiteral() : "dynamic"));
+		Trace.info("Client Configuration: " + (clientConfiguration != null ? clientConfiguration.getLiteral() : "dynamic"));
+		Trace.info("Credentials File Path: " + (credentialsFilePath != null ? credentialsFilePath.getLiteral() : "dynamic"));
+		Trace.info("Client Config Entity: " + (clientConfig != null ? "configured" : "default"));
 	}
 
 	/**
@@ -119,6 +128,8 @@ public class AWSLambdaProcessor extends MessageProcessor {
 	 */
 	private AWSCredentialsProvider getCredentialsProvider(ConfigContext ctx, Entity entity) throws EntityStoreException {
 		String credentialTypeValue = credentialType.getLiteral();
+		Trace.info("=== Credentials Provider Debug ===");
+		Trace.info("Credential Type Value: " + credentialTypeValue);
 		
 		if ("iam".equals(credentialTypeValue)) {
 			// Use IAM Role (EC2 Instance Profile or ECS Task Role)
@@ -127,6 +138,7 @@ public class AWSLambdaProcessor extends MessageProcessor {
 		} else if ("file".equals(credentialTypeValue)) {
 			// Use credentials file
 			String filePath = credentialsFilePath.getLiteral();
+			Trace.info("File Path: " + filePath);
 			if (filePath != null && !filePath.trim().isEmpty()) {
 				try {
 					Trace.info("Using AWS credentials file: " + filePath);
@@ -142,9 +154,10 @@ public class AWSLambdaProcessor extends MessageProcessor {
 			}
 		} else {
 			// Use explicit credentials via AWSFactory (following S3 pattern)
+			Trace.info("Using explicit AWS credentials via AWSFactory");
 			try {
 				AWSCredentials awsCredentials = AWSFactory.getCredentials(ctx, entity);
-				Trace.info("Using explicit AWS credentials");
+				Trace.info("AWSFactory.getCredentials() successful");
 				return getAWSCredentialsProvider(awsCredentials);
 			} catch (Exception e) {
 				Trace.error("Error getting explicit credentials: " + e.getMessage());
