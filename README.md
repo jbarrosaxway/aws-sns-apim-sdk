@@ -302,13 +302,11 @@ This project has complete documentation organized by topic:
 ### 📋 **Documentation Structure**
 ```
 docs/
-├── 📋 INSTALACAO_WINDOWS.md              # Windows installation
-├── 🔧 CONFIGURACAO_DINAMICA.md           # Dynamic configuration
-├── 🗳️ RELEASE_GUIDE.md                   # Release guide
-├── 📊 SEMANTIC_VERSIONING.md             # Semantic versioning
-├── 🔍 ATUALIZACOES_CAMPOS_FILTRO.md      # Field history
-├── 🔐 MELHORIAS_AUTENTICACAO_AWS.md      # AWS authentication
-└── 📖 AWS_LAMBDA_GROOVY_DOCUMENTATION.md # Groovy documentation
+├── RELEASE_GUIDE.md                    # Release guide
+├── SEMANTIC_VERSIONING.md              # Semantic versioning
+├── AUTOMATIC_RELEASE_SYSTEM.md         # Automatic release system
+├── SCRIPTS_REFERENCE.md                # Scripts reference
+└── AWS_LAMBDA_GROOVY_DOCUMENTATION.md  # Groovy documentation
 ```
 
 ---
