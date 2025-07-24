@@ -16,7 +16,7 @@
 			<choice value="iam" label="AWS_LAMBDA_CREDENTIAL_TYPE_IAM_LABEL" />
 		</RadioGroupAttribute>
 		
-
+	</group>
 	
 	<!-- AWS Lambda Configuration -->
 	<group label="AWS_LAMBDA_SETTINGS_LABEL" columns="2" span="2" fill="false">
