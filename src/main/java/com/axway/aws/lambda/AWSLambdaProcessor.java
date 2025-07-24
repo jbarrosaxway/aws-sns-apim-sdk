@@ -137,24 +137,9 @@ public class AWSLambdaProcessor extends MessageProcessor {
 			return new EC2ContainerCredentialsProviderWrapper();
 		} else if ("file".equals(credentialTypeValue)) {
 			// Use credentials file
-			Trace.info("Credentials Type is 'file', checking credentialsFilePath...");
-			String filePath = credentialsFilePath.getLiteral();
-			Trace.info("File Path: " + filePath);
-			Trace.info("File Path is null: " + (filePath == null));
-			Trace.info("File Path is empty: " + (filePath != null && filePath.trim().isEmpty()));
-			if (filePath != null && !filePath.trim().isEmpty()) {
-				try {
-					Trace.info("Using AWS credentials file: " + filePath);
-					return new ProfileCredentialsProvider(filePath);
-				} catch (Exception e) {
-					Trace.error("Error loading credentials file: " + e.getMessage());
-					Trace.info("Falling back to DefaultAWSCredentialsProviderChain");
-					return new DefaultAWSCredentialsProviderChain();
-				}
-			} else {
-				Trace.info("Credentials file path not specified, using DefaultAWSCredentialsProviderChain");
-				return new DefaultAWSCredentialsProviderChain();
-			}
+			Trace.info("Credentials Type is 'file', using DefaultAWSCredentialsProviderChain");
+			Trace.info("DefaultAWSCredentialsProviderChain will automatically find credentials file");
+			return new DefaultAWSCredentialsProviderChain();
 		} else {
 			// Use explicit credentials via AWSFactory (following S3 pattern)
 			Trace.info("Using explicit AWS credentials via AWSFactory");
@@ -275,6 +260,19 @@ public class AWSLambdaProcessor extends MessageProcessor {
 		Integer memorySizeValue = memorySize.substitute(msg);
 		String credentialTypeValue = credentialType.substitute(msg);
 		Boolean useIAMRoleValue = useIAMRole.substitute(msg);
+		String credentialsFilePathValue = credentialsFilePath.substitute(msg);
+
+		Trace.info("=== Invocation Debug ===");
+		Trace.info("Function Name: " + functionNameValue);
+		Trace.info("Region: " + regionValue);
+		Trace.info("Invocation Type: " + invocationTypeValue);
+		Trace.info("Log Type: " + logTypeValue);
+		Trace.info("Qualifier: " + qualifierValue);
+		Trace.info("Retry Delay: " + retryDelayValue);
+		Trace.info("Memory Size: " + memorySizeValue);
+		Trace.info("Credential Type: " + credentialTypeValue);
+		Trace.info("Use IAM Role: " + useIAMRoleValue);
+		Trace.info("Credentials File Path: " + credentialsFilePathValue);
 		
 		// Set default values
 		if (invocationTypeValue == null || invocationTypeValue.trim().isEmpty()) {
