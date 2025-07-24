@@ -137,9 +137,25 @@ public class AWSLambdaProcessor extends MessageProcessor {
 			return new EC2ContainerCredentialsProviderWrapper();
 		} else if ("file".equals(credentialTypeValue)) {
 			// Use credentials file
-			Trace.info("Credentials Type is 'file', using DefaultAWSCredentialsProviderChain");
-			Trace.info("DefaultAWSCredentialsProviderChain will automatically find credentials file");
-			return new DefaultAWSCredentialsProviderChain();
+			Trace.info("Credentials Type is 'file', checking credentialsFilePath...");
+			String filePath = credentialsFilePath.getLiteral();
+			Trace.info("File Path: " + filePath);
+			Trace.info("File Path is null: " + (filePath == null));
+			Trace.info("File Path is empty: " + (filePath != null && filePath.trim().isEmpty()));
+			if (filePath != null && !filePath.trim().isEmpty()) {
+				try {
+					Trace.info("Using AWS credentials file: " + filePath);
+					// Create ProfileCredentialsProvider with file path and default profile
+					return new ProfileCredentialsProvider(filePath, "default");
+				} catch (Exception e) {
+					Trace.error("Error loading credentials file: " + e.getMessage());
+					Trace.info("Falling back to DefaultAWSCredentialsProviderChain");
+					return new DefaultAWSCredentialsProviderChain();
+				}
+			} else {
+				Trace.info("Credentials file path not specified, using DefaultAWSCredentialsProviderChain");
+				return new DefaultAWSCredentialsProviderChain();
+			}
 		} else {
 			// Use explicit credentials via AWSFactory (following S3 pattern)
 			Trace.info("Using explicit AWS credentials via AWSFactory");
