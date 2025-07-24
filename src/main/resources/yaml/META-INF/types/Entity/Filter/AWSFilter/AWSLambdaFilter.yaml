@@ -54,14 +54,12 @@ fields:
     - data: "false"
     cardinality: 1
   awsCredential:
-    type: string
-    defaultValues:
-    - data: ""
+    type: '@ApiKeyProfile'
     cardinality: 1
   clientConfiguration:
-    type: string
+    type: '@AWSClientConfiguration'
     defaultValues:
-    - data: ""
+    - ref: /External Connections/(AWSSettings)Amazon Web Services Settings/(AWSClientConfiguration)Default AWS Client Configuration
     cardinality: 1
   credentialsFilePath:
     type: string
