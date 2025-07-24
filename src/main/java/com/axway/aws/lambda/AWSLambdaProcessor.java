@@ -45,6 +45,8 @@ public class AWSLambdaProcessor extends MessageProcessor {
 	protected Selector<Integer> memorySize;
 	protected Selector<String> credentialType;
 	protected Selector<Boolean> useIAMRole;
+	protected Selector<String> awsCredential;
+	protected Selector<String> clientConfiguration;
 	protected Selector<String> credentialsFilePath;
 	
 	// AWS Lambda client builder (following S3 pattern)
@@ -70,6 +72,8 @@ public class AWSLambdaProcessor extends MessageProcessor {
 		this.memorySize = new Selector(entity.getStringValue("memorySize"), Integer.class);
 		this.credentialType = new Selector(entity.getStringValue("credentialType"), String.class);
 		this.useIAMRole = new Selector(entity.getStringValue("useIAMRole"), Boolean.class);
+		this.awsCredential = new Selector(entity.getStringValue("awsCredential"), String.class);
+		this.clientConfiguration = new Selector(entity.getStringValue("clientConfiguration"), String.class);
 		this.credentialsFilePath = new Selector(entity.getStringValue("credentialsFilePath"), String.class);
 		
 		// Get client configuration (following S3 pattern exactly)
