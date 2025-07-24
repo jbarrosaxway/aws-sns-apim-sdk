@@ -137,8 +137,11 @@ public class AWSLambdaProcessor extends MessageProcessor {
 			return new EC2ContainerCredentialsProviderWrapper();
 		} else if ("file".equals(credentialTypeValue)) {
 			// Use credentials file
+			Trace.info("Credentials Type is 'file', checking credentialsFilePath...");
 			String filePath = credentialsFilePath.getLiteral();
 			Trace.info("File Path: " + filePath);
+			Trace.info("File Path is null: " + (filePath == null));
+			Trace.info("File Path is empty: " + (filePath != null && filePath.trim().isEmpty()));
 			if (filePath != null && !filePath.trim().isEmpty()) {
 				try {
 					Trace.info("Using AWS credentials file: " + filePath);
