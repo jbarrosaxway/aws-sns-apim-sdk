@@ -43,6 +43,7 @@ public class AWSLambdaProcessor extends MessageProcessor {
 	protected Selector<String> qualifier;
 	protected Selector<Integer> retryDelay;
 	protected Selector<Integer> memorySize;
+	protected Selector<String> credentialType;
 	protected Selector<Boolean> useIAMRole;
 	
 	// AWS Lambda client builder (following S3 pattern)
@@ -66,6 +67,7 @@ public class AWSLambdaProcessor extends MessageProcessor {
 		this.qualifier = new Selector(entity.getStringValue("qualifier"), String.class);
 		this.retryDelay = new Selector(entity.getStringValue("retryDelay"), Integer.class);
 		this.memorySize = new Selector(entity.getStringValue("memorySize"), Integer.class);
+		this.credentialType = new Selector(entity.getStringValue("credentialType"), String.class);
 		this.useIAMRole = new Selector(entity.getStringValue("useIAMRole"), Boolean.class);
 		
 		// Get client configuration (following S3 pattern exactly)
@@ -233,6 +235,7 @@ public class AWSLambdaProcessor extends MessageProcessor {
 		String qualifierValue = qualifier.substitute(msg);
 		Integer retryDelayValue = retryDelay.substitute(msg);
 		Integer memorySizeValue = memorySize.substitute(msg);
+		String credentialTypeValue = credentialType.substitute(msg);
 		Boolean useIAMRoleValue = useIAMRole.substitute(msg);
 		
 		// Set default values
@@ -245,9 +248,11 @@ public class AWSLambdaProcessor extends MessageProcessor {
 		if (retryDelayValue == null) {
 			retryDelayValue = 1000;
 		}
-		if (useIAMRoleValue == null) {
-			useIAMRoleValue = false;
+		if (credentialTypeValue == null || credentialTypeValue.trim().isEmpty()) {
+			credentialTypeValue = "local";
 		}
+		// Determine IAM Role usage based on credential type
+		useIAMRoleValue = "iam".equals(credentialTypeValue);
 		if (memorySizeValue == null) {
 			memorySizeValue = 128; // Default 128 MB
 		}

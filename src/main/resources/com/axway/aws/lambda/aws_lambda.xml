@@ -3,17 +3,20 @@
 		<NameAttribute />
 	</panel>
 	
-	<!-- AWS Credentials and Configuration -->
+		<!-- AWS Credentials and Configuration -->
 	<group label="AWS_LAMBDA_CREDENTIALS_LABEL" columns="2" span="2" fill="false">
 		
-			<ComboAttribute field="useIAMRole" label="AWS_LAMBDA_USE_IAM_ROLE_LABEL"
-		displayName="AWS_LAMBDA_USE_IAM_ROLE_NAME" description="AWS_LAMBDA_USE_IAM_ROLE_DESCRIPTION"
-		contentSource="com.axway.aws.lambda.AWSBooleanOptions.booleanOptions"
-		includeBlank="false" required="true" />
-		
-		<ReferenceSelector field="awsCredential" 
-			selectableTypes="ApiKeyProfile" label="CHOOSE_AWS_CREDENTTIAL_LABEL"
-			title="CHOOSE_AWS_CREDENTTIAL_DIALOG_TITLE" searches="AuthProfilesGroup,ApiKeyGroup,ApiKeyProviderProfile" />
+		<RadioGroupAttribute field="credentialType" label="AWS_LAMBDA_CREDENTIAL_TYPE_LABEL"
+			displayName="AWS_LAMBDA_CREDENTIAL_TYPE_NAME" description="AWS_LAMBDA_CREDENTIAL_TYPE_DESCRIPTION"
+			removeEnvWhenFieldDisabled="true">
+			<choice value="local" label="AWS_LAMBDA_CREDENTIAL_TYPE_LOCAL_LABEL" />
+			<panel margin="0,0,0,7" columns="2" span="2">
+				<ReferenceSelector field="awsCredential" 
+					selectableTypes="ApiKeyProfile" label="CHOOSE_AWS_CREDENTTIAL_LABEL"
+					title="CHOOSE_AWS_CREDENTTIAL_DIALOG_TITLE" searches="AuthProfilesGroup,ApiKeyGroup,ApiKeyProviderProfile" />
+			</panel>
+			<choice value="iam" label="AWS_LAMBDA_CREDENTIAL_TYPE_IAM_LABEL" />
+		</RadioGroupAttribute>
 		
 		<ComboAttribute field="awsRegion" label="AWS_LAMBDA_REGION_LABEL"
 			displayName="AWS_LAMBDA_REGION_NAME" description="AWS_LAMBDA_REGION_DESCRIPTION" 

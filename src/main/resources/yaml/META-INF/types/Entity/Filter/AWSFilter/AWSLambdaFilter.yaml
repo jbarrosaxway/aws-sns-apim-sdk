@@ -43,6 +43,11 @@ fields:
     defaultValues:
     - data: "128"
     cardinality: 1
+  credentialType:
+    type: string
+    defaultValues:
+    - data: "local"
+    cardinality: 1
   useIAMRole:
     type: string
     defaultValues:
