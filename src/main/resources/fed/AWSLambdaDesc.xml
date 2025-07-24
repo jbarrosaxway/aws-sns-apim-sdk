@@ -17,6 +17,12 @@
 		<field name="qualifier" type="string" cardinality="1" />
 		<field name="maxRetries" type="string" cardinality="1" />
 		<field name="retryDelay" type="string" cardinality="1" />
+		<field name="memorySize" type="string" cardinality="1" />
+		<field name="credentialType" type="string" cardinality="1" />
+		<field name="useIAMRole" type="string" cardinality="1" />
+		<field name="awsCredential" type="string" cardinality="1" />
+		<field name="clientConfiguration" type="string" cardinality="1" />
+		<field name="credentialsFilePath" type="string" cardinality="1" />
 	</entityType>
 
 	
