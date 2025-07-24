@@ -6,9 +6,22 @@
 		<!-- AWS Credentials -->
 	<group label="AWS_LAMBDA_CREDENTIALS_LABEL" columns="2" span="2" fill="false">
 		
-		<ReferenceSelector field="awsCredential" 
-			selectableTypes="ApiKeyProfile" label="CHOOSE_AWS_CREDENTTIAL_LABEL"
-			title="CHOOSE_AWS_CREDENTTIAL_DIALOG_TITLE" searches="AuthProfilesGroup,ApiKeyGroup,ApiKeyProviderProfile" />
+		<RadioGroupAttribute field="credentialType" label="AWS_LAMBDA_CREDENTIAL_TYPE_LABEL"
+			displayName="AWS_LAMBDA_CREDENTIAL_TYPE_NAME" description="AWS_LAMBDA_CREDENTIAL_TYPE_DESCRIPTION"
+			removeEnvWhenFieldDisabled="true">
+			<choice value="local" label="AWS_LAMBDA_CREDENTIAL_TYPE_LOCAL_LABEL" />
+			<panel margin="0,0,0,7" columns="2" span="2">
+				<ReferenceSelector field="awsCredential" 
+					selectableTypes="ApiKeyProfile" label="CHOOSE_AWS_CREDENTTIAL_LABEL"
+					title="CHOOSE_AWS_CREDENTTIAL_DIALOG_TITLE" searches="AuthProfilesGroup,ApiKeyGroup,ApiKeyProviderProfile" />
+			</panel>
+			<choice value="file" label="AWS_LAMBDA_CREDENTIAL_TYPE_FILE_LABEL" />
+			<panel margin="0,0,0,7" columns="2" span="2">
+				<TextAttribute field="credentialsFilePath" label="AWS_LAMBDA_CREDENTIALS_FILE_PATH_LABEL"
+					displayName="AWS_LAMBDA_CREDENTIALS_FILE_PATH_NAME" description="AWS_LAMBDA_CREDENTIALS_FILE_PATH_DESCRIPTION" />
+			</panel>
+			<choice value="iam" label="AWS_LAMBDA_CREDENTIAL_TYPE_IAM_LABEL" />
+		</RadioGroupAttribute>
 		
 	</group>
 	
