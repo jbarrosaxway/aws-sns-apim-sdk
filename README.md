@@ -74,7 +74,7 @@ Releases are automatically created on GitHub and include:
 # Extract the release ZIP
 # Navigate to the extracted folder
 # Run the Gradle task:
-.\gradlew "-Dproject.path=C:\Users\jbarros\apiprojects\DIGIO-POC-AKS-NEW" installWindowsToProject
+.\gradlew "-Dproject.path=C:\Users\jbarros\apiprojects\my-axway-project" installWindowsToProject
 ```
 
 **Linux:**
@@ -132,7 +132,7 @@ The project supports **dynamic configuration** of the Axway API Gateway path:
 ./gradlew installWindows
 
 # Install in specific project (with path)
-./gradlew "-Dproject.path=C:\Users\jbarros\apiprojects\DIGIO-POC-AKS" installWindowsToProject
+./gradlew "-Dproject.path=C:\Users\jbarros\apiprojects\my-axway-project" installWindowsToProject
 
 # Interactive installation (if path not specified)
 ./gradlew installWindowsToProject
