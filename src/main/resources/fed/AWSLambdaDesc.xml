@@ -8,7 +8,7 @@ filter classname. "functionName" - The name of the AWS Lambda function to invoke
 	retry attempts in milliseconds -->
 
 <entityStoreData>
-	<entityType name="AWSLambdaFilter" extends="AWSFilter">
+	<entityType name="InvokeLambdaFunctionFilter" extends="AWSFilter">
 		<constant name="class" type="string" value="com.axway.aws.lambda.AWSLambdaFilter" />
 		<field name="functionName" type="string" cardinality="1" />
 		<field name="awsRegion" type="string" cardinality="1" />
@@ -34,7 +34,7 @@ filter classname. "functionName" - The name of the AWS Lambda function to invoke
 			<id field="name" value="Internationalization Default" />
 		</key>
 		<fval name="type">
-			<value>AWSLambdaFilter</value>
+			        <value>InvokeLambdaFunctionFilter</value>
 		</fval>
 		<fval name="logFatal">
 			        <value>Error in the Invoke Lambda Function filter. Error: ${circuit.exception}</value>

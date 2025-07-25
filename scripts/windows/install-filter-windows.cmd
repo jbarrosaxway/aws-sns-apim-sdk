@@ -82,11 +82,11 @@ if %errorlevel% equ 0 (
 )
 goto :eof
 
-REM 1. Copy AWSLambdaFilter.yaml
+REM 1. Copy InvokeLambdaFunctionFilter.yaml
 set sourceFilter=%YAML_SOURCE_DIR%\META-INF\types\Entity\Filter\AWSFilter
 set destFilter=%POLICY_STUDIO_PROJECT%\META-INF\types\Entity\Filter\AWSFilter
 
-call :CopyYamlFiles "%sourceFilter%" "%destFilter%" "AWSLambdaFilter.yaml"
+call :CopyYamlFiles "%sourceFilter%" "%destFilter%" "InvokeLambdaFunctionFilter.yaml"
 set filterSuccess=%success%
 
 REM 2. Add content to Internationalization Default.yaml
@@ -124,7 +124,7 @@ if %filterSuccess% equ 1 if %systemSuccess% equ 1 (
     echo - Configure the filter with the required parameters
     echo.
     echo  [33mCopied files: [0m
-    echo - %destFilter%\AWSLambdaFilter.yaml
+    echo - %destFilter%\InvokeLambdaFunctionFilter.yaml
     echo - %destSystem%\Internationalization Default.yaml
     echo.
     echo  [36mTip: Adjust the POLICY_STUDIO_PROJECT variable in the script if your project is in another location [0m

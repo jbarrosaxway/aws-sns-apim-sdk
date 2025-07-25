@@ -1,5 +1,5 @@
 ---
-name: AWSLambdaFilter
+name: InvokeLambdaFunctionFilter
 version: 1
 class: com.axway.aws.lambda.AWSLambdaFilter
 fields:

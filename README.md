@@ -483,7 +483,7 @@ aws-lambda-apim-sdk/
 │                       └── Entity/
 │                           └── Filter/
 │                               └── AWSFilter/
-│                                   └── AWSLambdaFilter.yaml
+│                                   └── InvokeLambdaFunctionFilter.yaml
 └── build/                                   # Build output (generated)
     └── libs/
         └── aws-lambda-apim-sdk-<version>.jar

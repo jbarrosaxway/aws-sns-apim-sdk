@@ -1,6 +1,6 @@
 - type: InternationalizationFilter
   fields:
-    type: AWSLambdaFilter
+    type: InvokeLambdaFunctionFilter
   logging:
     fatal: "Error in the Invoke Lambda Function filter. Error: ${circuit.exception}"
     failure: "Failed in the Invoke Lambda Function filter"
