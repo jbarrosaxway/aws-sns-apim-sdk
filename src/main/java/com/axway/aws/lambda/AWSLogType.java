@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Tipos de log do AWS Lambda
+ * Tipos de log do Invoke Lambda Function
  */
 public class AWSLogType {
     

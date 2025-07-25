@@ -1,6 +1,6 @@
-<!-- This type defines the filter configuration data for the AWS Lambda filter 
-	which invokes AWS Lambda functions from Axway API Gateway "class" - The 
-	filter classname. "functionName" - The name of the AWS Lambda function to invoke
+<!-- This type defines the filter configuration data for the Invoke Lambda Function filter
+which invokes AWS Lambda functions from Axway API Gateway "class" - The
+filter classname. "functionName" - The name of the AWS Lambda function to invoke
 	"awsRegion" - The AWS region where the function is located "invocationType" - 
 	The type of invocation (RequestResponse, Event, DryRun) "logType" - The type 
 	of logging (None, Tail) "qualifier" - The version or alias of the function
@@ -37,13 +37,13 @@
 			<value>AWSLambdaFilter</value>
 		</fval>
 		<fval name="logFatal">
-			<value>Error in the AWS Lambda filter. Error: ${circuit.exception}</value>
+			        <value>Error in the Invoke Lambda Function filter. Error: ${circuit.exception}</value>
 		</fval>
 		<fval name="logFailure">
-			<value>Failed in the AWS Lambda filter</value>
+			        <value>Failed in the Invoke Lambda Function filter</value>
 		</fval>
 		<fval name="logSuccess">
-			<value>Success in the AWS Lambda filter</value>
+			        <value>Success in the Invoke Lambda Function filter</value>
 		</fval>
 	</entity>
 

@@ -1,4 +1,4 @@
-# AWS Lambda Integration for Axway API Gateway
+# Invoke Lambda Function Integration for Axway API Gateway
 
 This project provides integration with AWS Lambda through custom filters for Axway API Gateway, supporting both Java filters and Groovy scripts.
 
@@ -26,7 +26,7 @@ This project provides integration with AWS Lambda through custom filters for Axw
    - Restart Policy Studio with `-clean`
 
 5. **Use the filter:**
-   - Search for **"AWS Lambda Filter"** in the palette
+   - Search for **"Invoke Lambda Function"** in the palette
    - Configure the required parameters
    - Test the integration
 
@@ -425,7 +425,7 @@ For detailed information about the Java filter, including fields, installation, 
    - Restart Policy Studio with `-clean`
 
 3. **Configure filter:**
-   - Search for **"AWS Lambda Filter"** in the palette
+   - Search for **"Invoke Lambda Function"** in the palette
    - Configure the required parameters
    - Test the integration
 

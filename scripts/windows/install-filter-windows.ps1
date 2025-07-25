@@ -1,4 +1,4 @@
-# AWS Lambda Filter installation script for Axway API Gateway (Windows)
+# Invoke Lambda Function installation script for Axway API Gateway (Windows)
 # Author: Assistant
 # Date: $(Get-Date)
 
@@ -7,7 +7,7 @@ $POLICY_STUDIO_PROJECT = "C:\Users\jbarros\apiprojects\POC-CUSTOM-FILTER"
 $PROJECT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
 $YAML_SOURCE_DIR = Join-Path $PROJECT_DIR "src\main\resources\yaml"
 
-Write-Host "=== AWS Lambda Filter Installation for Policy Studio (Windows) ===" -ForegroundColor Green
+Write-Host "=== Invoke Lambda Function Installation for Policy Studio (Windows) ===" -ForegroundColor Green
 Write-Host "Policy Studio project: $POLICY_STUDIO_PROJECT" -ForegroundColor Yellow
 Write-Host "Project directory: $PROJECT_DIR" -ForegroundColor Yellow
 Write-Host "YAML source directory: $YAML_SOURCE_DIR" -ForegroundColor Yellow
@@ -119,12 +119,12 @@ if ($filterSuccess -and $systemSuccess) {
     Write-Host "   - aws-java-sdk-lambda-1.12.314.jar" -ForegroundColor Gray
     Write-Host "   - aws-java-sdk-core-1.12.314.jar" -ForegroundColor Gray
     Write-Host "4. Restart Policy Studio with the -clean option" -ForegroundColor White
-    Write-Host "5. The 'AWS Lambda Filter' will be available in the filter palette" -ForegroundColor White
+    Write-Host "5. The 'Invoke Lambda Function' will be available in the filter palette" -ForegroundColor White
     Write-Host ""
     Write-Host "🔧 To check if the filter is working:" -ForegroundColor Yellow
     Write-Host "- Open Policy Studio" -ForegroundColor White
     Write-Host "- Create a new policy" -ForegroundColor White
-    Write-Host "- Search for 'AWS Lambda' in the filter palette" -ForegroundColor White
+    Write-Host "- Search for 'Invoke Lambda Function' in the filter palette" -ForegroundColor White
     Write-Host "- Configure the filter with the required parameters" -ForegroundColor White
     Write-Host ""
     Write-Host "📋 Copied files:" -ForegroundColor Yellow

@@ -49,7 +49,7 @@ public class AWSLambdaProcessor extends MessageProcessor {
 	protected Selector<String> clientConfiguration;
 	protected Selector<String> credentialsFilePath;
 	
-	// AWS Lambda client builder (following S3 pattern)
+	// Invoke Lambda Function client builder (following S3 pattern)
 	protected AWSLambdaClientBuilder lambdaClientBuilder;
 	
 	// Content body selector
@@ -261,8 +261,8 @@ public class AWSLambdaProcessor extends MessageProcessor {
 	public boolean invoke(Circuit arg0, Message msg) throws CircuitAbortException {
 		
 		if (lambdaClientBuilder == null) {
-			Trace.error("AWS Lambda client builder was not configured");
-			msg.put("aws.lambda.error", "AWS Lambda client builder was not configured");
+			Trace.error("Invoke Lambda Function client builder was not configured");
+msg.put("aws.lambda.error", "Invoke Lambda Function client builder was not configured");
 			return false;
 		}
 		

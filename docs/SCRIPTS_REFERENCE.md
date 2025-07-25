@@ -43,7 +43,7 @@ This document lists all essential scripts maintained in the project and their fu
 #### **Linux** (`scripts/linux/`)
 
 ##### `scripts/linux/install-filter.sh`
-- **Function:** Installs the AWS Lambda filter on Linux
+- **Function:** Installs the Invoke Lambda Function filter on Linux
 - **Usage:** Automatic (Gradle task `installLinux`)
 - **Command:** `./gradlew installLinux`
 - **Output:** Filter installed in Axway API Gateway

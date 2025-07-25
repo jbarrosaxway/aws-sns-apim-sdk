@@ -314,7 +314,7 @@ def showNextSteps() {
     println "3. Go to Window > Preferences > Runtime Dependencies"
     println "4. Add the JAR: aws-lambda-apim-sdk-1.0.1.jar"
     println "5. Restart Policy Studio with -clean"
-    println "6. Search for 'AWS Lambda Filter' in the palette"
+    println "6. Search for 'Invoke Lambda Function' in the palette"
 }
 
 // Helper function to create project directory structure
@@ -381,7 +381,7 @@ task buildJarLinux {
     dependsOn build
     
     doFirst {
-        println "🔨 Building AWS Lambda Filter JAR..."
+        println "🔨 Building Invoke Lambda Function Filter JAR..."
         println "📁 JAR: build/libs/aws-lambda-apim-sdk-1.0.1.jar"
         println "⚠️  Note: This task should be run only on Linux"
     }
@@ -445,7 +445,7 @@ task showProjectInfo {
     description = 'Shows detailed project information'
     
     doLast {
-        println "📋 AWS Lambda APIM SDK Project Information"
+        println "📋 Invoke Lambda Function APIM SDK Project Information"
         println "=============================================="
         println ""
         println "🏷️  Current version: ${version}"
@@ -464,7 +464,7 @@ task showProjectInfo {
         println "  - Axway API Gateway: 7.7.0.20240830"
         println ""
         println "🚀 Features:"
-        println "  - AWS Lambda filter for Axway API Gateway"
+        println "  - Invoke Lambda Function filter for Axway API Gateway"
         println "  - Support for multiple Axway versions"
         println "  - Automated installation (Linux/Windows)"
         println "  - Automatic semantic versioning"

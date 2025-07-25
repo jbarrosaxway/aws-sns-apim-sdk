@@ -1,5 +1,5 @@
 @echo off
-REM AWS Lambda Filter installation script for Axway API Gateway (Windows CMD)
+REM Invoke Lambda Function installation script for Axway API Gateway (Windows CMD)
 REM Author: Assistant
 REM Date: %date% %time%
 
@@ -8,7 +8,7 @@ set POLICY_STUDIO_PROJECT=C:\Users\jbarros\apiprojects\POC-CUSTOM-FILTER
 set PROJECT_DIR=%~dp0
 set YAML_SOURCE_DIR=%PROJECT_DIR%src\main\resources\yaml
 
-echo === AWS Lambda Filter Installation for Policy Studio (Windows) ===
+echo === Invoke Lambda Function Installation for Policy Studio (Windows) ===
 echo Policy Studio project: %POLICY_STUDIO_PROJECT%
 echo Project directory: %PROJECT_DIR%
 echo YAML source directory: %YAML_SOURCE_DIR%
@@ -115,12 +115,12 @@ if %filterSuccess% equ 1 if %systemSuccess% equ 1 (
     echo    - aws-java-sdk-lambda-1.12.314.jar
     echo    - aws-java-sdk-core-1.12.314.jar
     echo 4. Restart Policy Studio with the -clean option
-    echo 5. The 'AWS Lambda Filter' will be available in the filter palette
+    echo 5. The 'Invoke Lambda Function' will be available in the filter palette
     echo.
     echo  [36mTo check if the filter is working: [0m
     echo - Open Policy Studio
     echo - Create a new policy
-    echo - Search for 'AWS Lambda' in the filter palette
+    echo - Search for 'Invoke Lambda Function' in the filter palette
     echo - Configure the filter with the required parameters
     echo.
     echo  [33mCopied files: [0m

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "========================================"
-echo "AWS Lambda APIM SDK - Linux Installer"
+echo "Invoke Lambda Function APIM SDK - Linux Installer"
 echo "========================================"
 echo
 
@@ -141,7 +141,7 @@ echo
 echo "Next steps:"
 echo "1. Restart Policy Studio"
 echo "2. Restart API Gateway"
-echo "3. The AWS Lambda filter will be available in Policy Studio"
+echo "3. The Invoke Lambda Function filter will be available in Policy Studio"
 echo
 echo "To uninstall, restore the backup or delete the copied files"
 echo 

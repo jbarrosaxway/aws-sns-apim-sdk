@@ -55,7 +55,7 @@ def invoke(msg) {
             return false
         }
         
-        // 2. Create AWS Lambda client
+        // 2. Create Invoke Lambda Function client
         AWSLambdaClientBuilder builder = AWSLambdaClientBuilder.standard()
             .withCredentials(credentialsProvider)
         

@@ -1,4 +1,4 @@
-# AWS Lambda Integration for Axway API Gateway
+# Invoke Lambda Function Integration for Axway API Gateway
 
 This document describes how to integrate AWS Lambda with Axway API Gateway using Groovy scripts, including configuration for Kubernetes environments.
 
@@ -59,7 +59,7 @@ The JARs must be in the gateway's `ext/lib` directory. Example structure:
 3. Configure AWS credentials
 4. Test the integration
 
-## Groovy Script for AWS Lambda
+## Groovy Script for Invoke Lambda Function
 
 ### Main Script
 

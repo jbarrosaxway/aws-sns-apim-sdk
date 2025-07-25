@@ -322,7 +322,7 @@ jobs:
           fi
           
           # Create README with information
-          echo "# AWS Lambda APIM SDK" > "$ZIP_DIR/README.md"
+          echo "# Invoke Lambda Function APIM SDK" > "$ZIP_DIR/README.md"
           echo "" >> "$ZIP_DIR/README.md"
           echo "Release Version: $RELEASE_VERSION" >> "$ZIP_DIR/README.md"
           echo "Axway Version: $VERSION" >> "$ZIP_DIR/README.md"

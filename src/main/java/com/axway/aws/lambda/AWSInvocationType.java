@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Tipos de invocação do AWS Lambda
+ * Tipos de invocação do Invoke Lambda Function
  */
 public class AWSInvocationType {
     
