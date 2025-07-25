@@ -24,8 +24,8 @@ public class InvokeLambdaFunctionFilter extends DefaultFilter {
 	}
 
 	@Override
-	public Class<AWSLambdaProcessor> getMessageProcessorClass() {
-		return AWSLambdaProcessor.class;
+	public Class<InvokeLambdaFunctionProcessor> getMessageProcessorClass() {
+		return InvokeLambdaFunctionProcessor.class;
 	}
 
 	public Class getConfigPanelClass() throws ClassNotFoundException {

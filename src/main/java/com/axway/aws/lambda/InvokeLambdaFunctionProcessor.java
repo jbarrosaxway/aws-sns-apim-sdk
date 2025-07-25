@@ -55,7 +55,7 @@ public class InvokeLambdaFunctionProcessor extends MessageProcessor {
 	// Content body selector
 	private Selector<String> contentBody = new Selector<>("${content.body}", String.class);
 
-	public AWSLambdaProcessor() {
+	public InvokeLambdaFunctionProcessor() {
 	}
 
 	@Override
