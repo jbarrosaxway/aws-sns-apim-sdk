@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * Tipos de log do Invoke Lambda Function
  */
-public class AWSLogType {
+public class InvokeLambdaFunctionLogType {
     
     public static Map<String, String> logType;
     

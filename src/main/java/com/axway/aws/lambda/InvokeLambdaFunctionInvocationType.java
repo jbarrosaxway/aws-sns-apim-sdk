@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * Tipos de invocação do Invoke Lambda Function
  */
-public class AWSInvocationType {
+public class InvokeLambdaFunctionInvocationType {
     
     public static Map<String, String> invocationType;
     

@@ -9,7 +9,7 @@ filter classname. "functionName" - The name of the AWS Lambda function to invoke
 
 <entityStoreData>
 	<entityType name="InvokeLambdaFunctionFilter" extends="AWSFilter">
-		<constant name="class" type="string" value="com.axway.aws.lambda.AWSLambdaFilter" />
+		<constant name="class" type="string" value="com.axway.aws.lambda.InvokeLambdaFunctionFilter" />
 		<field name="functionName" type="string" cardinality="1" />
 		<field name="awsRegion" type="string" cardinality="1" />
 		<field name="invocationType" type="string" cardinality="1" />

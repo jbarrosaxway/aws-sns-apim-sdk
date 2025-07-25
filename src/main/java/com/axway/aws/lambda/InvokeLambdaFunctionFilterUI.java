@@ -10,10 +10,10 @@ import com.vordel.client.manager.Images;
 import com.vordel.client.manager.filter.DefaultGUIFilter;
 import com.vordel.client.manager.wizard.VordelPage;
 
-public class AWSLambdaFilterUI extends DefaultGUIFilter {
+public class InvokeLambdaFunctionFilterUI extends DefaultGUIFilter {
 	public Vector<VordelPage> getPropertyPages() {
 		Vector<VordelPage> pages = new Vector<>();
-		pages.add(new AWSLambdaFilterPage());
+		pages.add(new InvokeLambdaFunctionFilterPage());
 		pages.add(createLogPage());
 		return pages;
 	}

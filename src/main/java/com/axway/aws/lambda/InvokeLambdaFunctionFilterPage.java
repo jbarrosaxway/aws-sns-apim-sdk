@@ -4,9 +4,9 @@ import org.eclipse.swt.widgets.Composite;
 
 import com.vordel.client.manager.wizard.VordelPage;
 
-public class AWSLambdaFilterPage extends VordelPage {
+public class InvokeLambdaFunctionFilterPage extends VordelPage {
 
-	public AWSLambdaFilterPage() {
+	public InvokeLambdaFunctionFilterPage() {
 		super("AWSLambdaPage");
 
 

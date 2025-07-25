@@ -1,7 +1,7 @@
 ---
 name: InvokeLambdaFunctionFilter
 version: 1
-class: com.axway.aws.lambda.InvokeLambdaFunctionFilter
+class: com.axway.aws.lambda.AWSLambdaFilter
 fields:
   functionName:
     type: string

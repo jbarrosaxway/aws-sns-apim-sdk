@@ -33,7 +33,7 @@ import com.vordel.trace.Trace;
 import java.io.File;
 import java.nio.ByteBuffer;
 
-public class AWSLambdaProcessor extends MessageProcessor {
+public class InvokeLambdaFunctionProcessor extends MessageProcessor {
 	
 	// Selectors for dynamic field resolution (following S3 pattern)
 	protected Selector<String> functionName;

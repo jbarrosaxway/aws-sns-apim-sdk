@@ -40,7 +40,7 @@
 
 					<ComboAttribute field="invocationType" label="AWS_LAMBDA_INVOCATION_TYPE_LABEL"
 						displayName="AWS_LAMBDA_INVOCATION_TYPE_NAME" description="AWS_LAMBDA_INVOCATION_TYPE_DESCRIPTION"
-						contentSource="com.axway.aws.lambda.AWSInvocationType.invocationType"
+						contentSource="com.axway.aws.lambda.InvokeLambdaFunctionInvocationType.invocationType"
 						includeBlank="false" required="true" stretch="true" />
 
 					<TextAttribute field="qualifier" label="AWS_LAMBDA_QUALIFIER_LABEL"
@@ -51,7 +51,7 @@
 				<panel columns="2">
 					<ComboAttribute field="logType" label="AWS_LAMBDA_LOG_TYPE_LABEL"
 						displayName="AWS_LAMBDA_LOG_TYPE_NAME" description="AWS_LAMBDA_LOG_TYPE_DESCRIPTION"
-						contentSource="com.axway.aws.lambda.AWSLogType.logType"
+						contentSource="com.axway.aws.lambda.InvokeLambdaFunctionLogType.logType"
 						includeBlank="false" required="true" stretch="true" />
 
 					<TextAttribute field="memorySize" label="AWS_LAMBDA_MEMORY_SIZE_LABEL"

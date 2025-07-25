@@ -7,7 +7,7 @@ import com.vordel.es.EntityStoreException;
 import com.vordel.mime.Body;
 import com.vordel.mime.HeaderSet;
 
-public class AWSLambdaFilter extends DefaultFilter {
+public class InvokeLambdaFunctionFilter extends DefaultFilter {
 
 	@Override
 	protected final void setDefaultPropertyDefs() {
@@ -31,7 +31,7 @@ public class AWSLambdaFilter extends DefaultFilter {
 	public Class getConfigPanelClass() throws ClassNotFoundException {
 		// Avoid any compile or runtime dependencies on SWT and other UI
 		// libraries by lazily loading the class when required.
-		return Class.forName("com.axway.aws.lambda.AWSLambdaFilterUI");
+		return Class.forName("com.axway.aws.lambda.InvokeLambdaFunctionFilterUI");
 	}
 
 }
