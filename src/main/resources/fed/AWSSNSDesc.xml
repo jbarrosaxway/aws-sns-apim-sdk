@@ -1,0 +1,48 @@
+<!-- This type defines the filter configuration data for the Publish SNS Message filter
+which publishes messages to AWS SNS topics from Axway API Gateway "class" - The
+filter classname. "topicArn" - The ARN of the AWS SNS topic "awsRegion" - The AWS 
+region where the topic is located "messageSubject" - The subject of the message
+"messageStructure" - The structure of the message (default, json) "messageAttributes" - 
+JSON format message attributes "maxRetries" - Maximum number of retry attempts 
+"retryDelay" - Delay between retry attempts in milliseconds -->
+
+<entityStoreData>
+	<entityType name="PublishSNSMessageFilter" extends="AWSFilter">
+		<constant name="class" type="string" value="com.axway.aws.sns.PublishSNSMessageFilter" />
+		<field name="topicArn" type="string" cardinality="1" />
+		<field name="awsRegion" type="string" cardinality="1" />
+		<field name="messageSubject" type="string" cardinality="1" />
+		<field name="messageStructure" type="string" cardinality="1" />
+		<field name="messageAttributes" type="string" cardinality="1" />
+		<field name="maxRetries" type="string" cardinality="1" />
+		<field name="retryDelay" type="string" cardinality="1" />
+		<field name="credentialType" type="string" cardinality="1" />
+		<field name="useIAMRole" type="string" cardinality="1" />
+		<field name="awsCredential" type="^ApiKeyProfile" cardinality="1" />
+		<field name="clientConfiguration" type="^AWSClientConfiguration" cardinality="1" />
+		<field name="credentialsFilePath" type="string" cardinality="1" />
+	</entityType>
+
+	
+
+	<!-- Internationalization for logging / audit trail -->
+	<entity xmlns="http://www.vordel.com/2005/06/24/entityStore"
+		type="InternationalizationFilter">
+		<key type="Internationalization">
+			<id field="name" value="Internationalization Default" />
+		</key>
+		<fval name="type">
+			        <value>PublishSNSMessageFilter</value>
+		</fval>
+		<fval name="logFatal">
+			        <value>Error in the Publish SNS Message filter. Error: ${circuit.exception}</value>
+		</fval>
+		<fval name="logFailure">
+			        <value>Failed in the Publish SNS Message filter</value>
+		</fval>
+		<fval name="logSuccess">
+			        <value>Success in the Publish SNS Message filter</value>
+		</fval>
+	</entity>
+
+</entityStoreData> 

@@ -1,4 +1,4 @@
-# Invoke Lambda Function installation script for Axway API Gateway (Windows)
+# Publish SNS Message installation script for Axway API Gateway (Windows)
 # Author: Assistant
 # Date: $(Get-Date)
 
@@ -7,7 +7,7 @@ $POLICY_STUDIO_PROJECT = "C:\Users\jbarros\apiprojects\POC-CUSTOM-FILTER"
 $PROJECT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
 $YAML_SOURCE_DIR = Join-Path $PROJECT_DIR "src\main\resources\yaml"
 
-Write-Host "=== Invoke Lambda Function Installation for Policy Studio (Windows) ===" -ForegroundColor Green
+Write-Host "=== Publish SNS Message Installation for Policy Studio (Windows) ===" -ForegroundColor Green
 Write-Host "Policy Studio project: $POLICY_STUDIO_PROJECT" -ForegroundColor Yellow
 Write-Host "Project directory: $PROJECT_DIR" -ForegroundColor Yellow
 Write-Host "YAML source directory: $YAML_SOURCE_DIR" -ForegroundColor Yellow
@@ -88,11 +88,11 @@ function Append-InternationalizationContent {
     }
 }
 
-# 1. Copy InvokeLambdaFunctionFilter.yaml
+# 1. Copy PublishSNSMessageFilter.yaml
 $sourceFilter = Join-Path $YAML_SOURCE_DIR "META-INF\types\Entity\Filter\AWSFilter"
 $destFilter = Join-Path $POLICY_STUDIO_PROJECT "META-INF\types\Entity\Filter\AWSFilter"
 
-$filterSuccess = Copy-YamlFiles -SourcePath $sourceFilter -DestPath $destFilter -Description "InvokeLambdaFunctionFilter.yaml"
+$filterSuccess = Copy-YamlFiles -SourcePath $sourceFilter -DestPath $destFilter -Description "PublishSNSMessageFilter.yaml"
 
 # 2. Add content to Internationalization Default.yaml
 $sourceSystemFile = Join-Path $YAML_SOURCE_DIR "System\Internationalization Default.yaml"
@@ -116,19 +116,19 @@ if ($filterSuccess -and $systemSuccess) {
     Write-Host "1. Open the project in Policy Studio" -ForegroundColor White
     Write-Host "2. Go to Window > Preferences > Runtime Dependencies" -ForegroundColor White
     Write-Host "3. Add AWS SDK JARs if needed:" -ForegroundColor White
-    Write-Host "   - aws-java-sdk-lambda-1.12.314.jar" -ForegroundColor Gray
+    Write-Host "   - aws-java-sdk-sns-1.12.314.jar" -ForegroundColor Gray
     Write-Host "   - aws-java-sdk-core-1.12.314.jar" -ForegroundColor Gray
     Write-Host "4. Restart Policy Studio with the -clean option" -ForegroundColor White
-    Write-Host "5. The 'Invoke Lambda Function' will be available in the filter palette" -ForegroundColor White
+    Write-Host "5. The 'Publish SNS Message' will be available in the filter palette" -ForegroundColor White
     Write-Host ""
     Write-Host "🔧 To check if the filter is working:" -ForegroundColor Yellow
     Write-Host "- Open Policy Studio" -ForegroundColor White
     Write-Host "- Create a new policy" -ForegroundColor White
-    Write-Host "- Search for 'Invoke Lambda Function' in the filter palette" -ForegroundColor White
+    Write-Host "- Search for 'Publish SNS Message' in the filter palette" -ForegroundColor White
     Write-Host "- Configure the filter with the required parameters" -ForegroundColor White
     Write-Host ""
     Write-Host "📋 Copied files:" -ForegroundColor Yellow
-    Write-Host "- $destFilter\InvokeLambdaFunctionFilter.yaml" -ForegroundColor Gray
+    Write-Host "- $destFilter\PublishSNSMessageFilter.yaml" -ForegroundColor Gray
     Write-Host "- $destSystem\Internationalization Default.yaml" -ForegroundColor Gray
     Write-Host ""
     Write-Host "💡 Tip: Adjust the `$POLICY_STUDIO_PROJECT variable in the script if your project is in another location" -ForegroundColor Cyan

@@ -1,4 +1,4 @@
-package com.axway.aws.lambda;
+package com.axway.aws.sns;
 
 import java.security.GeneralSecurityException;
 import com.amazonaws.ClientConfiguration;
@@ -13,10 +13,10 @@ import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.auth.EC2ContainerCredentialsProviderWrapper;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
-import com.amazonaws.services.lambda.AWSLambda;
-import com.amazonaws.services.lambda.AWSLambdaClientBuilder;
-import com.amazonaws.services.lambda.model.InvokeRequest;
-import com.amazonaws.services.lambda.model.InvokeResult;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sns.model.PublishRequest;
+import com.amazonaws.services.sns.model.PublishResult;
 import com.vordel.circuit.CircuitAbortException;
 import com.vordel.circuit.Message;
 import com.vordel.circuit.MessageProcessor;
@@ -33,63 +33,60 @@ import com.vordel.trace.Trace;
 import java.io.File;
 import java.nio.ByteBuffer;
 
-public class InvokeLambdaFunctionProcessor extends MessageProcessor {
+public class PublishSNSMessageProcessor extends MessageProcessor {
 	
-	// Selectors for dynamic field resolution (following S3 pattern)
-	protected Selector<String> functionName;
+	// Selectors for dynamic field resolution (following Lambda pattern)
+	protected Selector<String> topicArn;
 	protected Selector<String> awsRegion;
-	protected Selector<String> invocationType;
-	protected Selector<String> logType;
-	protected Selector<String> qualifier;
+	protected Selector<String> messageSubject;
+	protected Selector<String> messageStructure;
+	protected Selector<String> messageAttributes;
 	protected Selector<Integer> retryDelay;
-	protected Selector<Integer> memorySize;
 	protected Selector<String> credentialType;
 	protected Selector<Boolean> useIAMRole;
 	protected Selector<String> awsCredential;
 	protected Selector<String> clientConfiguration;
 	protected Selector<String> credentialsFilePath;
 	
-	// Invoke Lambda Function client builder (following S3 pattern)
-	protected AWSLambdaClientBuilder lambdaClientBuilder;
+	// SNS client builder (following Lambda pattern)
+	protected AmazonSNSClientBuilder snsClientBuilder;
 	
 	// Content body selector
 	private Selector<String> contentBody = new Selector<>("${content.body}", String.class);
 
-	public InvokeLambdaFunctionProcessor() {
+	public PublishSNSMessageProcessor() {
 	}
 
 	@Override
 	public void filterAttached(ConfigContext ctx, Entity entity) throws EntityStoreException {
 		super.filterAttached(ctx, entity);
 		
-		// Initialize selectors for all fields (following S3 pattern)
-		this.functionName = new Selector(entity.getStringValue("functionName"), String.class);
+		// Initialize selectors for all fields (following Lambda pattern)
+		this.topicArn = new Selector(entity.getStringValue("topicArn"), String.class);
 		this.awsRegion = new Selector(entity.getStringValue("awsRegion"), String.class);
-		this.invocationType = new Selector(entity.getStringValue("invocationType"), String.class);
-		this.logType = new Selector(entity.getStringValue("logType"), String.class);
-		this.qualifier = new Selector(entity.getStringValue("qualifier"), String.class);
+		this.messageSubject = new Selector(entity.getStringValue("messageSubject"), String.class);
+		this.messageStructure = new Selector(entity.getStringValue("messageStructure"), String.class);
+		this.messageAttributes = new Selector(entity.getStringValue("messageAttributes"), String.class);
 		this.retryDelay = new Selector(entity.getStringValue("retryDelay"), Integer.class);
-		this.memorySize = new Selector(entity.getStringValue("memorySize"), Integer.class);
 		this.credentialType = new Selector(entity.getStringValue("credentialType"), String.class);
 		this.useIAMRole = new Selector(entity.getStringValue("useIAMRole"), Boolean.class);
 		this.awsCredential = new Selector(entity.getStringValue("awsCredential"), String.class);
 		this.clientConfiguration = new Selector(entity.getStringValue("clientConfiguration"), String.class);
 		this.credentialsFilePath = new Selector(entity.getStringValue("credentialsFilePath") != null ? entity.getStringValue("credentialsFilePath") : "", String.class);
 		
-		// Get client configuration (following S3 pattern exactly)
+		// Get client configuration (following Lambda pattern exactly)
 		Entity clientConfig = ctx.getEntity(entity.getReferenceValue("clientConfiguration"));
 		
-		// Configure Lambda client builder (following S3 pattern)
-		this.lambdaClientBuilder = getLambdaClientBuilder(ctx, entity, clientConfig);
+		// Configure SNS client builder (following Lambda pattern)
+		this.snsClientBuilder = getSNSClientBuilder(ctx, entity, clientConfig);
 		
-		Trace.info("=== Lambda Configuration (Following S3 Pattern) ===");
-		Trace.info("Function: " + (functionName != null ? functionName.getLiteral() : "dynamic"));
+		Trace.info("=== SNS Configuration (Following Lambda Pattern) ===");
+		Trace.info("Topic ARN: " + (topicArn != null ? topicArn.getLiteral() : "dynamic"));
 		Trace.info("Region: " + (awsRegion != null ? awsRegion.getLiteral() : "dynamic"));
-		Trace.info("Invocation Type: " + (invocationType != null ? invocationType.getLiteral() : "dynamic"));
-		Trace.info("Log Type: " + (logType != null ? logType.getLiteral() : "dynamic"));
-		Trace.info("Qualifier: " + (qualifier != null ? qualifier.getLiteral() : "dynamic"));
+		Trace.info("Message Subject: " + (messageSubject != null ? messageSubject.getLiteral() : "dynamic"));
+		Trace.info("Message Structure: " + (messageStructure != null ? messageStructure.getLiteral() : "dynamic"));
+		Trace.info("Message Attributes: " + (messageAttributes != null ? messageAttributes.getLiteral() : "dynamic"));
 		Trace.info("Retry Delay: " + (retryDelay != null ? retryDelay.getLiteral() : "dynamic"));
-		Trace.info("Memory Size: " + (memorySize != null ? memorySize.getLiteral() : "dynamic"));
 		Trace.info("Credential Type: " + (credentialType != null ? credentialType.getLiteral() : "dynamic"));
 		Trace.info("Use IAM Role: " + (useIAMRole != null ? useIAMRole.getLiteral() : "false"));
 		Trace.info("AWS Credential: " + (awsCredential != null ? awsCredential.getLiteral() : "dynamic"));
@@ -99,19 +96,19 @@ public class InvokeLambdaFunctionProcessor extends MessageProcessor {
 	}
 
 	/**
-	 * Creates Lambda client builder following S3 pattern exactly
+	 * Creates SNS client builder following Lambda pattern exactly
 	 */
-	private AWSLambdaClientBuilder getLambdaClientBuilder(ConfigContext ctx, Entity entity, Entity clientConfig) 
+	private AmazonSNSClientBuilder getSNSClientBuilder(ConfigContext ctx, Entity entity, Entity clientConfig) 
 			throws EntityStoreException {
 		
 		// Get credentials provider based on configuration
 		AWSCredentialsProvider credentialsProvider = getCredentialsProvider(ctx, entity);
 		
-		// Create client builder with credentials and client configuration (following S3 pattern)
-		AWSLambdaClientBuilder builder = AWSLambdaClientBuilder.standard()
+		// Create client builder with credentials and client configuration (following Lambda pattern)
+		AmazonSNSClientBuilder builder = AmazonSNSClientBuilder.standard()
 			.withCredentials(credentialsProvider);
 		
-		// Apply client configuration if available (following S3 pattern exactly)
+		// Apply client configuration if available (following Lambda pattern exactly)
 		if (clientConfig != null) {
 			ClientConfiguration clientConfiguration = createClientConfiguration(ctx, clientConfig);
 			builder.withClientConfiguration(clientConfiguration);
@@ -157,7 +154,7 @@ public class InvokeLambdaFunctionProcessor extends MessageProcessor {
 				return new DefaultAWSCredentialsProviderChain();
 			}
 		} else {
-			// Use explicit credentials via AWSFactory (following S3 pattern)
+			// Use explicit credentials via AWSFactory (following Lambda pattern)
 			Trace.info("Using explicit AWS credentials via AWSFactory");
 			try {
 				AWSCredentials awsCredentials = AWSFactory.getCredentials(ctx, entity);
@@ -172,7 +169,7 @@ public class InvokeLambdaFunctionProcessor extends MessageProcessor {
 	}
 	
 	/**
-	 * Creates ClientConfiguration from entity (following S3 pattern exactly)
+	 * Creates ClientConfiguration from entity (following Lambda pattern exactly)
 	 */
 	private ClientConfiguration createClientConfiguration(ConfigContext ctx, Entity entity) throws EntityStoreException {
 		ClientConfiguration clientConfig = new ClientConfiguration();
@@ -182,7 +179,7 @@ public class InvokeLambdaFunctionProcessor extends MessageProcessor {
 			return clientConfig;
 		}
 		
-		// Apply configuration settings (following S3 pattern exactly)
+		// Apply configuration settings (following Lambda pattern exactly)
 		if (containsKey(entity, "connectionTimeout")) {
 			clientConfig.setConnectionTimeout(entity.getIntegerValue("connectionTimeout"));
 		}
@@ -235,7 +232,7 @@ public class InvokeLambdaFunctionProcessor extends MessageProcessor {
 	}
 	
 	/**
-	 * Checks if entity contains a non-empty key (following S3 pattern exactly)
+	 * Checks if entity contains a non-empty key (following Lambda pattern exactly)
 	 */
 	private boolean containsKey(Entity entity, String fieldName) {
 		if (!entity.containsKey(fieldName)) {
@@ -246,7 +243,7 @@ public class InvokeLambdaFunctionProcessor extends MessageProcessor {
 	}
 	
 	/**
-	 * Creates AWSCredentialsProvider (following S3 pattern)
+	 * Creates AWSCredentialsProvider (following Lambda pattern)
 	 */
 	private AWSCredentialsProvider getAWSCredentialsProvider(final AWSCredentials awsCredentials) {
 		return new AWSCredentialsProvider() {
@@ -260,43 +257,35 @@ public class InvokeLambdaFunctionProcessor extends MessageProcessor {
 	@Override
 	public boolean invoke(Circuit arg0, Message msg) throws CircuitAbortException {
 		
-		if (lambdaClientBuilder == null) {
-			Trace.error("Invoke Lambda Function client builder was not configured");
-msg.put("aws.lambda.error", "Invoke Lambda Function client builder was not configured");
+		if (snsClientBuilder == null) {
+			Trace.error("SNS client builder was not configured");
+			msg.put("aws.sns.error", "SNS client builder was not configured");
 			return false;
 		}
 		
-		// Get dynamic values using selectors (following S3 pattern)
-		String functionNameValue = functionName.substitute(msg);
+		// Get dynamic values using selectors (following Lambda pattern)
+		String topicArnValue = topicArn.substitute(msg);
 		String regionValue = awsRegion.substitute(msg);
-		String invocationTypeValue = invocationType.substitute(msg);
-		String logTypeValue = logType.substitute(msg);
-		String qualifierValue = qualifier.substitute(msg);
+		String messageSubjectValue = messageSubject.substitute(msg);
+		String messageStructureValue = messageStructure.substitute(msg);
+		String messageAttributesValue = messageAttributes.substitute(msg);
 		Integer retryDelayValue = retryDelay.substitute(msg);
-		Integer memorySizeValue = memorySize.substitute(msg);
 		String credentialTypeValue = credentialType.substitute(msg);
 		Boolean useIAMRoleValue = useIAMRole.substitute(msg);
 		String credentialsFilePathValue = credentialsFilePath.substitute(msg);
 
-		Trace.info("=== Invocation Debug ===");
-		Trace.info("Function Name: " + functionNameValue);
+		Trace.info("=== SNS Invocation Debug ===");
+		Trace.info("Topic ARN: " + topicArnValue);
 		Trace.info("Region: " + regionValue);
-		Trace.info("Invocation Type: " + invocationTypeValue);
-		Trace.info("Log Type: " + logTypeValue);
-		Trace.info("Qualifier: " + qualifierValue);
+		Trace.info("Message Subject: " + messageSubjectValue);
+		Trace.info("Message Structure: " + messageStructureValue);
+		Trace.info("Message Attributes: " + messageAttributesValue);
 		Trace.info("Retry Delay: " + retryDelayValue);
-		Trace.info("Memory Size: " + memorySizeValue);
 		Trace.info("Credential Type: " + credentialTypeValue);
 		Trace.info("Use IAM Role: " + useIAMRoleValue);
 		Trace.info("Credentials File Path: " + credentialsFilePathValue);
 		
 		// Set default values
-		if (invocationTypeValue == null || invocationTypeValue.trim().isEmpty()) {
-			invocationTypeValue = "RequestResponse";
-		}
-		if (logTypeValue == null || logTypeValue.trim().isEmpty()) {
-			logTypeValue = "None";
-		}
 		if (retryDelayValue == null) {
 			retryDelayValue = 1000;
 		}
@@ -305,18 +294,14 @@ msg.put("aws.lambda.error", "Invoke Lambda Function client builder was not confi
 		}
 		// Determine IAM Role usage based on credential type
 		useIAMRoleValue = "iam".equals(credentialTypeValue);
-		if (memorySizeValue == null) {
-			memorySizeValue = 128; // Default 128 MB
-		}
 		
 		String body = contentBody.substitute(msg);
 		if (body == null || body.trim().isEmpty()) {
 			body = "{}";
 		}
 		
-		Trace.info("Invoking Lambda function with retry...");
+		Trace.info("Publishing message to SNS with retry...");
 		Trace.info("Using IAM Role: " + useIAMRoleValue);
-		Trace.info("Memory Size: " + memorySizeValue + " MB");
 		
 		Exception lastException = null;
 		
@@ -327,27 +312,31 @@ msg.put("aws.lambda.error", "Invoke Lambda Function client builder was not confi
 			try {
 				Trace.info("Attempt " + attempt + " of " + maxRetriesValue);
 				
-				// Create Lambda client with region (following S3 pattern)
-				AWSLambda lambdaClient = lambdaClientBuilder.withRegion(regionValue).build();
+				// Create SNS client with region (following Lambda pattern)
+				AmazonSNS snsClient = snsClientBuilder.withRegion(regionValue).build();
 				
 				// Create request
-				InvokeRequest invokeRequest = new InvokeRequest()
-					.withFunctionName(functionNameValue)
-					.withPayload(ByteBuffer.wrap(body.getBytes()))
-					.withInvocationType(invocationTypeValue)
-					.withLogType(logTypeValue);
+				PublishRequest publishRequest = new PublishRequest()
+					.withTopicArn(topicArnValue)
+					.withMessage(body);
 				
-				// Add qualifier if specified
-				if (qualifierValue != null && !qualifierValue.trim().isEmpty()) {
-					invokeRequest.setQualifier(qualifierValue);
-					Trace.info("Using qualifier: " + qualifierValue);
+				// Add subject if specified
+				if (messageSubjectValue != null && !messageSubjectValue.trim().isEmpty()) {
+					publishRequest.setSubject(messageSubjectValue);
+					Trace.info("Using subject: " + messageSubjectValue);
 				}
 				
-				// Invoke Lambda function
-				InvokeResult invokeResult = lambdaClient.invoke(invokeRequest);
+				// Add message structure if specified
+				if (messageStructureValue != null && !messageStructureValue.trim().isEmpty()) {
+					publishRequest.setMessageStructure(messageStructureValue);
+					Trace.info("Using message structure: " + messageStructureValue);
+				}
+				
+				// Publish message to SNS
+				PublishResult publishResult = snsClient.publish(publishRequest);
 				
 				// Process response
-				return processInvokeResult(invokeResult, msg, memorySizeValue);
+				return processPublishResult(publishResult, msg);
 				
 			} catch (Exception e) {
 				lastException = e;
@@ -369,58 +358,33 @@ msg.put("aws.lambda.error", "Invoke Lambda Function client builder was not confi
 		
 		// If reached here, all attempts failed
 		Trace.error("All " + maxRetriesValue + " attempts failed");
-		msg.put("aws.lambda.error", "Failure after " + maxRetriesValue + " attempts: " + 
+		msg.put("aws.sns.error", "Failure after " + maxRetriesValue + " attempts: " + 
 			(lastException != null ? lastException.getMessage() : "Unknown error"));
 		return false;
 	}
 	
 	/**
-	 * Processes the result of the Lambda invocation
+	 * Processes the result of the SNS publish operation
 	 */
-	private boolean processInvokeResult(InvokeResult invokeResult, Message msg, Integer memorySizeValue) {
+	private boolean processPublishResult(PublishResult publishResult, Message msg) {
 		try {
-			String response = new String(invokeResult.getPayload().array(), "UTF-8");
-			int statusCode = invokeResult.getStatusCode();
+			String messageId = publishResult.getMessageId();
 			
-			// === Lambda Response ===
-			Trace.info("=== Lambda Response ===");
-			Trace.info("Status Code: " + statusCode);
-			Trace.info("Response: " + response);
-			Trace.info("Executed Version: " + invokeResult.getExecutedVersion());
-			
-			if (invokeResult.getLogResult() != null) {
-				Trace.info("Log Result: " + invokeResult.getLogResult());
-			}
+			// === SNS Response ===
+			Trace.info("=== SNS Response ===");
+			Trace.info("Message ID: " + messageId);
 			
 			// Store results
-			msg.put("aws.lambda.response", response);
-			msg.put("aws.lambda.http.status.code", statusCode);
-			msg.put("aws.lambda.executed.version", invokeResult.getExecutedVersion());
-			msg.put("aws.lambda.log.result", invokeResult.getLogResult());
-			msg.put("aws.lambda.memory.size", memorySizeValue);
+			msg.put("aws.sns.message.id", messageId);
+			msg.put("aws.sns.response", "Message published successfully");
 			
-			// Check Lambda function error
-			if (invokeResult.getFunctionError() != null) {
-				Trace.error("Lambda function error: " + invokeResult.getFunctionError());
-				msg.put("aws.lambda.error", invokeResult.getFunctionError());
-				msg.put("aws.lambda.function.error", invokeResult.getFunctionError());
-				return false;
-			}
-			
-			// Check HTTP status code
-			if (statusCode >= 400) {
-				Trace.error("HTTP error in Lambda invocation: " + statusCode);
-				msg.put("aws.lambda.error", "HTTP Error: " + statusCode);
-				return false;
-			}
-			
-			Trace.info("Lambda invocation successful");
+			Trace.info("SNS message published successfully");
 			return true;
 			
 		} catch (Exception e) {
-			Trace.error("Error processing Lambda response: " + e.getMessage(), e);
-			msg.put("aws.lambda.error", "Error processing response: " + e.getMessage());
+			Trace.error("Error processing SNS response: " + e.getMessage(), e);
+			msg.put("aws.sns.error", "Error processing response: " + e.getMessage());
 			return false;
 		}
 	}
-}
+} 

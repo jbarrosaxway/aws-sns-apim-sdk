@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "========================================"
-echo "Invoke Lambda Function APIM SDK - Linux Installer"
+echo "Publish SNS Message APIM SDK - Linux Installer"
 echo "========================================"
 echo
 
@@ -27,11 +27,11 @@ echo "Axway found at: $AXWAY_HOME"
 echo
 
 # Check if main JAR exists
-MAIN_JAR=$(find . -name "aws-lambda-apim-sdk-*.jar" | head -1)
+MAIN_JAR=$(find . -name "aws-sns-apim-sdk-*.jar" | head -1)
 if [ -z "$MAIN_JAR" ]; then
     echo "ERROR: Main JAR not found"
     echo
-    echo "Make sure the file aws-lambda-apim-sdk-*.jar is present"
+    echo "Make sure the file aws-sns-apim-sdk-*.jar is present"
     echo
     exit 1
 fi
@@ -141,7 +141,7 @@ echo
 echo "Next steps:"
 echo "1. Restart Policy Studio"
 echo "2. Restart API Gateway"
-echo "3. The Invoke Lambda Function filter will be available in Policy Studio"
+echo "3. The Publish SNS Message filter will be available in Policy Studio"
 echo
 echo "To uninstall, restore the backup or delete the copied files"
 echo 

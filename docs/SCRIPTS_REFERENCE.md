@@ -22,7 +22,7 @@ This document lists all essential scripts maintained in the project and their fu
 - **Function:** Build the JAR using the published Docker image
 - **Usage:** Manual (development)
 - **Command:** `./scripts/build-with-docker-image.sh`
-- **Output:** JAR in `build/libs/aws-lambda-apim-sdk-*.jar`
+- **Output:** JAR in `build/libs/aws-sns-apim-sdk-*.jar`
 
 #### `scripts/generate-release-notes.sh`
 - **Function:** Generates intelligent release notes based on commit history
@@ -43,7 +43,7 @@ This document lists all essential scripts maintained in the project and their fu
 #### **Linux** (`scripts/linux/`)
 
 ##### `scripts/linux/install-filter.sh`
-- **Function:** Installs the Invoke Lambda Function filter on Linux
+- **Function:** Installs the Publish SNS Message filter on Linux
 - **Usage:** Automatic (Gradle task `installLinux`)
 - **Command:** `./gradlew installLinux`
 - **Output:** Filter installed in Axway API Gateway
@@ -92,7 +92,7 @@ scripts/
 The following scripts were removed as they were not essential:
 
 ### 🧪 **Test/Validation Scripts (Removed):**
-- `verify-aws-lambda-values.sh` - AWS values verification
+- `verify-aws-sns-values.sh` - AWS values verification
 - `verify-filter-structure.sh` - Filter structure verification
 - `test-preserve-other-filters.sh` - Filter preservation test
 - `clean-and-reinstall.sh` - Clean and reinstall

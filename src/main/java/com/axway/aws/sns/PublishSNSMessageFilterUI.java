@@ -1,4 +1,4 @@
-package com.axway.aws.lambda;
+package com.axway.aws.sns;
 
 import java.util.Vector;
 
@@ -10,10 +10,10 @@ import com.vordel.client.manager.Images;
 import com.vordel.client.manager.filter.DefaultGUIFilter;
 import com.vordel.client.manager.wizard.VordelPage;
 
-public class InvokeLambdaFunctionFilterUI extends DefaultGUIFilter {
+public class PublishSNSMessageFilterUI extends DefaultGUIFilter {
 	public Vector<VordelPage> getPropertyPages() {
 		Vector<VordelPage> pages = new Vector<>();
-		pages.add(new InvokeLambdaFunctionFilterPage());
+		pages.add(new PublishSNSMessageFilterPage());
 		pages.add(createLogPage());
 		return pages;
 	}
@@ -23,7 +23,7 @@ public class InvokeLambdaFunctionFilterUI extends DefaultGUIFilter {
 	}
 
 	public String[] getCategories() {
-		return new String[] { resolve("FILTER_GROUP_AWS_LAMBDA") };
+		return new String[] { resolve("FILTER_GROUP_AWS_SNS") };
 	}
 
 	private static final String IMAGE_KEY = "amazon";
@@ -40,8 +40,7 @@ public class InvokeLambdaFunctionFilterUI extends DefaultGUIFilter {
 		return Images.getImageDescriptor(getSmallIconId());
 	}
 
-
 	public String getTypeName() {
-		return resolve("AWS_LAMBDA_FILTER");
+		return resolve("AWS_SNS_FILTER");
 	}
-}
+} 

@@ -1,6 +1,6 @@
-# Invoke Lambda Function Integration for Axway API Gateway
+# Publish SNS Message Integration for Axway API Gateway
 
-This project provides integration with AWS Lambda through custom filters for Axway API Gateway, supporting both Java filters and Groovy scripts.
+This project provides integration with AWS SNS through custom filters for Axway API Gateway, supporting both Java filters and Groovy scripts.
 
 ## 🚀 Quick Start Guide
 
@@ -10,10 +10,10 @@ This project provides integration with AWS Lambda through custom filters for Axw
 2. **Extract and copy the files:**
    ```bash
    # Copy main JAR
-   cp aws-lambda-apim-sdk-*.jar /opt/Axway/apigateway/groups/group-2/instance-1/ext/lib/
+   cp aws-sns-apim-sdk-*.jar /opt/Axway/apigateway/groups/group-2/instance-1/ext/lib/
    
    # Copy AWS SDK dependency
-   cp dependencies/external-aws-java-sdk-lambda-*.jar /opt/Axway/apigateway/groups/group-2/instance-1/ext/lib/
+   cp dependencies/external-aws-java-sdk-sns-*.jar /opt/Axway/apigateway/groups/group-2/instance-1/ext/lib/
    ```
 
 3. **Restart the gateway:**
@@ -26,7 +26,7 @@ This project provides integration with AWS Lambda through custom filters for Axw
    - Restart Policy Studio with `-clean`
 
 5. **Use the filter:**
-   - Search for **"Invoke Lambda Function"** in the palette
+   - Search for **"Publish SNS Message"** in the palette
    - Configure the required parameters
    - Test the integration
 
@@ -39,7 +39,7 @@ This artifact has been successfully tested with the following versions:
 
 ## Overview
 
-The project offers two approaches for AWS Lambda integration:
+The project offers two approaches for AWS SNS integration:
 
 ### 1. Java Filter (Recommended)
 - Graphical interface in Policy Studio
@@ -60,7 +60,7 @@ The project offers two approaches for AWS Lambda integration:
 Releases are automatically created on GitHub and include:
 
 #### **Files Available in Each Release:**
-- **Main JAR** - `aws-lambda-apim-sdk-*.jar` (built for multiple Axway versions)
+- **Main JAR** - `aws-sns-apim-sdk-*.jar` (built for multiple Axway versions)
 - **External Dependencies** - `dependencies/` folder with AWS SDK JARs
 - **Policy Studio Resources** - `src/main/resources/fed/` and `src/main/resources/yaml/`
 - **Gradle Wrapper** - `gradlew`, `gradlew.bat` and `gradle/` folder
@@ -171,9 +171,8 @@ docker run --rm \
     gradle clean build
   "
 ```
-```
 
-> 💡 **Tip**: GitHub Actions uses the published image `axwayjbarros/aws-lambda-apim-sdk:1.0.0`.
+> 💡 **Tip**: GitHub Actions uses the published image `axwayjbarros/aws-sns-apim-sdk:1.0.0`.
 
 #### **Test Published Image**
 
@@ -181,9 +180,9 @@ docker run --rm \
 # Test the published image
 
 # Or manually:
-docker pull axwayjbarros/aws-lambda-apim-sdk:1.0.0
-docker run --rm axwayjbarros/aws-lambda-apim-sdk:1.0.0 java -version
-docker run --rm axwayjbarros/aws-lambda-apim-sdk:1.0.0 ls -la /opt/Axway/
+docker pull axwayjbarros/aws-sns-apim-sdk:1.0.0
+docker run --rm axwayjbarros/aws-sns-apim-sdk:1.0.0 java -version
+docker run --rm axwayjbarros/aws-sns-apim-sdk:1.0.0 ls -la /opt/Axway/
 ```
 
 > ⚠️ **Note**: This image is **for build only**, not for application runtime.
@@ -194,14 +193,14 @@ The image includes the following JARs organized:
 
 ```
 /opt/Axway/apigateway/lib/
-├── aws-java-sdk-lambda-*.jar          # AWS Lambda SDK
-├── aws-java-sdk-core-*.jar            # AWS Core SDK
-└── jackson-*.jar                      # Jackson JSON library
+├── aws-java-sdk-sns-*.jar           # AWS SNS SDK
+├── aws-java-sdk-core-*.jar          # AWS Core SDK
+└── jackson-*.jar                     # Jackson JSON library
 ```
 
 #### **Using the Image for Build**
 
-The image `axwayjbarros/aws-lambda-apim-sdk:1.0.0` is **for build only**, not for runtime. It contains all Axway API Gateway libraries needed to compile the project:
+The image `axwayjbarros/aws-sns-apim-sdk:1.0.0` is **for build only**, not for runtime. It contains all Axway API Gateway libraries needed to compile the project:
 
 ```bash
 # Build using the image (libraries only)
@@ -209,7 +208,7 @@ docker run --rm \
   -v "$(pwd):/workspace" \
   -v "$(pwd)/build:/workspace/build" \
   -w /workspace \
-  axwayjbarros/aws-lambda-apim-sdk:1.0.0 \
+  axwayjbarros/aws-sns-apim-sdk:1.0.0 \
   bash -c "
     export JAVA_HOME=/opt/java/openjdk-11
     export PATH=\$JAVA_HOME/bin:\$PATH
@@ -229,7 +228,7 @@ The project uses the image for automated build:
 
 - **Continuous Build**: `.github/workflows/build-jar.yml`
 - **Release**: `.github/workflows/release.yml`
-- **Image**: `axwayjbarros/aws-lambda-apim-sdk:1.0.0`
+- **Image**: `axwayjbarros/aws-sns-apim-sdk:1.0.0`
 
 > 📖 **Docker**: Docker documentation is integrated in this README section.
 
@@ -244,7 +243,7 @@ The project uses the image for automated build:
 
 2. **Copy JAR to Windows:**
    ```bash
-   # Copy the file: build/libs/aws-lambda-apim-sdk-1.0.1.jar
+   # Copy the file: build/libs/aws-sns-apim-sdk-1.0.1.jar
    # To the Windows environment
    ```
 
@@ -297,7 +296,7 @@ This project has complete documentation organized by topic:
 ### 📝 **Technical Documentation**
 - **[🔍 Field Updates](docs/FILTER_FIELD_UPDATES.md)** - History of filter field changes
 - **[🔐 AWS Authentication Improvements](docs/AWS_AUTHENTICATION_IMPROVEMENTS.md)** - Advanced authentication settings
-- **[📖 Groovy Documentation](docs/AWS_LAMBDA_GROOVY_DOCUMENTATION.md)** - Complete guide for Groovy scripts
+- **[📖 Groovy Documentation](docs/AWS_SNS_GROOVY_DOCUMENTATION.md)** - Complete guide for Groovy scripts
 
 ### 📋 **Documentation Structure**
 ```
@@ -306,7 +305,7 @@ docs/
 ├── SEMANTIC_VERSIONING.md              # Semantic versioning
 ├── AUTOMATIC_RELEASE_SYSTEM.md         # Automatic release system
 ├── SCRIPTS_REFERENCE.md                # Scripts reference
-└── AWS_LAMBDA_GROOVY_DOCUMENTATION.md  # Groovy documentation
+└── AWS_SNS_GROOVY_DOCUMENTATION.md     # Groovy documentation
 ```
 
 ---
@@ -324,7 +323,7 @@ docs/
 2. **Configure Policy Studio:**
    - Open Policy Studio
    - Go to **Window > Preferences > Runtime Dependencies**
-   - Add the JAR: `/opt/axway/Axway-7.7.0.20240830/apigateway/groups/group-2/instance-1/ext/lib/aws-lambda-apim-sdk-1.0.1.jar`
+   - Add the JAR: `/opt/axway/Axway-7.7.0.20240830/apigateway/groups/group-2/instance-1/ext/lib/aws-sns-apim-sdk-1.0.1.jar`
    - Restart Policy Studio with `-clean`
 
 ### Windows
@@ -348,7 +347,7 @@ docs/
 4. **Configure Policy Studio:**
    - Open Policy Studio
    - Go to **Window > Preferences > Runtime Dependencies**
-   - Add the JAR: `aws-lambda-apim-sdk-1.0.1.jar`
+   - Add the JAR: `aws-sns-apim-sdk-1.0.1.jar`
    - Restart Policy Studio with `-clean`
 
 ## AWS Configuration
@@ -394,7 +393,7 @@ kind: ServiceAccount
 metadata:
   name: axway-gateway-sa
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT:role/axway-lambda-role
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT:role/axway-sns-role
 ```
 
 **For EC2:**
@@ -415,8 +414,8 @@ For detailed information about the Java filter, including fields, installation, 
 
 **Basic usage:**
 1. **Install JARs:**
-   - Copy `aws-lambda-apim-sdk-<version>.jar` to `/opt/Axway/apigateway/groups/group-2/instance-1/ext/lib/`
-   - Copy `dependencies/external-aws-java-sdk-lambda-<version>.jar` to the same directory
+   - Copy `aws-sns-apim-sdk-<version>.jar` to `/opt/Axway/apigateway/groups/group-2/instance-1/ext/lib/`
+   - Copy `dependencies/external-aws-java-sdk-sns-<version>.jar` to the same directory
    - Restart the gateway
 
 2. **Add to Policy Studio:**
@@ -425,17 +424,17 @@ For detailed information about the Java filter, including fields, installation, 
    - Restart Policy Studio with `-clean`
 
 3. **Configure filter:**
-   - Search for **"Invoke Lambda Function"** in the palette
+   - Search for **"Publish SNS Message"** in the palette
    - Configure the required parameters
    - Test the integration
 
 ### Groovy Script
 
-For detailed information about the Groovy script, including Kubernetes configuration, troubleshooting, and specific parameters, see **[📖 Groovy Documentation](docs/AWS_LAMBDA_GROOVY_DOCUMENTATION.md)**.
+For detailed information about the Groovy script, including Kubernetes configuration, troubleshooting, and specific parameters, see **[📖 Groovy Documentation](docs/AWS_SNS_GROOVY_DOCUMENTATION.md)**.
 
 **Basic usage:**
 1. **Copy script:**
-   - Use the file `aws-lambda-filter.groovy`
+   - Use the file `aws-sns-filter.groovy`
    - Paste it into the Policy Studio script filter
 
 2. **Configure AWS credentials**
@@ -444,16 +443,16 @@ For detailed information about the Groovy script, including Kubernetes configura
 ## Project Structure
 
 ```
-aws-lambda-apim-sdk/
+aws-sns-apim-sdk/
 ├── README.md                                # Main documentation
 ├── docs/                                    # 📚 Project documentation
 │   ├── AUTOMATIC_RELEASE_SYSTEM.md          # Automatic release system
 │   ├── RELEASE_GUIDE.md                     # Release guide
 │   ├── SEMANTIC_VERSIONING.md               # Semantic versioning
 │   ├── SCRIPTS_REFERENCE.md                 # Scripts reference
-│   └── AWS_LAMBDA_GROOVY_DOCUMENTATION.md   # Groovy documentation
+│   └── AWS_SNS_GROOVY_DOCUMENTATION.md      # Groovy documentation
 ├── build.gradle                             # Gradle build configuration
-├── aws-lambda-filter.groovy                 # Groovy script for Policy Studio
+├── aws-sns-filter.groovy                    # Groovy script for Policy Studio
 ├── axway-versions.json                      # Supported Axway versions
 ├── scripts/                                 # Utility and build scripts
 │   ├── build-with-docker-image.sh           # Build JAR with Docker
@@ -472,8 +471,8 @@ aws-lambda-apim-sdk/
 │       ├── java/                            # Java source code
 │       └── resources/
 │           ├── fed/
-│           │   ├── AWSLambdaDesc.xml
-│           │   └── AWSLambdaTypeSet.xml
+│           │   ├── AWSSNSDesc.xml
+│           │   └── AWSSNSTypeSet.xml
 │           └── yaml/
 │               ├── System/
 │               │   ├── Internationalization Default.yaml
@@ -483,10 +482,10 @@ aws-lambda-apim-sdk/
 │                       └── Entity/
 │                           └── Filter/
 │                               └── AWSFilter/
-│                                   └── InvokeLambdaFunctionFilter.yaml
+│                                   └── InvokeSNSFunctionFilter.yaml
 └── build/                                   # Build output (generated)
     └── libs/
-        └── aws-lambda-apim-sdk-<version>.jar
+        └── aws-sns-apim-sdk-<version>.jar
 ```
 
 ## Tests
@@ -516,16 +515,16 @@ aws-lambda-apim-sdk/
    - Check if credentials are configured
    - Test with `aws sts get-caller-identity`
 
-3. **Function not found error:**
-   - Check the function name and region
-   - Confirm the function exists in AWS
+3. **Topic not found error:**
+   - Check the topic ARN and region
+   - Confirm the topic exists in AWS
 
 ### Logs
 
 The filter generates detailed logs:
-- **Success**: "Success in the AWS Lambda filter"
-- **Failure**: "Failed in the AWS Lambda filter"
-- **Error**: "Error in the AWS Lambda Error: ${circuit.exception}"
+- **Success**: "Success in the AWS SNS filter"
+- **Failure**: "Failed in the AWS SNS filter"
+- **Error**: "Error in the AWS SNS Error: ${circuit.exception}"
 
 ## Approach Comparison
 
@@ -598,8 +597,8 @@ The project includes automated workflows that use Docker for build:
 
 #### **Main JAR**
 ```
-aws-lambda-apim-sdk-1.0.1.jar
-├── AWS Lambda Java Filter
+aws-sns-apim-sdk-1.0.1.jar
+├── AWS SNS Java Filter
 ├── Policy Studio UI classes
 ├── AWS SDK dependencies
 └── YAML configurations
@@ -608,7 +607,7 @@ aws-lambda-apim-sdk-1.0.1.jar
 #### **Location**
 - **GitHub Releases**: Available for download
 - **GitHub Actions Artifacts**: During CI/CD
-- **Local**: `build/libs/aws-lambda-apim-sdk-*.jar`
+- **Local**: `build/libs/aws-sns-apim-sdk-*.jar`
 
 ### How to Use
 

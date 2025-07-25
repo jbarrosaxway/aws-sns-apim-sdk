@@ -1,7 +1,7 @@
 - type: InternationalizationFilter
   fields:
-    type: InvokeLambdaFunctionFilter
+    type: PublishSNSMessageFilter
   logging:
-    fatal: "Error in the Invoke Lambda Function filter. Error: ${circuit.exception}"
-    failure: "Failed in the Invoke Lambda Function filter"
-    success: "Success in the Invoke Lambda Function filter"
+    fatal: "Error in the Publish SNS Message filter. Error: ${circuit.exception}"
+    failure: "Failed in the Publish SNS Message filter"
+    success: "Success in the Publish SNS Message filter"

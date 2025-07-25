@@ -1,9 +1,9 @@
 ---
-name: InvokeLambdaFunctionFilter
+name: PublishSNSMessageFilter
 version: 1
-class: com.axway.aws.lambda.InvokeLambdaFunctionFilter
+class: com.axway.aws.sns.PublishSNSMessageFilter
 fields:
-  functionName:
+  topicArn:
     type: string
     defaultValues:
     - data: ""
@@ -13,17 +13,17 @@ fields:
     defaultValues:
     - data: us-east-1
     cardinality: 1
-  invocationType:
+  messageSubject:
     type: string
     defaultValues:
-    - data: RequestResponse
+    - data: ""
     cardinality: 1
-  logType:
+  messageStructure:
     type: string
     defaultValues:
-    - data: None
+    - data: ""
     cardinality: 1
-  qualifier:
+  messageAttributes:
     type: string
     defaultValues:
     - data: ""
@@ -37,11 +37,6 @@ fields:
     type: string
     defaultValues:
     - data: "1000"
-    cardinality: 1
-  memorySize:
-    type: string
-    defaultValues:
-    - data: "128"
     cardinality: 1
   credentialType:
     type: string
@@ -65,4 +60,4 @@ fields:
     type: string
     defaultValues:
     - data: ""
-    cardinality: 1
+    cardinality: 1 

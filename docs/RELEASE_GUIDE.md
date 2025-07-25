@@ -1,6 +1,6 @@
 # Release Guide
 
-This guide describes the automated release process for the `aws-lambda-apim-sdk` project, as implemented in the GitHub Actions workflow (`.github/workflows/build-multi-version.yml`).
+This guide describes the automated release process for the `aws-sns-apim-sdk` project, as implemented in the GitHub Actions workflow (`.github/workflows/build-multi-version.yml`).
 
 ## Overview
 
@@ -100,7 +100,7 @@ This release includes **15** commits with the following changes:
 ## 🔍 Detailed Changes
 
 ### ✨ New Features
-- **feat: add AWS Lambda integration support** ([abc123](https://github.com/user/repo/commit/abc123)) - John Doe
+- **feat: add AWS SNS integration support** ([abc123](https://github.com/user/repo/commit/abc123)) - John Doe
 - **feat: implement new filter configuration** ([def456](https://github.com/user/repo/commit/def456)) - Jane Smith
 
 ### 🐛 Bug Fixes
@@ -150,9 +150,9 @@ This release includes **8** commits with the following changes:
 
 ## Release Artifacts
 
-- **ZIP files**: One per Axway version, named `aws-lambda-apim-sdk-<version>-<axway-version>-<date>.zip`
+- **ZIP files**: One per Axway version, named `aws-sns-apim-sdk-<version>-<axway-version>-<date>.zip`
 - **Contents:**
-  - Main JAR (`aws-lambda-apim-sdk-*.jar`)
+  - Main JAR (`aws-sns-apim-sdk-*.jar`)
   - `dependencies/` (external Gradle dependencies)
   - `src/main/resources/fed/` and `src/main/resources/yaml/` (Policy Studio resources)
   - `install-linux.sh` (Linux install script)

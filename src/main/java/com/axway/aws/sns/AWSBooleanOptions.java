@@ -1,4 +1,4 @@
-package com.axway.aws.lambda;
+package com.axway.aws.sns;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.axway'
-version '1.0.13'
+version '1.0.0'
 sourceCompatibility = 1.8
 
 
@@ -100,22 +100,22 @@ dependencies {
                 }
             }
             
-            // Check if AWS SDK Lambda is available
-            def awsLambdaJar = awsSdkModulesJars.files.find { it.name.contains('lambda') }
-            if (!awsLambdaJar) {
-                def lambdaVersion = detectedVersion ?: fallbackAwsSdkVersion
-                println "⚠️  AWS SDK Lambda not found in Axway, adding external: $lambdaVersion"
-                implementation group: 'com.amazonaws', name: 'aws-java-sdk-lambda', version: lambdaVersion
+            // Check if AWS SDK SNS is available
+            def awsSnsJar = awsSdkModulesJars.files.find { it.name.contains('sns') }
+            if (!awsSnsJar) {
+                def snsVersion = detectedVersion ?: fallbackAwsSdkVersion
+                println "⚠️  AWS SDK SNS not found in Axway, adding external: $snsVersion"
+                implementation group: 'com.amazonaws', name: 'aws-java-sdk-sns', version: snsVersion
             }
         } else {
             println "⚠️  AWS SDK not found in Axway, using fallback: $fallbackAwsSdkVersion"
-            implementation group: 'com.amazonaws', name: 'aws-java-sdk-lambda', version: fallbackAwsSdkVersion
+            implementation group: 'com.amazonaws', name: 'aws-java-sdk-sns', version: fallbackAwsSdkVersion
             implementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: fallbackAwsSdkVersion
         }
     } else {
         // Use external AWS SDK (fallback)
         println "🔧 Using external AWS SDK: $fallbackAwsSdkVersion"
-        implementation group: 'com.amazonaws', name: 'aws-java-sdk-lambda', version: fallbackAwsSdkVersion
+        implementation group: 'com.amazonaws', name: 'aws-java-sdk-sns', version: fallbackAwsSdkVersion
         implementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: fallbackAwsSdkVersion
     }
     
@@ -144,15 +144,15 @@ dependencies {
 // Task para instalação no Linux
 task installLinux(type: Exec) {
     group = 'Installation'
-    description = 'Installs the AWS Lambda filter on Linux'
+    description = 'Installs the AWS SNS filter on Linux'
     
     dependsOn build
     
     commandLine 'bash', 'scripts/linux/install-filter.sh'
     
     doFirst {
-        println "🚀 Installing AWS Lambda filter on Linux..."
-        println "📁 JAR: build/libs/aws-lambda-apim-sdk-1.0.1.jar"
+        println "🚀 Installing AWS SNS filter on Linux..."
+        println "📁 JAR: build/libs/aws-sns-apim-sdk-1.0.1.jar"
         println "📁 Gateway: ${axway_base}"
     }
 }
@@ -193,16 +193,16 @@ def processInternationalizationFile(def sourceFile, def destFile) {
     def sourceContent = sourceFile.text.trim()
     def destContent = destFile.exists() ? destFile.text : ""
     
-    // Check if InvokeLambdaFunctionFilter already exists in the file
-if (destContent.contains("type: InvokeLambdaFunctionFilter")) {
-println "🔄 InvokeLambdaFunctionFilter already exists. Updating section..."
+    // Check if PublishSNSMessageFilter already exists in the file
+if (destContent.contains("type: PublishSNSMessageFilter")) {
+println "🔄 PublishSNSMessageFilter already exists. Updating section..."
         
-        // Strategy: preserve other filters and only update InvokeLambdaFunctionFilter
+        // Strategy: preserve other filters and only update PublishSNSMessageFilter
         def lines = destContent.split('\n')
         def newLines = []
         def skipSection = false
         def inInternationalizationFilter = false
-        def foundInvokeLambdaFunctionFilter = false
+        def foundPublishSNSMessageFilter = false
         def outputNewContent = false
         
         for (int i = 0; i < lines.length; i++) {
@@ -217,15 +217,15 @@ println "🔄 InvokeLambdaFunctionFilter already exists. Updating section..."
                 continue
             }
             
-            // If we are inside InternationalizationFilter, check if it contains InvokeLambdaFunctionFilter
-            if (inInternationalizationFilter && trimmedLine == "type: InvokeLambdaFunctionFilter") {
-                if (foundInvokeLambdaFunctionFilter) {
-                    // We already found an InvokeLambdaFunctionFilter section, skip this one
+            // If we are inside InternationalizationFilter, check if it contains PublishSNSMessageFilter
+            if (inInternationalizationFilter && trimmedLine == "type: PublishSNSMessageFilter") {
+                if (foundPublishSNSMessageFilter) {
+                    // We already found a PublishSNSMessageFilter section, skip this one
                     skipSection = true
                     continue
                 } else {
                     // First occurrence, skip and replace with new content
-                    foundInvokeLambdaFunctionFilter = true
+                    foundPublishSNSMessageFilter = true
                     skipSection = true
                     outputNewContent = true
                     continue
@@ -262,7 +262,7 @@ println "🔄 InvokeLambdaFunctionFilter already exists. Updating section..."
         
         destFile.text = newLines.join('\n')
         
-        println "✅ InvokeLambdaFunctionFilter section updated: ${destFile.name}"
+        println "✅ PublishSNSMessageFilter section updated: ${destFile.name}"
         return true
     } else {
         // Add at the end if it does not exist
@@ -278,7 +278,7 @@ println "🔄 InvokeLambdaFunctionFilter already exists. Updating section..."
 
 // Helper function to install YAML files on Windows
 def installYamlFiles(def projectPath, def taskName) {
-    println "🚀 Installing AWS Lambda filter YAML files on Windows..."
+    println "🚀 Installing AWS SNS filter YAML files on Windows..."
     println "📋 Task: ${taskName}"
     println "📁 Project: ${projectPath}"
     println ""
@@ -312,9 +312,9 @@ def showNextSteps() {
     println "1. Copy the JAR built on Linux to Windows"
     println "2. Open Policy Studio"
     println "3. Go to Window > Preferences > Runtime Dependencies"
-    println "4. Add the JAR: aws-lambda-apim-sdk-1.0.1.jar"
+    println "4. Add the JAR: aws-sns-apim-sdk-1.0.1.jar"
     println "5. Restart Policy Studio with -clean"
-    println "6. Search for 'Invoke Lambda Function' in the palette"
+    println "6. Search for 'Publish SNS Message' in the palette"
 }
 
 // Helper function to create project directory structure
@@ -330,13 +330,13 @@ def createProjectStructure(def projectPath) {
 
 // Helper function to copy YAML files
 def copyYamlFiles(def sourceYamlDir, def metaInfDir, def systemDir) {
-    // Copy InvokeLambdaFunctionFilter.yaml
-def sourceFilterYaml = new File(sourceYamlDir, "META-INF/types/Entity/Filter/AWSFilter/InvokeLambdaFunctionFilter.yaml")
-def destFilterYaml = new File(metaInfDir, "InvokeLambdaFunctionFilter.yaml")
+    // Copy PublishSNSMessageFilter.yaml
+def sourceFilterYaml = new File(sourceYamlDir, "META-INF/types/Entity/Filter/AWSFilter/PublishSNSMessageFilter.yaml")
+def destFilterYaml = new File(metaInfDir, "PublishSNSMessageFilter.yaml")
     
     if (sourceFilterYaml.exists()) {
         destFilterYaml.text = sourceFilterYaml.text
-        println "✅ Copied: InvokeLambdaFunctionFilter.yaml"
+        println "✅ Copied: PublishSNSMessageFilter.yaml"
     } else {
         println "❌ File not found: ${sourceFilterYaml.absolutePath}"
     }
@@ -381,13 +381,13 @@ task buildJarLinux {
     dependsOn build
     
     doFirst {
-        println "🔨 Building Invoke Lambda Function Filter JAR..."
-        println "📁 JAR: build/libs/aws-lambda-apim-sdk-1.0.1.jar"
+        println "🔨 Building Publish SNS Message Filter JAR..."
+        println "📁 JAR: build/libs/aws-sns-apim-sdk-1.0.1.jar"
         println "⚠️  Note: This task should be run only on Linux"
     }
     
     doLast {
-        def jarFile = new File("build/libs/aws-lambda-apim-sdk-1.0.1.jar")
+        def jarFile = new File("build/libs/aws-sns-apim-sdk-1.0.1.jar")
         if (jarFile.exists()) {
             println "✅ JAR created successfully: ${jarFile.absolutePath}"
             println "📋 For Windows: Copy this JAR to the Windows environment"
@@ -405,8 +405,8 @@ task showAwsJars {
     doLast {
         println "📦 AWS SDK JARs required for Windows:"
         println ""
-        println "🔗 aws-java-sdk-lambda-1.12.314.jar:"
-        println "   https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-lambda/1.12.314/aws-java-sdk-lambda-1.12.314.jar"
+        println "🔗 aws-java-sdk-sns-1.12.314.jar:"
+        println "   https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-sns/1.12.314/aws-java-sdk-sns-1.12.314.jar"
         println ""
         println "🔗 aws-java-sdk-core-1.12.314.jar:"
         println "   https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-core/1.12.314/aws-java-sdk-core-1.12.314.jar"
@@ -445,7 +445,7 @@ task showProjectInfo {
     description = 'Shows detailed project information'
     
     doLast {
-        println "📋 Invoke Lambda Function APIM SDK Project Information"
+        println "📋 Publish SNS Message APIM SDK Project Information"
         println "=============================================="
         println ""
         println "🏷️  Current version: ${version}"
@@ -459,12 +459,12 @@ task showProjectInfo {
         println "  - docs/              # Documentation"
         println ""
         println "🔗 Main dependencies:"
-        println "  - AWS SDK Lambda: 1.12.314"
+        println "  - AWS SDK SNS: 1.12.314"
         println "  - AWS SDK Core: 1.12.314"
         println "  - Axway API Gateway: 7.7.0.20240830"
         println ""
         println "🚀 Features:"
-        println "  - Invoke Lambda Function filter for Axway API Gateway"
+        println "  - Publish SNS Message filter for Axway API Gateway"
         println "  - Support for multiple Axway versions"
         println "  - Automated installation (Linux/Windows)"
         println "  - Automatic semantic versioning"
@@ -503,4 +503,11 @@ task showTasks {
         println "  ./gradlew tasks                   # Lists all tasks"
     }
 }
+
+// Configure JAR name
+jar {
+    archiveBaseName = 'aws-sns-apim-sdk'
+    archiveVersion = '1.0.1'
+}
+
 
