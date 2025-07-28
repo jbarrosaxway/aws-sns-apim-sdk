@@ -13,7 +13,7 @@ public class PublishSNSMessageStructure {
     
     static {
         Map<String, String> init = new HashMap<>();
-        init.put("", "Default");
+        init.put("default", "Default");
         init.put("json", "JSON");
         messageStructure = Collections.unmodifiableMap(init);
     }

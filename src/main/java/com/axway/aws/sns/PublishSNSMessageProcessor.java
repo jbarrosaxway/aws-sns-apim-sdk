@@ -32,6 +32,7 @@ import com.vordel.security.util.SecureString;
 import com.vordel.trace.Trace;
 import java.io.File;
 import java.nio.ByteBuffer;
+import com.axway.aws.sns.SNSMessageJsonHelper;
 
 public class PublishSNSMessageProcessor extends MessageProcessor {
 	
@@ -298,6 +299,12 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 		String body = contentBody.substitute(msg);
 		if (body == null || body.trim().isEmpty()) {
 			body = "{}";
+		}
+		
+		// Handle JSON message structure format
+		if ("json".equals(messageStructureValue)) {
+			body = SNSMessageJsonHelper.formatJsonMessage(body);
+			Trace.info("Formatted message for JSON structure: " + body);
 		}
 		
 		Trace.info("Publishing message to SNS with retry...");

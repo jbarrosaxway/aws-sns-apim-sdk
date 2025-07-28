@@ -21,7 +21,7 @@ fields:
   messageStructure:
     type: string
     defaultValues:
-    - data: ""
+    - data: "default"
     cardinality: 1
   messageAttributes:
     type: string
