@@ -119,6 +119,10 @@ dependencies {
         implementation group: 'com.amazonaws', name: 'aws-java-sdk-core', version: fallbackAwsSdkVersion
     }
     
+    // Jackson for JSON manipulation
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.15.2'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.15.2'
+    
     // Axway API Gateway libs
     implementation fileTree( dir: "${apim_folder}/lib", include: '*.jar')
     implementation fileTree(dir: "${apim_folder}/lib/modules", include: '*.jar')
