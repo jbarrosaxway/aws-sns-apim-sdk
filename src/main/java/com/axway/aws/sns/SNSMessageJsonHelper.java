@@ -31,8 +31,9 @@ public class SNSMessageJsonHelper {
 
 		if (cleaned.startsWith("{")) {
 			// É um JSON, mas não tem "default". Envolve como valor de default
-			String result = "{\"default\":" + cleaned + "}";
-			Trace.info("Body is JSON without default, wrapping: '" + result + "'");
+			// Para JSONs complexos, vamos usar uma string simples para evitar problemas
+			String result = "{\"default\":\"" + cleaned.replace("\"", "\\\"") + "\"}";
+			Trace.info("Body is JSON without default, wrapping as string: '" + result + "'");
 			return result;
 		}
 
