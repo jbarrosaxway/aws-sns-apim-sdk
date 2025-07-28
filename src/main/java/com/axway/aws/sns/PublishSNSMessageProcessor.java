@@ -302,9 +302,14 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 		}
 		
 		// Handle JSON message structure format
-		if ("json".equals(messageStructureValue)) {
+		if ("json".equalsIgnoreCase(messageStructureValue)) {
+			Trace.info("=== JSON Message Structure Debug ===");
+			Trace.info("messageStructureValue: '" + messageStructureValue + "'");
+			Trace.info("Original body: '" + body + "'");
 			body = SNSMessageJsonHelper.formatJsonMessage(body);
 			Trace.info("Formatted message for JSON structure: " + body);
+		} else {
+			Trace.info("messageStructureValue is not 'json': '" + messageStructureValue + "'");
 		}
 		
 		Trace.info("Publishing message to SNS with retry...");
