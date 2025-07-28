@@ -17,8 +17,10 @@ public class SNSMessageJsonHelper {
 			return "{\"default\":\"\"}";
 		}
 
-		// Remove quebras de linha e espaços extras
+		// Remove quebras de linha e espaços extras, compactando o JSON
 		String cleaned = body.replaceAll("\\s+", " ").trim();
+		// Remove espaços antes e depois de chaves e vírgulas
+		cleaned = cleaned.replaceAll("\\s*([{}:,])\\s*", "$1");
 		Trace.info("Cleaned body: '" + cleaned + "'");
 
 		if (cleaned.startsWith("{") && cleaned.contains("\"default\"")) {
@@ -29,14 +31,14 @@ public class SNSMessageJsonHelper {
 
 		if (cleaned.startsWith("{")) {
 			// É um JSON, mas não tem "default". Envolve como valor de default
-			String result = "{\"default\": " + cleaned + "}";
+			String result = "{\"default\":" + cleaned + "}";
 			Trace.info("Body is JSON without default, wrapping: '" + result + "'");
 			return result;
 		}
 
 		// Não é JSON, escapa aspas e envolve
 		String escaped = cleaned.replace("\"", "\\\"");
-		String result = "{\"default\": \"" + escaped + "\"}";
+		String result = "{\"default\":\"" + escaped + "\"}";
 		Trace.info("Body is not JSON, escaping and wrapping: '" + result + "'");
 		return result;
 	}
