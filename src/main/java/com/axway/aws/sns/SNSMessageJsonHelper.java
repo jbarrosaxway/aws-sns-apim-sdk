@@ -12,22 +12,22 @@ public class SNSMessageJsonHelper {
 	 * O valor de "default" deve ser sempre uma string, conforme a documentação da AWS SNS.
 	 */
 	public static String formatJsonMessage(String body) {
-		Trace.info("=== SNSMessageJsonHelper Debug ===");
-		Trace.info("Input body: '" + body + "'");
+		Trace.debug("=== SNSMessageJsonHelper Debug ===");
+		Trace.debug("Input body: '" + body + "'");
 
 		if (body == null || body.trim().isEmpty()) {
-			Trace.info("Body is null or empty, returning default");
+			Trace.debug("Body is null or empty, returning default");
 			return "{\"default\":\"\"}";
 		}
 
 		String trimmed = body.trim();
-		Trace.info("Trimmed body: '" + trimmed + "'");
+		Trace.debug("Trimmed body: '" + trimmed + "'");
 
 		try {
 			// Verificar se já tem a chave "default" e é uma string
 			if (trimmed.startsWith("{") && trimmed.contains("\"default\"")) {
 				// Já está no formato esperado
-				Trace.info("Body already has default key, returning as is");
+				Trace.debug("Body already has default key, returning as is");
 				return trimmed;
 			}
 
@@ -36,21 +36,21 @@ public class SNSMessageJsonHelper {
 			JsonNode resultNode = objectMapper.createObjectNode().put("default", trimmed);
 			String result = objectMapper.writeValueAsString(resultNode);
 			
-			Trace.info("Body converted to string format: '" + result + "'");
+			Trace.debug("Body converted to string format: '" + result + "'");
 			return result;
 			
 		} catch (Exception e) {
-			Trace.info("Error processing JSON, treating as plain string: " + e.getMessage());
+			Trace.debug("Error processing JSON, treating as plain string: " + e.getMessage());
 			
 			// Fallback: tratar como string simples
 			try {
 				JsonNode resultNode = objectMapper.createObjectNode().put("default", trimmed);
 				String result = objectMapper.writeValueAsString(resultNode);
 				
-				Trace.info("Fallback result: '" + result + "'");
+				Trace.debug("Fallback result: '" + result + "'");
 				return result;
 			} catch (Exception fallbackError) {
-				Trace.info("Fallback also failed, returning simple default");
+				Trace.debug("Fallback also failed, returning simple default");
 				return "{\"default\":\"" + trimmed.replace("\"", "\\\"") + "\"}";
 			}
 		}

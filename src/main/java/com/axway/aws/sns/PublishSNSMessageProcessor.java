@@ -303,20 +303,20 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 		
 		// Handle JSON message structure format
 		if ("json".equalsIgnoreCase(messageStructureValue)) {
-			Trace.info("=== JSON Message Structure Debug ===");
-			Trace.info("messageStructureValue: '" + messageStructureValue + "'");
-			Trace.info("Original body: '" + body + "'");
+			Trace.debug("=== JSON Message Structure Debug ===");
+			Trace.debug("messageStructureValue: '" + messageStructureValue + "'");
+			Trace.debug("Original body: '" + body + "'");
 			body = SNSMessageJsonHelper.formatJsonMessage(body);
-			Trace.info("Formatted message for JSON structure: " + body);
+			Trace.debug("Formatted message for JSON structure: " + body);
 		} else {
-			Trace.info("messageStructureValue is not 'json': '" + messageStructureValue + "'");
+			Trace.debug("messageStructureValue is not 'json': '" + messageStructureValue + "'");
 		}
 
-		Trace.info("=== Final Message Debug ===");
-		Trace.info("Final body to be sent: '" + body + "'");
-		Trace.info("Message structure value: '" + messageStructureValue + "'");
-		Trace.info("Subject: '" + messageSubjectValue + "'");
-		Trace.info("Topic ARN: '" + topicArnValue + "'");
+		Trace.debug("=== Final Message Debug ===");
+		Trace.debug("Final body to be sent: '" + body + "'");
+		Trace.debug("Message structure value: '" + messageStructureValue + "'");
+		Trace.debug("Subject: '" + messageSubjectValue + "'");
+		Trace.debug("Topic ARN: '" + topicArnValue + "'");
 		
 		Trace.info("Publishing message to SNS with retry...");
 		Trace.info("Using IAM Role: " + useIAMRoleValue);
@@ -340,12 +340,12 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 					.withSubject(messageSubjectValue)
 					.withMessageStructure(messageStructureValue.toLowerCase());
 
-				Trace.info("=== PublishRequest Debug ===");
-				Trace.info("PublishRequest.topicArn: '" + publishRequest.getTopicArn() + "'");
-				Trace.info("PublishRequest.message: '" + publishRequest.getMessage() + "'");
-				Trace.info("PublishRequest.subject: '" + publishRequest.getSubject() + "'");
-				Trace.info("PublishRequest.messageStructure: '" + publishRequest.getMessageStructure() + "'");
-				Trace.info("PublishRequest.messageAttributes: " + publishRequest.getMessageAttributes());
+				Trace.debug("=== PublishRequest Debug ===");
+				Trace.debug("PublishRequest.topicArn: '" + publishRequest.getTopicArn() + "'");
+				Trace.debug("PublishRequest.message: '" + publishRequest.getMessage() + "'");
+				Trace.debug("PublishRequest.subject: '" + publishRequest.getSubject() + "'");
+				Trace.debug("PublishRequest.messageStructure: '" + publishRequest.getMessageStructure() + "'");
+				Trace.debug("PublishRequest.messageAttributes: " + publishRequest.getMessageAttributes());
 				
 				// Publish message to SNS
 				PublishResult publishResult = snsClient.publish(publishRequest);
