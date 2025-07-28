@@ -311,6 +311,12 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 		} else {
 			Trace.info("messageStructureValue is not 'json': '" + messageStructureValue + "'");
 		}
+
+		Trace.info("=== Final Message Debug ===");
+		Trace.info("Final body to be sent: '" + body + "'");
+		Trace.info("Message structure value: '" + messageStructureValue + "'");
+		Trace.info("Subject: '" + messageSubjectValue + "'");
+		Trace.info("Topic ARN: '" + topicArnValue + "'");
 		
 		Trace.info("Publishing message to SNS with retry...");
 		Trace.info("Using IAM Role: " + useIAMRoleValue);
@@ -327,22 +333,19 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 				// Create SNS client with region (following Lambda pattern)
 				AmazonSNS snsClient = snsClientBuilder.withRegion(regionValue).build();
 				
-				// Create request
+				// Create the publish request
 				PublishRequest publishRequest = new PublishRequest()
 					.withTopicArn(topicArnValue)
-					.withMessage(body);
-				
-				// Add subject if specified
-				if (messageSubjectValue != null && !messageSubjectValue.trim().isEmpty()) {
-					publishRequest.setSubject(messageSubjectValue);
-					Trace.info("Using subject: " + messageSubjectValue);
-				}
-				
-				// Add message structure if specified
-				if (messageStructureValue != null && !messageStructureValue.trim().isEmpty()) {
-					publishRequest.setMessageStructure(messageStructureValue);
-					Trace.info("Using message structure: " + messageStructureValue);
-				}
+					.withMessage(body)
+					.withSubject(messageSubjectValue)
+					.withMessageStructure(messageStructureValue.toLowerCase());
+
+				Trace.info("=== PublishRequest Debug ===");
+				Trace.info("PublishRequest.topicArn: '" + publishRequest.getTopicArn() + "'");
+				Trace.info("PublishRequest.message: '" + publishRequest.getMessage() + "'");
+				Trace.info("PublishRequest.subject: '" + publishRequest.getSubject() + "'");
+				Trace.info("PublishRequest.messageStructure: '" + publishRequest.getMessageStructure() + "'");
+				Trace.info("PublishRequest.messageAttributes: " + publishRequest.getMessageAttributes());
 				
 				// Publish message to SNS
 				PublishResult publishResult = snsClient.publish(publishRequest);
