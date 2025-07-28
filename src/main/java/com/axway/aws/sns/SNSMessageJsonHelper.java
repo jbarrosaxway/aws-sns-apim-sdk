@@ -9,8 +9,7 @@ public class SNSMessageJsonHelper {
 	
 	/**
 	 * Formata o corpo da mensagem para o formato esperado pelo SNS quando messageStructure = "json".
-	 * Se o body já for um JSON com a chave "default", retorna como está.
-	 * Se não, encapsula o body em {"default": ...} usando Jackson para manipulação segura.
+	 * O valor de "default" deve ser sempre uma string, conforme a documentação da AWS SNS.
 	 */
 	public static String formatJsonMessage(String body) {
 		Trace.info("=== SNSMessageJsonHelper Debug ===");
@@ -25,37 +24,25 @@ public class SNSMessageJsonHelper {
 		Trace.info("Trimmed body: '" + trimmed + "'");
 
 		try {
-			// Verificar se já tem a chave "default"
+			// Verificar se já tem a chave "default" e é uma string
 			if (trimmed.startsWith("{") && trimmed.contains("\"default\"")) {
 				// Já está no formato esperado
 				Trace.info("Body already has default key, returning as is");
 				return trimmed;
 			}
 
-			// Se é um JSON válido, envolver como valor de default
-			if (trimmed.startsWith("{")) {
-				// Parse o JSON para validar e depois criar a estrutura correta
-				JsonNode jsonNode = objectMapper.readTree(trimmed);
-				
-				// Criar a estrutura {"default": <json_original>}
-				JsonNode resultNode = objectMapper.createObjectNode().set("default", jsonNode);
-				String result = objectMapper.writeValueAsString(resultNode);
-				
-				Trace.info("Body is JSON without default, wrapping with Jackson: '" + result + "'");
-				return result;
-			}
-
-			// Se não é JSON, tratar como string
+			// Para qualquer JSON (válido ou não), converter para string
+			// O SNS espera que o valor de "default" seja uma string
 			JsonNode resultNode = objectMapper.createObjectNode().put("default", trimmed);
 			String result = objectMapper.writeValueAsString(resultNode);
 			
-			Trace.info("Body is not JSON, treating as string: '" + result + "'");
+			Trace.info("Body converted to string format: '" + result + "'");
 			return result;
 			
 		} catch (Exception e) {
-			Trace.info("Error parsing JSON, treating as string: " + e.getMessage());
+			Trace.info("Error processing JSON, treating as plain string: " + e.getMessage());
 			
-			// Fallback: tratar como string
+			// Fallback: tratar como string simples
 			try {
 				JsonNode resultNode = objectMapper.createObjectNode().put("default", trimmed);
 				String result = objectMapper.writeValueAsString(resultNode);
