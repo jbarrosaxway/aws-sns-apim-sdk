@@ -4,12 +4,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vordel.trace.Trace;
 
+/**
+ * Helper class for formatting JSON messages for SNS
+ * Thread-safe and optimized for performance
+ */
 public class SNSMessageJsonHelper {
-	private static final ObjectMapper objectMapper = new ObjectMapper();
+	
+	// Thread-safe ObjectMapper instance
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 	
 	/**
-	 * Formata o corpo da mensagem para o formato esperado pelo SNS quando messageStructure = "json".
-	 * O valor de "default" deve ser sempre uma string, conforme a documentação da AWS SNS.
+	 * Private constructor to prevent instantiation
+	 */
+	private SNSMessageJsonHelper() {
+		// Utility class - should not be instantiated
+	}
+	
+	/**
+	 * Formats the message body for the format expected by SNS when messageStructure = "json".
+	 * The "default" value must always be a string, according to AWS SNS documentation.
+	 * 
+	 * @param body The message body to format
+	 * @return Formatted JSON string for SNS
 	 */
 	public static String formatJsonMessage(String body) {
 		Trace.debug("=== SNSMessageJsonHelper Debug ===");
@@ -24,17 +40,17 @@ public class SNSMessageJsonHelper {
 		Trace.debug("Trimmed body: '" + trimmed + "'");
 
 		try {
-			// Verificar se já tem a chave "default" e é uma string
+			// Check if already has "default" key and is a string
 			if (trimmed.startsWith("{") && trimmed.contains("\"default\"")) {
-				// Já está no formato esperado
+				// Already in expected format
 				Trace.debug("Body already has default key, returning as is");
 				return trimmed;
 			}
 
-			// Para qualquer JSON (válido ou não), converter para string
-			// O SNS espera que o valor de "default" seja uma string
-			JsonNode resultNode = objectMapper.createObjectNode().put("default", trimmed);
-			String result = objectMapper.writeValueAsString(resultNode);
+			// For any JSON (valid or not), convert to string
+			// SNS expects the "default" value to be a string
+			JsonNode resultNode = OBJECT_MAPPER.createObjectNode().put("default", trimmed);
+			String result = OBJECT_MAPPER.writeValueAsString(resultNode);
 			
 			Trace.debug("Body converted to string format: '" + result + "'");
 			return result;
@@ -42,10 +58,10 @@ public class SNSMessageJsonHelper {
 		} catch (Exception e) {
 			Trace.debug("Error processing JSON, treating as plain string: " + e.getMessage());
 			
-			// Fallback: tratar como string simples
+			// Fallback: treat as simple string
 			try {
-				JsonNode resultNode = objectMapper.createObjectNode().put("default", trimmed);
-				String result = objectMapper.writeValueAsString(resultNode);
+				JsonNode resultNode = OBJECT_MAPPER.createObjectNode().put("default", trimmed);
+				String result = OBJECT_MAPPER.writeValueAsString(resultNode);
 				
 				Trace.debug("Fallback result: '" + result + "'");
 				return result;

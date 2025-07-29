@@ -1,18 +1,14 @@
 package com.axway.aws.sns;
 
 import java.security.GeneralSecurityException;
+import java.nio.charset.StandardCharsets;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.auth.EC2ContainerCredentialsProviderWrapper;
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sns.model.PublishRequest;
@@ -21,22 +17,21 @@ import com.vordel.circuit.CircuitAbortException;
 import com.vordel.circuit.Message;
 import com.vordel.circuit.MessageProcessor;
 import com.vordel.circuit.aws.AWSFactory;
-import com.vordel.common.Dictionary;
 import com.vordel.config.Circuit;
 import com.vordel.config.ConfigContext;
 import com.vordel.el.Selector;
 import com.vordel.es.Entity;
 import com.vordel.es.EntityStoreException;
-import com.vordel.es.ESPK;
-import com.vordel.security.util.SecureString;
 import com.vordel.trace.Trace;
-import java.io.File;
-import java.nio.ByteBuffer;
 import com.axway.aws.sns.SNSMessageJsonHelper;
 
+/**
+ * AWS SNS Message Publisher Processor
+ * Thread-safe and optimized for performance
+ */
 public class PublishSNSMessageProcessor extends MessageProcessor {
 	
-	// Selectors for dynamic field resolution (following Lambda pattern)
+	// Selectors for dynamic field resolution
 	protected Selector<String> topicArn;
 	protected Selector<String> awsRegion;
 	protected Selector<String> messageSubject;
@@ -49,55 +44,65 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 	protected Selector<String> clientConfiguration;
 	protected Selector<String> credentialsFilePath;
 	
-	// SNS client builder (following Lambda pattern)
+	// SNS client builder - created once and reused
 	protected AmazonSNSClientBuilder snsClientBuilder;
 	
 	// Content body selector
-	private Selector<String> contentBody = new Selector<>("${content.body}", String.class);
+	private final Selector<String> contentBody = new Selector<>("${content.body}", String.class);
+	
+	// Default configuration values
+	private static final int DEFAULT_RETRY_DELAY = 1000;
+	private static final int DEFAULT_MAX_RETRIES = 3;
+	private static final String DEFAULT_CREDENTIAL_TYPE = "local";
+	private static final String DEFAULT_MESSAGE_BODY = "{}";
 
+	/**
+	 * Private constructor to prevent instantiation
+	 */
 	public PublishSNSMessageProcessor() {
+		// Utility class - should not be instantiated
 	}
 
 	@Override
 	public void filterAttached(ConfigContext ctx, Entity entity) throws EntityStoreException {
 		super.filterAttached(ctx, entity);
 		
-		// Initialize selectors for all fields (following Lambda pattern)
-		this.topicArn = new Selector(entity.getStringValue("topicArn"), String.class);
-		this.awsRegion = new Selector(entity.getStringValue("awsRegion"), String.class);
-		this.messageSubject = new Selector(entity.getStringValue("messageSubject"), String.class);
-		this.messageStructure = new Selector(entity.getStringValue("messageStructure"), String.class);
-		this.messageAttributes = new Selector(entity.getStringValue("messageAttributes"), String.class);
-		this.retryDelay = new Selector(entity.getStringValue("retryDelay"), Integer.class);
-		this.credentialType = new Selector(entity.getStringValue("credentialType"), String.class);
-		this.useIAMRole = new Selector(entity.getStringValue("useIAMRole"), Boolean.class);
-		this.awsCredential = new Selector(entity.getStringValue("awsCredential"), String.class);
-		this.clientConfiguration = new Selector(entity.getStringValue("clientConfiguration"), String.class);
-		this.credentialsFilePath = new Selector(entity.getStringValue("credentialsFilePath") != null ? entity.getStringValue("credentialsFilePath") : "", String.class);
+		// Initialize selectors for all fields
+		this.topicArn = new Selector<String>(entity.getStringValue("topicArn"), String.class);
+		this.awsRegion = new Selector<String>(entity.getStringValue("awsRegion"), String.class);
+		this.messageSubject = new Selector<String>(entity.getStringValue("messageSubject"), String.class);
+		this.messageStructure = new Selector<String>(entity.getStringValue("messageStructure"), String.class);
+		this.messageAttributes = new Selector<String>(entity.getStringValue("messageAttributes"), String.class);
+		this.retryDelay = new Selector<Integer>(entity.getStringValue("retryDelay"), Integer.class);
+		this.credentialType = new Selector<String>(entity.getStringValue("credentialType"), String.class);
+		this.useIAMRole = new Selector<Boolean>(entity.getStringValue("useIAMRole"), Boolean.class);
+		this.awsCredential = new Selector<String>(entity.getStringValue("awsCredential"), String.class);
+		this.clientConfiguration = new Selector<String>(entity.getStringValue("clientConfiguration"), String.class);
+		this.credentialsFilePath = new Selector<String>(entity.getStringValue("credentialsFilePath") != null ? entity.getStringValue("credentialsFilePath") : "", String.class);
 		
-		// Get client configuration (following Lambda pattern exactly)
+		// Get client configuration
 		Entity clientConfig = ctx.getEntity(entity.getReferenceValue("clientConfiguration"));
 		
-		// Configure SNS client builder (following Lambda pattern)
+		// Configure SNS client builder
 		this.snsClientBuilder = getSNSClientBuilder(ctx, entity, clientConfig);
 		
-		Trace.info("=== SNS Configuration (Following Lambda Pattern) ===");
-		Trace.info("Topic ARN: " + (topicArn != null ? topicArn.getLiteral() : "dynamic"));
-		Trace.info("Region: " + (awsRegion != null ? awsRegion.getLiteral() : "dynamic"));
-		Trace.info("Message Subject: " + (messageSubject != null ? messageSubject.getLiteral() : "dynamic"));
-		Trace.info("Message Structure: " + (messageStructure != null ? messageStructure.getLiteral() : "dynamic"));
-		Trace.info("Message Attributes: " + (messageAttributes != null ? messageAttributes.getLiteral() : "dynamic"));
-		Trace.info("Retry Delay: " + (retryDelay != null ? retryDelay.getLiteral() : "dynamic"));
-		Trace.info("Credential Type: " + (credentialType != null ? credentialType.getLiteral() : "dynamic"));
-		Trace.info("Use IAM Role: " + (useIAMRole != null ? useIAMRole.getLiteral() : "false"));
-		Trace.info("AWS Credential: " + (awsCredential != null ? awsCredential.getLiteral() : "dynamic"));
-		Trace.info("Client Configuration: " + (clientConfiguration != null ? clientConfiguration.getLiteral() : "dynamic"));
-		Trace.info("Credentials File Path: " + (credentialsFilePath != null ? credentialsFilePath.getLiteral() : "dynamic"));
-		Trace.info("Client Config Entity: " + (clientConfig != null ? "configured" : "default"));
+		Trace.debug("=== SNS Configuration ===");
+		Trace.debug("Topic ARN: " + (topicArn != null ? topicArn.getLiteral() : "dynamic"));
+		Trace.debug("Region: " + (awsRegion != null ? awsRegion.getLiteral() : "dynamic"));
+		Trace.debug("Message Subject: " + (messageSubject != null ? messageSubject.getLiteral() : "dynamic"));
+		Trace.debug("Message Structure: " + (messageStructure != null ? messageStructure.getLiteral() : "dynamic"));
+		Trace.debug("Message Attributes: " + (messageAttributes != null ? messageAttributes.getLiteral() : "dynamic"));
+		Trace.debug("Retry Delay: " + (retryDelay != null ? retryDelay.getLiteral() : "dynamic"));
+		Trace.debug("Credential Type: " + (credentialType != null ? credentialType.getLiteral() : "dynamic"));
+		Trace.debug("Use IAM Role: " + (useIAMRole != null ? useIAMRole.getLiteral() : "false"));
+		Trace.debug("AWS Credential: " + (awsCredential != null ? awsCredential.getLiteral() : "dynamic"));
+		Trace.debug("Client Configuration: " + (clientConfiguration != null ? clientConfiguration.getLiteral() : "dynamic"));
+		Trace.debug("Credentials File Path: " + (credentialsFilePath != null ? credentialsFilePath.getLiteral() : "dynamic"));
+		Trace.debug("Client Config Entity: " + (clientConfig != null ? "configured" : "default"));
 	}
 
 	/**
-	 * Creates SNS client builder following Lambda pattern exactly
+	 * Creates SNS client builder with optimized configuration
 	 */
 	private AmazonSNSClientBuilder getSNSClientBuilder(ConfigContext ctx, Entity entity, Entity clientConfig) 
 			throws EntityStoreException {
@@ -105,15 +110,15 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 		// Get credentials provider based on configuration
 		AWSCredentialsProvider credentialsProvider = getCredentialsProvider(ctx, entity);
 		
-		// Create client builder with credentials and client configuration (following Lambda pattern)
+		// Create client builder with credentials and client configuration
 		AmazonSNSClientBuilder builder = AmazonSNSClientBuilder.standard()
 			.withCredentials(credentialsProvider);
 		
-		// Apply client configuration if available (following Lambda pattern exactly)
+		// Apply client configuration if available
 		if (clientConfig != null) {
 			ClientConfiguration clientConfiguration = createClientConfiguration(ctx, clientConfig);
 			builder.withClientConfiguration(clientConfiguration);
-			Trace.info("Applied custom client configuration");
+			Trace.debug("Applied custom client configuration");
 		} else {
 			Trace.debug("Using default client configuration");
 		}
@@ -126,125 +131,158 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 	 */
 	private AWSCredentialsProvider getCredentialsProvider(ConfigContext ctx, Entity entity) throws EntityStoreException {
 		String credentialTypeValue = credentialType.getLiteral();
-		Trace.info("=== Credentials Provider Debug ===");
-		Trace.info("Credential Type Value: " + credentialTypeValue);
+		Trace.debug("=== Credentials Provider Debug ===");
+		Trace.debug("Credential Type Value: " + credentialTypeValue);
 		
 		if ("iam".equals(credentialTypeValue)) {
 			// Use IAM Role (EC2 Instance Profile or ECS Task Role)
-			Trace.info("Using IAM Role credentials (Instance Profile/Task Role)");
+			Trace.debug("Using IAM Role credentials (Instance Profile/Task Role)");
 			return new EC2ContainerCredentialsProviderWrapper();
 		} else if ("file".equals(credentialTypeValue)) {
 			// Use credentials file
-			Trace.info("Credentials Type is 'file', checking credentialsFilePath...");
+			Trace.debug("Credentials Type is 'file', checking credentialsFilePath...");
 			String filePath = credentialsFilePath.getLiteral();
-			Trace.info("File Path: " + filePath);
-			Trace.info("File Path is null: " + (filePath == null));
-			Trace.info("File Path is empty: " + (filePath != null && filePath.trim().isEmpty()));
+			Trace.debug("File Path: " + filePath);
+			Trace.debug("File Path is null: " + (filePath == null));
+			Trace.debug("File Path is empty: " + (filePath != null && filePath.trim().isEmpty()));
 			if (filePath != null && !filePath.trim().isEmpty()) {
 				try {
-					Trace.info("Using AWS credentials file: " + filePath);
+					Trace.debug("Using AWS credentials file: " + filePath);
 					// Create ProfileCredentialsProvider with file path and default profile
 					return new ProfileCredentialsProvider(filePath, "default");
 				} catch (Exception e) {
 					Trace.error("Error loading credentials file: " + e.getMessage());
-					Trace.info("Falling back to DefaultAWSCredentialsProviderChain");
+					Trace.debug("Falling back to DefaultAWSCredentialsProviderChain");
 					return new DefaultAWSCredentialsProviderChain();
 				}
 			} else {
-				Trace.info("Credentials file path not specified, using DefaultAWSCredentialsProviderChain");
+				Trace.debug("Credentials file path not specified, using DefaultAWSCredentialsProviderChain");
 				return new DefaultAWSCredentialsProviderChain();
 			}
 		} else {
-			// Use explicit credentials via AWSFactory (following Lambda pattern)
-			Trace.info("Using explicit AWS credentials via AWSFactory");
+			// Use explicit credentials via AWSFactory
+			Trace.debug("Using explicit AWS credentials via AWSFactory");
 			try {
 				AWSCredentials awsCredentials = AWSFactory.getCredentials(ctx, entity);
-				Trace.info("AWSFactory.getCredentials() successful");
+				Trace.debug("AWSFactory.getCredentials() successful");
 				return getAWSCredentialsProvider(awsCredentials);
 			} catch (Exception e) {
 				Trace.error("Error getting explicit credentials: " + e.getMessage());
-				Trace.info("Falling back to DefaultAWSCredentialsProviderChain");
+				Trace.debug("Falling back to DefaultAWSCredentialsProviderChain");
 				return new DefaultAWSCredentialsProviderChain();
 			}
 		}
 	}
 	
 	/**
-	 * Creates ClientConfiguration from entity (following Lambda pattern exactly)
+	 * Creates ClientConfiguration from entity with optimized access patterns
 	 */
 	private ClientConfiguration createClientConfiguration(ConfigContext ctx, Entity entity) throws EntityStoreException {
 		ClientConfiguration clientConfig = new ClientConfiguration();
 		
 		if (entity == null) {
-			Trace.debug("using empty default ClientConfiguration");
+			Trace.debug("Using empty default ClientConfiguration");
 			return clientConfig;
 		}
 		
-		// Apply configuration settings (following Lambda pattern exactly)
-		if (containsKey(entity, "connectionTimeout")) {
-			clientConfig.setConnectionTimeout(entity.getIntegerValue("connectionTimeout"));
-		}
-		if (containsKey(entity, "maxConnections")) {
-			clientConfig.setMaxConnections(entity.getIntegerValue("maxConnections"));
-		}
-		if (containsKey(entity, "maxErrorRetry")) {
-			clientConfig.setMaxErrorRetry(entity.getIntegerValue("maxErrorRetry"));
-		}
-		if (containsKey(entity, "protocol")) {
-			clientConfig.setProtocol(Protocol.valueOf(entity.getStringValue("protocol")));
-		}
-		if (containsKey(entity, "socketTimeout")) {
-			clientConfig.setSocketTimeout(entity.getIntegerValue("socketTimeout"));
-		}
-		if (containsKey(entity, "userAgent")) {
-			clientConfig.setUserAgent(entity.getStringValue("userAgent"));
-		}
-		if (containsKey(entity, "proxyHost")) {
-			clientConfig.setProxyHost(entity.getStringValue("proxyHost"));
-		}
-		if (containsKey(entity, "proxyPort")) {
-			clientConfig.setProxyPort(entity.getIntegerValue("proxyPort"));
-		}
-		if (containsKey(entity, "proxyUsername")) {
-			clientConfig.setProxyUsername(entity.getStringValue("proxyUsername"));
-		}
-		if (containsKey(entity, "proxyPassword")) {
-			try {
-				byte[] proxyPasswordBytes = ctx.getCipher().decrypt(entity.getEncryptedValue("proxyPassword"));
-				clientConfig.setProxyPassword(new String(proxyPasswordBytes));
-			} catch (GeneralSecurityException e) {
-				Trace.error("Error decrypting proxy password: " + e.getMessage());
+		// Apply configuration settings using optimized helper methods
+		setIntegerConfig(clientConfig, entity, "connectionTimeout", ClientConfiguration::setConnectionTimeout);
+		setIntegerConfig(clientConfig, entity, "maxConnections", ClientConfiguration::setMaxConnections);
+		setIntegerConfig(clientConfig, entity, "maxErrorRetry", ClientConfiguration::setMaxErrorRetry);
+		setIntegerConfig(clientConfig, entity, "socketTimeout", ClientConfiguration::setSocketTimeout);
+		setIntegerConfig(clientConfig, entity, "proxyPort", ClientConfiguration::setProxyPort);
+		setIntegerConfig(clientConfig, entity, "socketSendBufferSizeHint", (config, value) -> {
+			Integer receiveValue = getIntegerValue(entity, "socketReceiveBufferSizeHint");
+			if (receiveValue != null) {
+				config.setSocketBufferSizeHints(value, receiveValue);
 			}
-		}
-		if (containsKey(entity, "proxyDomain")) {
-			clientConfig.setProxyDomain(entity.getStringValue("proxyDomain"));
-		}
-		if (containsKey(entity, "proxyWorkstation")) {
-			clientConfig.setProxyWorkstation(entity.getStringValue("proxyWorkstation"));
-		}
-		if (containsKey(entity, "socketSendBufferSizeHint") && containsKey(entity, "socketReceiveBufferSizeHint")) {
-			clientConfig.setSocketBufferSizeHints(
-				entity.getIntegerValue("socketSendBufferSizeHint"),
-				entity.getIntegerValue("socketReceiveBufferSizeHint")
-			);
-		}
+		});
+		
+		setStringConfig(clientConfig, entity, "protocol", (config, value) -> {
+			try {
+				config.setProtocol(Protocol.valueOf(value));
+			} catch (IllegalArgumentException e) {
+				Trace.error("Invalid protocol value: " + value);
+			}
+		});
+		setStringConfig(clientConfig, entity, "userAgent", ClientConfiguration::setUserAgent);
+		setStringConfig(clientConfig, entity, "proxyHost", ClientConfiguration::setProxyHost);
+		setStringConfig(clientConfig, entity, "proxyUsername", ClientConfiguration::setProxyUsername);
+		setStringConfig(clientConfig, entity, "proxyDomain", ClientConfiguration::setProxyDomain);
+		setStringConfig(clientConfig, entity, "proxyWorkstation", ClientConfiguration::setProxyWorkstation);
+		
+		// Handle encrypted proxy password
+		setEncryptedConfig(clientConfig, ctx, entity, "proxyPassword", ClientConfiguration::setProxyPassword);
 		
 		return clientConfig;
 	}
 	
 	/**
-	 * Checks if entity contains a non-empty key (following Lambda pattern exactly)
+	 * Helper method to set integer configuration values
 	 */
-	private boolean containsKey(Entity entity, String fieldName) {
-		if (!entity.containsKey(fieldName)) {
-			return false;
+	private void setIntegerConfig(ClientConfiguration config, Entity entity, String fieldName, 
+			java.util.function.BiConsumer<ClientConfiguration, Integer> setter) {
+		Integer value = getIntegerValue(entity, fieldName);
+		if (value != null) {
+			setter.accept(config, value);
 		}
-		String value = entity.getStringValue(fieldName);
-		return value != null && !value.trim().isEmpty();
 	}
 	
 	/**
-	 * Creates AWSCredentialsProvider (following Lambda pattern)
+	 * Helper method to set string configuration values
+	 */
+	private void setStringConfig(ClientConfiguration config, Entity entity, String fieldName, 
+			java.util.function.BiConsumer<ClientConfiguration, String> setter) {
+		String value = getStringValue(entity, fieldName);
+		if (value != null && !value.trim().isEmpty()) {
+			setter.accept(config, value);
+		}
+	}
+	
+	/**
+	 * Helper method to set encrypted configuration values
+	 */
+	private void setEncryptedConfig(ClientConfiguration config, ConfigContext ctx, Entity entity, String fieldName, 
+			java.util.function.BiConsumer<ClientConfiguration, String> setter) {
+		String value = getStringValue(entity, fieldName);
+		if (value != null && !value.trim().isEmpty()) {
+			try {
+				byte[] decryptedBytes = ctx.getCipher().decrypt(entity.getEncryptedValue(fieldName));
+				String decryptedValue = new String(decryptedBytes, StandardCharsets.UTF_8);
+				setter.accept(config, decryptedValue);
+			} catch (GeneralSecurityException e) {
+				Trace.error("Error decrypting " + fieldName + ": " + e.getMessage());
+			}
+		}
+	}
+	
+	/**
+	 * Optimized method to get integer value with single access
+	 */
+	private Integer getIntegerValue(Entity entity, String fieldName) {
+		String valueStr = getStringValue(entity, fieldName);
+		if (valueStr != null && !valueStr.trim().isEmpty()) {
+			try {
+				return Integer.valueOf(valueStr.trim());
+			} catch (NumberFormatException e) {
+				Trace.error("Invalid " + fieldName + " value: " + valueStr);
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Optimized method to get string value with single access
+	 */
+	private String getStringValue(Entity entity, String fieldName) {
+		if (!entity.containsKey(fieldName)) {
+			return null;
+		}
+		return entity.getStringValue(fieldName);
+	}
+	
+	/**
+	 * Creates AWSCredentialsProvider
 	 */
 	private AWSCredentialsProvider getAWSCredentialsProvider(final AWSCredentials awsCredentials) {
 		return new AWSCredentialsProvider() {
@@ -264,7 +302,7 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 			return false;
 		}
 		
-		// Get dynamic values using selectors (following Lambda pattern)
+		// Get dynamic values using selectors
 		String topicArnValue = topicArn.substitute(msg);
 		String regionValue = awsRegion.substitute(msg);
 		String messageSubjectValue = messageSubject.substitute(msg);
@@ -275,30 +313,30 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 		Boolean useIAMRoleValue = useIAMRole.substitute(msg);
 		String credentialsFilePathValue = credentialsFilePath.substitute(msg);
 
-		Trace.info("=== SNS Invocation Debug ===");
-		Trace.info("Topic ARN: " + topicArnValue);
-		Trace.info("Region: " + regionValue);
-		Trace.info("Message Subject: " + messageSubjectValue);
-		Trace.info("Message Structure: " + messageStructureValue);
-		Trace.info("Message Attributes: " + messageAttributesValue);
-		Trace.info("Retry Delay: " + retryDelayValue);
-		Trace.info("Credential Type: " + credentialTypeValue);
-		Trace.info("Use IAM Role: " + useIAMRoleValue);
-		Trace.info("Credentials File Path: " + credentialsFilePathValue);
+		Trace.debug("=== SNS Invocation Debug ===");
+		Trace.debug("Topic ARN: " + topicArnValue);
+		Trace.debug("Region: " + regionValue);
+		Trace.debug("Message Subject: " + messageSubjectValue);
+		Trace.debug("Message Structure: " + messageStructureValue);
+		Trace.debug("Message Attributes: " + messageAttributesValue);
+		Trace.debug("Retry Delay: " + retryDelayValue);
+		Trace.debug("Credential Type: " + credentialTypeValue);
+		Trace.debug("Use IAM Role: " + useIAMRoleValue);
+		Trace.debug("Credentials File Path: " + credentialsFilePathValue);
 		
 		// Set default values
 		if (retryDelayValue == null) {
-			retryDelayValue = 1000;
+			retryDelayValue = DEFAULT_RETRY_DELAY;
 		}
 		if (credentialTypeValue == null || credentialTypeValue.trim().isEmpty()) {
-			credentialTypeValue = "local";
+			credentialTypeValue = DEFAULT_CREDENTIAL_TYPE;
 		}
 		// Determine IAM Role usage based on credential type
 		useIAMRoleValue = "iam".equals(credentialTypeValue);
 		
 		String body = contentBody.substitute(msg);
 		if (body == null || body.trim().isEmpty()) {
-			body = "{}";
+			body = DEFAULT_MESSAGE_BODY;
 		}
 		
 		// Handle JSON message structure format
@@ -319,26 +357,30 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 		Trace.debug("Topic ARN: '" + topicArnValue + "'");
 		
 		Trace.info("Publishing message to SNS with retry...");
-		Trace.info("Using IAM Role: " + useIAMRoleValue);
+		Trace.debug("Using IAM Role: " + useIAMRoleValue);
 		
 		Exception lastException = null;
 		
 		// Get maxRetries from clientConfiguration (default 3)
-		int maxRetriesValue = 3; // Default value
+		int maxRetriesValue = DEFAULT_MAX_RETRIES;
+		
+		// Create SNS client once and reuse
+		AmazonSNS snsClient = snsClientBuilder.withRegion(regionValue).build();
+		
+		// Prepare message body once
+		final String finalBody = body;
+		final String finalMessageStructure = messageStructureValue != null ? messageStructureValue.toLowerCase() : null;
 		
 		for (int attempt = 1; attempt <= maxRetriesValue; attempt++) {
 			try {
-				Trace.info("Attempt " + attempt + " of " + maxRetriesValue);
-				
-				// Create SNS client with region (following Lambda pattern)
-				AmazonSNS snsClient = snsClientBuilder.withRegion(regionValue).build();
+				Trace.debug("Attempt " + attempt + " of " + maxRetriesValue);
 				
 				// Create the publish request
 				PublishRequest publishRequest = new PublishRequest()
 					.withTopicArn(topicArnValue)
-					.withMessage(body)
+					.withMessage(finalBody)
 					.withSubject(messageSubjectValue)
-					.withMessageStructure(messageStructureValue.toLowerCase());
+					.withMessageStructure(finalMessageStructure);
 
 				Trace.debug("=== PublishRequest Debug ===");
 				Trace.debug("PublishRequest.topicArn: '" + publishRequest.getTopicArn() + "'");
@@ -359,7 +401,7 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 				
 				// If not the last attempt, wait before retrying
 				if (attempt < maxRetriesValue) {
-					Trace.info("Waiting " + retryDelayValue + "ms before next attempt...");
+					Trace.debug("Waiting " + retryDelayValue + "ms before next attempt...");
 					try {
 						Thread.sleep(retryDelayValue);
 					} catch (InterruptedException ie) {

@@ -5,16 +5,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Tipos de estrutura de mensagem do Publish SNS Message
+ * Message structure types for Publish SNS Message
+ * Thread-safe and immutable
  */
 public class PublishSNSMessageStructure {
     
-    public static Map<String, String> messageStructure;
+    // Immutable map for message structure options
+    public static final Map<String, String> MESSAGE_STRUCTURE;
     
     static {
         Map<String, String> init = new HashMap<>();
         init.put("default", "Default");
         init.put("json", "JSON");
-        messageStructure = Collections.unmodifiableMap(init);
+        MESSAGE_STRUCTURE = Collections.unmodifiableMap(init);
+    }
+    
+    /**
+     * Private constructor to prevent instantiation
+     */
+    private PublishSNSMessageStructure() {
+        // Utility class - should not be instantiated
     }
 } 
