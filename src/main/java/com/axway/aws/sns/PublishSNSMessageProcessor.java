@@ -5,14 +5,9 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.auth.EC2ContainerCredentialsProviderWrapper;
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sns.model.PublishRequest;
@@ -21,17 +16,12 @@ import com.vordel.circuit.CircuitAbortException;
 import com.vordel.circuit.Message;
 import com.vordel.circuit.MessageProcessor;
 import com.vordel.circuit.aws.AWSFactory;
-import com.vordel.common.Dictionary;
 import com.vordel.config.Circuit;
 import com.vordel.config.ConfigContext;
 import com.vordel.el.Selector;
 import com.vordel.es.Entity;
 import com.vordel.es.EntityStoreException;
-import com.vordel.es.ESPK;
-import com.vordel.security.util.SecureString;
 import com.vordel.trace.Trace;
-import java.io.File;
-import java.nio.ByteBuffer;
 import com.axway.aws.sns.SNSMessageJsonHelper;
 
 public class PublishSNSMessageProcessor extends MessageProcessor {
@@ -180,68 +170,127 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 			return clientConfig;
 		}
 		
-		// Apply configuration settings (following Lambda pattern exactly)
-		if (containsKey(entity, "connectionTimeout")) {
-			clientConfig.setConnectionTimeout(entity.getIntegerValue("connectionTimeout"));
-		}
-		if (containsKey(entity, "maxConnections")) {
-			clientConfig.setMaxConnections(entity.getIntegerValue("maxConnections"));
-		}
-		if (containsKey(entity, "maxErrorRetry")) {
-			clientConfig.setMaxErrorRetry(entity.getIntegerValue("maxErrorRetry"));
-		}
-		if (containsKey(entity, "protocol")) {
-			clientConfig.setProtocol(Protocol.valueOf(entity.getStringValue("protocol")));
-		}
-		if (containsKey(entity, "socketTimeout")) {
-			clientConfig.setSocketTimeout(entity.getIntegerValue("socketTimeout"));
-		}
-		if (containsKey(entity, "userAgent")) {
-			clientConfig.setUserAgent(entity.getStringValue("userAgent"));
-		}
-		if (containsKey(entity, "proxyHost")) {
-			clientConfig.setProxyHost(entity.getStringValue("proxyHost"));
-		}
-		if (containsKey(entity, "proxyPort")) {
-			clientConfig.setProxyPort(entity.getIntegerValue("proxyPort"));
-		}
-		if (containsKey(entity, "proxyUsername")) {
-			clientConfig.setProxyUsername(entity.getStringValue("proxyUsername"));
-		}
-		if (containsKey(entity, "proxyPassword")) {
-			try {
-				byte[] proxyPasswordBytes = ctx.getCipher().decrypt(entity.getEncryptedValue("proxyPassword"));
-				clientConfig.setProxyPassword(new String(proxyPasswordBytes));
-			} catch (GeneralSecurityException e) {
-				Trace.error("Error decrypting proxy password: " + e.getMessage());
+		// Apply configuration settings (optimized single access pattern)
+		try {
+			Integer connectionTimeout = entity.getIntegerValue("connectionTimeout");
+			if (connectionTimeout != null) {
+				clientConfig.setConnectionTimeout(connectionTimeout);
 			}
+		} catch (Exception e) {
+			// Field doesn't exist, skip silently
 		}
-		if (containsKey(entity, "proxyDomain")) {
-			clientConfig.setProxyDomain(entity.getStringValue("proxyDomain"));
+		
+		try {
+			Integer maxConnections = entity.getIntegerValue("maxConnections");
+			if (maxConnections != null) {
+				clientConfig.setMaxConnections(maxConnections);
+			}
+		} catch (Exception e) {
+			// Field doesn't exist, skip silently
 		}
-		if (containsKey(entity, "proxyWorkstation")) {
-			clientConfig.setProxyWorkstation(entity.getStringValue("proxyWorkstation"));
+		
+		try {
+			Integer maxErrorRetry = entity.getIntegerValue("maxErrorRetry");
+			if (maxErrorRetry != null) {
+				clientConfig.setMaxErrorRetry(maxErrorRetry);
+			}
+		} catch (Exception e) {
+			// Field doesn't exist, skip silently
 		}
-		if (containsKey(entity, "socketSendBufferSizeHint") && containsKey(entity, "socketReceiveBufferSizeHint")) {
-			clientConfig.setSocketBufferSizeHints(
-				entity.getIntegerValue("socketSendBufferSizeHint"),
-				entity.getIntegerValue("socketReceiveBufferSizeHint")
-			);
+		
+		try {
+			String protocol = entity.getStringValue("protocol");
+			if (protocol != null && !protocol.trim().isEmpty()) {
+				clientConfig.setProtocol(Protocol.valueOf(protocol));
+			}
+		} catch (Exception e) {
+			// Field doesn't exist, skip silently
+		}
+		
+		try {
+			Integer socketTimeout = entity.getIntegerValue("socketTimeout");
+			if (socketTimeout != null) {
+				clientConfig.setSocketTimeout(socketTimeout);
+			}
+		} catch (Exception e) {
+			// Field doesn't exist, skip silently
+		}
+		
+		try {
+			String userAgent = entity.getStringValue("userAgent");
+			if (userAgent != null && !userAgent.trim().isEmpty()) {
+				clientConfig.setUserAgent(userAgent);
+			}
+		} catch (Exception e) {
+			// Field doesn't exist, skip silently
+		}
+		
+		try {
+			String proxyHost = entity.getStringValue("proxyHost");
+			if (proxyHost != null && !proxyHost.trim().isEmpty()) {
+				clientConfig.setProxyHost(proxyHost);
+			}
+		} catch (Exception e) {
+			// Field doesn't exist, skip silently
+		}
+		
+		try {
+			Integer proxyPort = entity.getIntegerValue("proxyPort");
+			if (proxyPort != null) {
+				clientConfig.setProxyPort(proxyPort);
+			}
+		} catch (Exception e) {
+			// Field doesn't exist, skip silently
+		}
+		
+		try {
+			String proxyUsername = entity.getStringValue("proxyUsername");
+			if (proxyUsername != null && !proxyUsername.trim().isEmpty()) {
+				clientConfig.setProxyUsername(proxyUsername);
+			}
+		} catch (Exception e) {
+			// Field doesn't exist, skip silently
+		}
+		
+		try {
+			byte[] proxyPasswordBytes = ctx.getCipher().decrypt(entity.getEncryptedValue("proxyPassword"));
+			clientConfig.setProxyPassword(new String(proxyPasswordBytes));
+		} catch (Exception e) {
+			// Field doesn't exist or decryption failed, skip silently
+		}
+		
+		try {
+			String proxyDomain = entity.getStringValue("proxyDomain");
+			if (proxyDomain != null && !proxyDomain.trim().isEmpty()) {
+				clientConfig.setProxyDomain(proxyDomain);
+			}
+		} catch (Exception e) {
+			// Field doesn't exist, skip silently
+		}
+		
+		try {
+			String proxyWorkstation = entity.getStringValue("proxyWorkstation");
+			if (proxyWorkstation != null && !proxyWorkstation.trim().isEmpty()) {
+				clientConfig.setProxyWorkstation(proxyWorkstation);
+			}
+		} catch (Exception e) {
+			// Field doesn't exist, skip silently
+		}
+		
+		try {
+			Integer socketSendBufferSizeHint = entity.getIntegerValue("socketSendBufferSizeHint");
+			Integer socketReceiveBufferSizeHint = entity.getIntegerValue("socketReceiveBufferSizeHint");
+			if (socketSendBufferSizeHint != null && socketReceiveBufferSizeHint != null) {
+				clientConfig.setSocketBufferSizeHints(socketSendBufferSizeHint, socketReceiveBufferSizeHint);
+			}
+		} catch (Exception e) {
+			// Field doesn't exist, skip silently
 		}
 		
 		return clientConfig;
 	}
 	
-	/**
-	 * Checks if entity contains a non-empty key (following Lambda pattern exactly)
-	 */
-	private boolean containsKey(Entity entity, String fieldName) {
-		if (!entity.containsKey(fieldName)) {
-			return false;
-		}
-		String value = entity.getStringValue(fieldName);
-		return value != null && !value.trim().isEmpty();
-	}
+
 	
 	/**
 	 * Creates AWSCredentialsProvider (following Lambda pattern)
