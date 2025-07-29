@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.axway'
-version '1.0.5'
+version '1.0.6'
 sourceCompatibility = 1.8
 
 
@@ -156,7 +156,7 @@ task installLinux(type: Exec) {
     
     doFirst {
         println "🚀 Installing AWS SNS filter on Linux..."
-        println "📁 JAR: build/libs/aws-sns-apim-sdk-1.0.1.jar"
+        println "📁 JAR: build/libs/aws-sns-apim-sdk-${version}.jar"
         println "📁 Gateway: ${axway_base}"
     }
 }
@@ -316,7 +316,7 @@ def showNextSteps() {
     println "1. Copy the JAR built on Linux to Windows"
     println "2. Open Policy Studio"
     println "3. Go to Window > Preferences > Runtime Dependencies"
-    println "4. Add the JAR: aws-sns-apim-sdk-1.0.1.jar"
+    println "4. Add the JAR: aws-sns-apim-sdk-${version}.jar"
     println "5. Restart Policy Studio with -clean"
     println "6. Search for 'Publish SNS Message' in the palette"
 }
@@ -386,12 +386,12 @@ task buildJarLinux {
     
     doFirst {
         println "🔨 Building Publish SNS Message Filter JAR..."
-        println "📁 JAR: build/libs/aws-sns-apim-sdk-1.0.1.jar"
+        println "📁 JAR: build/libs/aws-sns-apim-sdk-${version}.jar"
         println "⚠️  Note: This task should be run only on Linux"
     }
     
     doLast {
-        def jarFile = new File("build/libs/aws-sns-apim-sdk-1.0.1.jar")
+        def jarFile = new File("build/libs/aws-sns-apim-sdk-${version}.jar")
         if (jarFile.exists()) {
             println "✅ JAR created successfully: ${jarFile.absolutePath}"
             println "📋 For Windows: Copy this JAR to the Windows environment"
@@ -511,7 +511,7 @@ task showTasks {
 // Configure JAR name
 jar {
     archiveBaseName = 'aws-sns-apim-sdk'
-    archiveVersion = '1.0.1'
+    archiveVersion = version
 }
 
 
