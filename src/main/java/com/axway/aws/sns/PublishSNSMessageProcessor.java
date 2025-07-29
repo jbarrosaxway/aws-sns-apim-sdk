@@ -57,10 +57,9 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 	private static final String DEFAULT_MESSAGE_BODY = "{}";
 
 	/**
-	 * Private constructor to prevent instantiation
+	 * Default constructor for Axway API Gateway
 	 */
 	public PublishSNSMessageProcessor() {
-		// Utility class - should not be instantiated
 	}
 
 	@Override
