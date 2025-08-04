@@ -5,9 +5,10 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.auth.EC2ContainerCredentialsProviderWrapper;
+import com.amazonaws.auth.WebIdentityTokenCredentialsProvider;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sns.model.PublishRequest;
@@ -24,6 +25,18 @@ import com.vordel.es.EntityStoreException;
 import com.vordel.trace.Trace;
 import com.axway.aws.sns.SNSMessageJsonHelper;
 
+/**
+ * AWS SNS Message Publisher with optimized IAM Role support
+ * 
+ * IAM Role Configuration:
+ * - "iam" credential type: Uses WebIdentityTokenCredentialsProvider only
+ *   - AWS SDK automatically handles IRSA (IAM Roles for Service Accounts) and EC2 Instance Profile
+ *   - Reads environment variables (AWS_WEB_IDENTITY_TOKEN_FILE, AWS_ROLE_ARN) internally
+ *   - Supports both ServiceAccount tokens and EC2 instance metadata
+ * 
+ * - "file" credential type: Uses ProfileCredentialsProvider with specified file
+ * - "local" credential type: Uses AWSFactory for explicit credentials
+ */
 public class PublishSNSMessageProcessor extends MessageProcessor {
 	
 	// Selectors for dynamic field resolution (following Lambda pattern)
@@ -120,9 +133,19 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 		Trace.info("Credential Type Value: " + credentialTypeValue);
 		
 		if ("iam".equals(credentialTypeValue)) {
-			// Use IAM Role (EC2 Instance Profile or ECS Task Role)
-			Trace.info("Using IAM Role credentials (Instance Profile/Task Role)");
-			return new EC2ContainerCredentialsProviderWrapper();
+			// Use IAM Role - WebIdentityTokenCredentialsProvider only
+			Trace.info("Using IAM Role credentials - WebIdentityTokenCredentialsProvider");
+			Trace.info("Credential Type Value: " + credentialTypeValue);
+			
+			// Debug IRSA configuration
+			Trace.info("=== IRSA Debug ===");
+			Trace.info("AWS_WEB_IDENTITY_TOKEN_FILE: " + System.getenv("AWS_WEB_IDENTITY_TOKEN_FILE"));
+			Trace.info("AWS_ROLE_ARN: " + System.getenv("AWS_ROLE_ARN"));
+			Trace.info("AWS_REGION: " + System.getenv("AWS_REGION"));
+			
+			// Use WebIdentityTokenCredentialsProvider for IAM role
+			Trace.info("✅ Using WebIdentityTokenCredentialsProvider for IAM role");
+			return new WebIdentityTokenCredentialsProvider();
 		} else if ("file".equals(credentialTypeValue)) {
 			// Use credentials file
 			Trace.info("Credentials Type is 'file', checking credentialsFilePath...");
@@ -370,6 +393,12 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 		Trace.info("Publishing message to SNS with retry...");
 		Trace.info("Using IAM Role: " + useIAMRoleValue);
 		
+		// Debug IRSA during actual invocation
+		Trace.info("=== IRSA Debug During Invoke ===");
+		Trace.info("AWS_WEB_IDENTITY_TOKEN_FILE: " + System.getenv("AWS_WEB_IDENTITY_TOKEN_FILE"));
+		Trace.info("AWS_ROLE_ARN: " + System.getenv("AWS_ROLE_ARN"));
+		Trace.info("AWS_REGION: " + System.getenv("AWS_REGION"));
+		
 		Exception lastException = null;
 		
 		// Get maxRetries from clientConfiguration (default 3)
@@ -405,6 +434,21 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 			} catch (Exception e) {
 				lastException = e;
 				Trace.error("Attempt " + attempt + " failed: " + e.getMessage());
+				
+				// Debug the specific error for IRSA issues
+				if (e.getMessage().contains("AccessDeniedException")) {
+					Trace.error("=== Access Denied Debug ===");
+					Trace.error("Error message: " + e.getMessage());
+					
+					// Check if it's still using node group role
+					if (e.getMessage().contains("axway-first-ng-role")) {
+						Trace.error("❌ Still using node group role instead of ServiceAccount");
+						Trace.error("This indicates IRSA is not properly configured");
+					} else if (e.getMessage().contains("axway-sns-role")) {
+						Trace.error("✅ Using ServiceAccount role but permission denied");
+						Trace.error("This indicates IRSA is working but role lacks permissions");
+					}
+				}
 				
 				// If not the last attempt, wait before retrying
 				if (attempt < maxRetriesValue) {
