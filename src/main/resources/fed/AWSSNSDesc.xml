@@ -9,18 +9,27 @@ JSON format message attributes "maxRetries" - Maximum number of retry attempts
 <entityStoreData>
 	<entityType name="PublishSNSMessageFilter" extends="AWSFilter">
 		<constant name="class" type="string" value="com.axway.aws.sns.PublishSNSMessageFilter" />
-		<field name="topicArn" type="string" cardinality="1" />
-		<field name="awsRegion" type="string" cardinality="1" />
-		<field name="messageSubject" type="string" cardinality="1" />
-		<field name="messageStructure" type="string" cardinality="1" />
-		<field name="messageAttributes" type="string" cardinality="1" />
-		<field name="maxRetries" type="string" cardinality="1" />
-		<field name="retryDelay" type="string" cardinality="1" />
-		<field name="credentialType" type="string" cardinality="1" />
-		<field name="useIAMRole" type="string" cardinality="1" />
-		<field name="awsCredential" type="^ApiKeyProfile" cardinality="1" />
-		<field name="clientConfiguration" type="^AWSClientConfiguration" cardinality="1" />
-		<field name="credentialsFilePath" type="string" cardinality="1" />
+		<field name="topicArn" type="string" cardinality="1" default="" />
+		<field name="awsRegion" type="string" cardinality="1" default="us-east-1" />
+		<field name="messageSubject" type="string" cardinality="1" default="" />
+		<field name="messageStructure" type="string" cardinality="1" default="default" />
+		<field name="messageAttributes" type="string" cardinality="1" default="" />
+		<field name="maxRetries" type="string" cardinality="1" default="3" />
+		<field name="retryDelay" type="string" cardinality="1" default="1000" />
+		<field name="credentialType" type="string" cardinality="1" default="local" />
+		<field name="useIAMRole" type="string" cardinality="1" default="false" />
+		<field name="awsCredential" type="^ApiKeyProfile" cardinality="?" />
+		<field name="clientConfiguration" type="^AWSClientConfiguration" cardinality="?">
+			<defaultRef>
+				<key type="AWSSettings">
+					<id field="name" value="Amazon Web Services Settings"/>
+					<key type="AWSClientConfiguration">
+						<id field="name" value="Default AWS Client Configuration"/>
+					</key>
+				</key>
+			</defaultRef>
+		</field>
+		<field name="credentialsFilePath" type="string" cardinality="1" default="" />
 	</entityType>
 
 	
