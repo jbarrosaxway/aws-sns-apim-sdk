@@ -15,6 +15,8 @@ public class PublishSNSMessageFilter extends DefaultFilter {
 		this.reqProps.add(new PropDef("http.headers", HeaderSet.class));
 		genProps.add(new PropDef("aws.sns.response",String.class));
 		genProps.add(new PropDef("aws.sns.http.status.code",Integer.class));
+		genProps.add(new PropDef("aws.sns.error.code", String.class));
+		genProps.add(new PropDef("aws.sns.request.id", String.class));
 	}
 
 	@Override

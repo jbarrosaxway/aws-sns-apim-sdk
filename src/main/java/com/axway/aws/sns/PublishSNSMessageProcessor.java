@@ -1,6 +1,7 @@
 package com.axway.aws.sns;
 
 import java.security.GeneralSecurityException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSCredentials;
@@ -332,7 +333,7 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 		
 		if (snsClientBuilder == null) {
 			Trace.error("SNS client builder was not configured");
-			msg.put("aws.sns.error", "SNS client builder was not configured");
+			populateSnsError(msg, "SNS client builder was not configured", null);
 			return false;
 		}
 		
@@ -466,9 +467,46 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 		
 		// If reached here, all attempts failed
 		Trace.error("All " + maxRetriesValue + " attempts failed");
-		msg.put("aws.sns.error", "Failure after " + maxRetriesValue + " attempts: " + 
-			(lastException != null ? lastException.getMessage() : "Unknown error"));
+		String errorMessage = "Failure after " + maxRetriesValue + " attempts: " +
+			(lastException != null ? lastException.getMessage() : "Unknown error");
+		populateSnsError(msg, errorMessage, lastException);
 		return false;
+	}
+
+	/**
+	 * Populates circuit message properties for SNS failures, including structured AWS error fields when available.
+	 */
+	private void populateSnsError(Message msg, String errorMessage, Exception e) {
+		msg.put("aws.sns.error", errorMessage);
+
+		AmazonServiceException awsException = resolveAmazonServiceException(e);
+		if (awsException == null) {
+			return;
+		}
+
+		msg.put("aws.sns.http.status.code", awsException.getStatusCode());
+		if (awsException.getErrorCode() != null) {
+			msg.put("aws.sns.error.code", awsException.getErrorCode());
+		}
+		if (awsException.getRequestId() != null) {
+			msg.put("aws.sns.request.id", awsException.getRequestId());
+		}
+
+		Trace.error("=== SNS AWS Error Details ===");
+		Trace.error("HTTP Status: " + awsException.getStatusCode());
+		Trace.error("Error Code: " + awsException.getErrorCode());
+		Trace.error("Request ID: " + awsException.getRequestId());
+	}
+
+	private AmazonServiceException resolveAmazonServiceException(Exception e) {
+		if (e instanceof AmazonServiceException) {
+			return (AmazonServiceException) e;
+		}
+		Throwable cause = e.getCause();
+		if (cause instanceof AmazonServiceException) {
+			return (AmazonServiceException) cause;
+		}
+		return null;
 	}
 	
 	/**
@@ -485,13 +523,14 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 			// Store results
 			msg.put("aws.sns.message.id", messageId);
 			msg.put("aws.sns.response", "Message published successfully");
+			msg.put("aws.sns.http.status.code", 200);
 			
 			Trace.info("SNS message published successfully");
 			return true;
 			
 		} catch (Exception e) {
 			Trace.error("Error processing SNS response: " + e.getMessage(), e);
-			msg.put("aws.sns.error", "Error processing response: " + e.getMessage());
+			populateSnsError(msg, "Error processing response: " + e.getMessage(), e);
 			return false;
 		}
 	}
