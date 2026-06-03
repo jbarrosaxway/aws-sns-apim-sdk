@@ -6,8 +6,12 @@ import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sns.model.MessageAttributeValue;
 import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
+import groovy.json.JsonSlurper;
+import java.nio.ByteBuffer;
+import java.util.Base64;
 
 def invoke(msg) {
     AmazonSNS amazonSNS = null
@@ -23,8 +27,8 @@ def invoke(msg) {
         def messageSubject = msg.get("aws.sns.message.subject")
         def messageStructure = msg.get("aws.sns.message.structure")
         
-        // Advanced new parameters
-        def messageAttributes = msg.get("aws.sns.message.attributes") // JSON string
+        // Message attributes JSON (prefer messageAttributes; legacy aws.sns.message.attributes)
+        def messageAttributes = msg.get("messageAttributes") ?: msg.get("aws.sns.message.attributes")
         def maxRetries = msg.get("aws.sns.max.retries") ?: "3"
         def retryDelay = msg.get("aws.sns.retry.delay.ms") ?: "1000"
         
@@ -74,6 +78,15 @@ def invoke(msg) {
         // ========================================
         
         Trace.info("Publishing message to SNS with retry...")
+
+        Map messageAttributesMap
+        try {
+            messageAttributesMap = parseMessageAttributesJson(messageAttributes)
+        } catch (IllegalArgumentException e) {
+            Trace.error("Invalid message attributes: " + e.getMessage())
+            msg.put("aws.sns.error", e.getMessage())
+            return false
+        }
         
         def maxRetriesInt = Integer.parseInt(maxRetries)
         def retryDelayInt = Integer.parseInt(retryDelay)
@@ -85,7 +98,7 @@ def invoke(msg) {
                 
                 // 3. Create advanced request
                 PublishRequest publishRequest = createPublishRequest(
-                    topicArn, payload, messageSubject, messageStructure, messageAttributes
+                    topicArn, payload, messageSubject, messageStructure, messageAttributesMap
                 )
                 
                 // 4. Publish message to SNS
@@ -136,7 +149,7 @@ def invoke(msg) {
 /**
  * Creates PublishRequest with all parameters
  */
-def createPublishRequest(topicArn, payload, messageSubject, messageStructure, messageAttributes) {
+def createPublishRequest(topicArn, payload, messageSubject, messageStructure, messageAttributesMap) {
     PublishRequest request = new PublishRequest()
         .withTopicArn(topicArn)
         .withMessage(payload)
@@ -153,18 +166,69 @@ def createPublishRequest(topicArn, payload, messageSubject, messageStructure, me
         Trace.info("Using message structure: " + messageStructure)
     }
     
-    // Add message attributes if specified (JSON format)
-    if (messageAttributes && !messageAttributes.trim().isEmpty()) {
-        try {
-            // Parse JSON attributes and add to request
-            // This is a simplified implementation - you may need to enhance this
-            Trace.info("Message attributes specified: " + messageAttributes)
-        } catch (Exception e) {
-            Trace.error("Error parsing message attributes: " + e.getMessage())
-        }
+    if (messageAttributesMap != null && !messageAttributesMap.isEmpty()) {
+        request.setMessageAttributes(messageAttributesMap)
+        Trace.info("Using " + messageAttributesMap.size() + " message attribute(s): " + messageAttributesMap.keySet())
     }
     
     return request
+}
+
+/**
+ * Parses SNS MessageAttributes JSON (AWS map format). Returns null when empty.
+ */
+def parseMessageAttributesJson(messageAttributesJson) {
+    if (messageAttributesJson == null) {
+        return null
+    }
+    def trimmed = messageAttributesJson.toString().trim()
+    if (trimmed.isEmpty()) {
+        return null
+    }
+
+    def parsed = new JsonSlurper().parseText(trimmed)
+    if (!(parsed instanceof Map)) {
+        throw new IllegalArgumentException("Message attributes JSON must be an object")
+    }
+    if (parsed.isEmpty()) {
+        return null
+    }
+    if (parsed.size() > 10) {
+        throw new IllegalArgumentException("Maximum of 10 attributes reached")
+    }
+
+    def attributes = [:]
+    parsed.each { name, spec ->
+        if (name == null || name.toString().trim().isEmpty()) {
+            throw new IllegalArgumentException("Message attribute name cannot be empty")
+        }
+        if (!(spec instanceof Map)) {
+            throw new IllegalArgumentException("Message attribute '${name}' must be an object")
+        }
+        def dataType = spec.DataType
+        if (dataType == null || dataType.toString().trim().isEmpty()) {
+            throw new IllegalArgumentException("Message attribute '${name}' requires DataType")
+        }
+
+        def attr = new MessageAttributeValue().withDataType(dataType.toString().trim())
+        def hasString = spec.containsKey("StringValue") && spec.StringValue != null
+        def hasBinary = spec.containsKey("BinaryValue") && spec.BinaryValue != null
+        if (!hasString && !hasBinary) {
+            throw new IllegalArgumentException("Message attribute '${name}' requires StringValue or BinaryValue")
+        }
+        if (hasBinary) {
+            def binaryText = spec.BinaryValue.toString().trim()
+            if (binaryText.isEmpty()) {
+                throw new IllegalArgumentException("Message attribute '${name}' BinaryValue cannot be empty")
+            }
+            attr.withBinaryValue(ByteBuffer.wrap(Base64.decoder.decode(binaryText)))
+        }
+        if (hasString) {
+            attr.withStringValue(spec.StringValue.toString())
+        }
+        attributes[name.toString()] = attr
+    }
+    return attributes
 }
 
 /**

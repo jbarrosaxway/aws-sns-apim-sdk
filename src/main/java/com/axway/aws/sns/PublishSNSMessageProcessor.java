@@ -12,8 +12,10 @@ import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.auth.WebIdentityTokenCredentialsProvider;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sns.model.MessageAttributeValue;
 import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
+import java.util.Map;
 import com.vordel.circuit.CircuitAbortException;
 import com.vordel.circuit.Message;
 import com.vordel.circuit.MessageProcessor;
@@ -25,6 +27,7 @@ import com.vordel.es.Entity;
 import com.vordel.es.EntityStoreException;
 import com.vordel.trace.Trace;
 import com.axway.aws.sns.SNSMessageJsonHelper;
+import com.axway.aws.sns.SNSMessageAttributesHelper;
 
 /**
  * AWS SNS Message Publisher with optimized IAM Role support
@@ -353,6 +356,7 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 		Trace.info("Region: " + regionValue);
 		Trace.info("Message Subject: " + messageSubjectValue);
 		Trace.info("Message Structure: " + messageStructureValue);
+		messageAttributesValue = resolveMessageAttributesJson(msg, messageAttributesValue);
 		Trace.info("Message Attributes: " + messageAttributesValue);
 		Trace.info("Retry Delay: " + retryDelayValue);
 		Trace.info("Credential Type: " + credentialTypeValue);
@@ -400,6 +404,15 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 		Trace.info("AWS_ROLE_ARN: " + System.getenv("AWS_ROLE_ARN"));
 		Trace.info("AWS_REGION: " + System.getenv("AWS_REGION"));
 		
+		Map<String, MessageAttributeValue> messageAttributesMap;
+		try {
+			messageAttributesMap = SNSMessageAttributesHelper.parseMessageAttributes(messageAttributesValue);
+		} catch (IllegalArgumentException e) {
+			Trace.error("Invalid message attributes: " + e.getMessage());
+			populateSnsError(msg, e.getMessage(), null);
+			return false;
+		}
+		
 		Exception lastException = null;
 		
 		// Get maxRetries from clientConfiguration (default 3)
@@ -418,6 +431,10 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 					.withMessage(body)
 					.withSubject(messageSubjectValue)
 					.withMessageStructure(messageStructureValue.toLowerCase());
+
+				if (messageAttributesMap != null && !messageAttributesMap.isEmpty()) {
+					publishRequest.withMessageAttributes(messageAttributesMap);
+				}
 
 				Trace.debug("=== PublishRequest Debug ===");
 				Trace.debug("PublishRequest.topicArn: '" + publishRequest.getTopicArn() + "'");
@@ -496,6 +513,24 @@ public class PublishSNSMessageProcessor extends MessageProcessor {
 		Trace.error("HTTP Status: " + awsException.getStatusCode());
 		Trace.error("Error Code: " + awsException.getErrorCode());
 		Trace.error("Request ID: " + awsException.getRequestId());
+	}
+
+	/**
+	 * Resolves message attributes JSON from selector substitution or msg map key "messageAttributes".
+	 */
+	private String resolveMessageAttributesJson(Message msg, String fromSelector) {
+		if (fromSelector != null && !fromSelector.trim().isEmpty()) {
+			return fromSelector;
+		}
+		Object fromMsg = msg.get("messageAttributes");
+		if (fromMsg != null) {
+			String value = String.valueOf(fromMsg);
+			if (!value.trim().isEmpty()) {
+				Trace.debug("Message attributes resolved from msg.messageAttributes");
+				return value;
+			}
+		}
+		return fromSelector;
 	}
 
 	private AmazonServiceException resolveAmazonServiceException(Exception e) {
